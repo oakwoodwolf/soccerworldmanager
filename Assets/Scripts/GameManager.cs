@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +18,8 @@ public class GameManager : MonoBehaviour
     public const int MaxNumberOfSubsOnBench = 3;
     public const int MaxPlayersInSquad = MaxPlayersInFormation + MaxNumberOfSubsOnBench;
 
+    public Enums.Screen currentScreen;
+    public GameObject[] Screens = new GameObject[(int)Enums.Screen.Max];
 
     public int FormationCycle;
     public Vector2 FormationSelectionScrollPos;
@@ -139,6 +142,18 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        for (int i = 1; i < Screens.Length; i++)
+        {
+            if (Screens[i] != null) 
+            {
+                Screens[i].SetActive(false); 
+            }
+
+        }
+        
+        Screens[0].SetActive(true);
+        currentScreen = Enums.Screen.Title;
+        
     }
 
     // Update is called once per frame
@@ -279,5 +294,44 @@ public class GameManager : MonoBehaviour
     private int getArrayIndexForTeam(int teamId) 
     {
         return 0;
+    }
+    public void GoToMenu(int newScreen=0)
+    {
+        int oldScreen = (int)currentScreen;
+        currentScreen = (Enums.Screen)newScreen;
+        GameObject screenToActivate = Screens[newScreen];
+        GameObject screenToDeactivate = Screens[oldScreen];
+        
+        screenToActivate.SetActive(true);
+        Debug.Log(screenToActivate.activeSelf);
+        if (screenToDeactivate != null)
+        {
+            screenToDeactivate.SetActive(false);
+        }
+       
+    }
+    public void GoToMenu(Enums.Screen newScreen)
+    {
+        Enums.Screen oldScreen = currentScreen;
+        currentScreen = newScreen;
+        GameObject screenToActivate = Screens[(int)newScreen];
+        GameObject screenToDeactivate = Screens[(int)oldScreen];
+        screenToActivate.SetActive(true);
+        screenToDeactivate.SetActive(false);
+    }
+    /// <summary>
+    /// This is a translation of the old test function, used when starting a new game.
+    /// </summary>
+    public void StartGame()
+    {
+        List<int> savedata = new();
+        if (savedata.Count > 0) //savedata is present
+        {
+            GoToMenu(Enums.Screen.Confirm);
+        }
+        else
+        {
+            GoToMenu(Enums.Screen.ChooseLeague);
+        }
     }
 }

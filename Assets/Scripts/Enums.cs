@@ -4,7 +4,7 @@ public class Enums : MonoBehaviour
 {
     public enum Screen
     {
-        Test,
+        Title, // formerly Test
         Confirm,
         Instructions,
         Instructions2,
