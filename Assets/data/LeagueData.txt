@@ -1,0 +1,7 @@
+6							
+0	Premium	0.01	90	150	100	9	14
+1	Chumpionship	0.005	40	90	20	6	11
+2	League_1	0.001	20	40	10	3	8
+3	League_2	0.0005	5	20	5	0	5
+10	League_of_Scotland	0.005	40	90	20	7	12
+50	League_USA	0.005	70	120	80	7	12
