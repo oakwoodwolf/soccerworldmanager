@@ -43,6 +43,34 @@ public class Enums : MonoBehaviour
         LoadGameError,		
         Max
     }
+    public enum MenuAction { 
+        Null = 0,
+        GotoMenu,
+        CallFunction,
+        PrepareChooseTeam,
+        SelectTeamAndCreateGame,
+        LoadAndContinueGame,
+        CyclePlayerTraining,
+        CyclePlayerTransferStatus,
+        SetCurrentPage,
+        BuyPlayerReview,
+        BuyPlayerUpdateOffer,
+        UpdateCurrentPage,
+        AssignSponsor,
+        BuyMatchbreaker,
+        UseMatchBreaker,
+        PrepareFormation,
+        AssignPlayerToFormation,
+        CheckTeamBeforeGotoMenu,        // TODO - validates submitted team then returns to match - if appropriate 
+        RadioSelectOptions,
+        RadioSelectMatchBalance,        // handle radio buttons for defensive/balanced/attacking play
+        ProcessSkipMatch,               // TODO - handle skipping (finishing) a match, then do a GotoMenu to the post match screen
+        ProcessResetLeagueForNextYear,  // TODO - If I do this as an action it might be easier to adjust it to whatever I need to do??? 
+
+        OpenSafari,                     // open Gavin Wade search on iTunes?
+
+        Max
+    }
     public enum MatchStrategy { Defensive, Balanced, Attacking }
     public enum State
     {
@@ -104,24 +132,38 @@ public class Enums : MonoBehaviour
         USA = 50,
     }
 
+    public enum MatchBreakerFlags
+    {
+        GuaranteedPossession20Mins = 1,
+        HomeTeamSupport = 2,
+        MaximumAttendence = 4,
+        Frustration = 16,
+        FlukeORama = 64,
+        ExtraExtraTime = 128,
+        ImmunityToCards = 256,
+        ImmunityToInjury = 512,
+        SponsorBonus = 1024,
+        Stalemate = 4096,
+    }
+
     public enum SponsorID
     {
         None = -1,
-        OGM_Insurance = 0,   // lots of cash
+        OGMInsurance = 0,   // lots of cash
         MrMunchySnacks,  // slowly climbing income
         FootLoose,       // random income?
         MAX
     }
     public enum Formation
     {
-        kFormation_442 = 0,
-        kFormation_424,
-        kFormation_433,
-        kFormation_532,
-        kFormation_514,
-        kFormation_352,
-        kFormation_541,
-        kFormation_MAX
+        kFormation442 = 0,
+        kFormation424,
+        kFormation433,
+        kFormation532,
+        kFormation514,
+        kFormation352,
+        kFormation541,
+        kFormationMAX
     }
     public enum GameMode
     {

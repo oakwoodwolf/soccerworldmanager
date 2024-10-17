@@ -40,11 +40,19 @@ public class MatchEngine : MonoBehaviour
     public int AwayTeamMatchBreakerActivationTurn;
     public int MaxAwayTeamPlayersOnPitch;
 
-    public int TurnTimeMultiplier;
+    [Tooltip("*5 or *1, used to calc time to display (normal or extra time)")]
+    public int TurnTimeMultiplier =1;
+    [Tooltip("0 or 90, depending upon displaying in game or extra time")]
+    [Range(0,90)]
     public int TurnTimeOffset;
     public int TurnsInPossession;
+    [Tooltip("Index of a fouled player (else -1)")]
+    public float IndexOfFouledPlayer;
+    [Tooltip("Strength of damage done")]
     public float FoulDamageDone;
+    [Tooltip("Who did the naughty!?")]
     public int IndexOfPlayerCommitingFoul;
+    [Tooltip("index into player arrays for the player with the ball - used for penalty taking")]
     public int PlayerWithBallIndex;
     [Tooltip("keep track of the yOff, so we can scroll up text if needed")]
     public float MatchStatusYOffset;
