@@ -20,10 +20,12 @@ public class StaticTeamData : ScriptableObject
             offset = 1; 
         }
         teamId = int.Parse(txtData[0]);
-        ColorUtility.TryParseHtmlString(txtData[5+offset], out homeTeam1stColour);
-        ColorUtility.TryParseHtmlString(txtData[6+offset], out homeTeam2ndColour);
-        ColorUtility.TryParseHtmlString(txtData[7+offset], out awayTeam1stColour);
-        ColorUtility.TryParseHtmlString(txtData[8+offset], out awayTeam2ndColour);
+        //Importing colours. TryParseHtmlString is the only way to import hex.
+        ColorUtility.TryParseHtmlString("#" + txtData[5+offset], out homeTeam1stColour);
+        ColorUtility.TryParseHtmlString("#" + txtData[6+offset], out homeTeam2ndColour);
+        ColorUtility.TryParseHtmlString("#" + txtData[7+offset], out awayTeam1stColour);
+        ColorUtility.TryParseHtmlString("#" + txtData[8+offset], out awayTeam2ndColour);
+
         stadiumSeats = int.Parse(txtData[4+offset]);
         teamName = txtData[1];
     }
