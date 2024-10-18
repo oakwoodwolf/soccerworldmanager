@@ -312,23 +312,37 @@ public class GameManager : MonoBehaviour
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Loads all the leagues from a .txt file. Unlike the old implementation,
+    /// the mapping is done on the object's side, this just reads the line and passes it to the object.
+    /// </summary>
     private void LoadLeagueData()
     {
         NumberOfLeaguesInArrays = 0;
-        int matches;
-        int leagueId;
-        float ticketValue;
-        int minSponsorIncomePerTurn;
-        int maxSponsorIncomePerTurn;
-        int tvIncomePerTurn;
-        int minStarRating;
-        int maxStarRating;
         string path = "Assets/data/LeagueData.txt";
         //Check if data file exists.
         if (File.Exists(path))
         {
             StreamReader sr = new(path);
-            sr.ReadLine();
+            int leagueCount = int.Parse(sr.ReadLine());
+            Debug.LogAssertion(leagueCount == 6);
+            for (int i=0; i < leagueCount; i++) //Iterate through each line
+            {
+                string[] line = sr.ReadLine().Split();
+                if (line.Length == 8) // ensure its split enough
+                {
+                    //Add to the list of leaguesData.
+                    staticLeaguesData[NumberOfLeaguesInArrays] = ScriptableObject.CreateInstance<StaticLeagueData>();
+                    staticLeaguesData[NumberOfLeaguesInArrays].LoadStaticLeagueData(line);
+                    Debug.Log(staticLeaguesData[NumberOfLeaguesInArrays].ToString());
+                    NumberOfLeaguesInArrays++;
+                }
+                else // throw error. Invalid data
+                {
+                    Debug.LogError("League ID is -1!");
+                }
+                
+            }
         }
     }
 
