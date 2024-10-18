@@ -291,9 +291,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void PrepareChooseTeamMenu(int scenarioId)
+    public void PrepareChooseTeamMenu(int scenarioId)
     {
-
+        PlayersScenario = scenarioId;
+        //todo load league data, including teams, players and managers.
+        GoToMenu(Enums.Screen.ChooseTeam);
     }
     private void CreateGameUsingTeam(int teamId, int scenarioId) { }
     private int getArrayIndexForTeam(int teamId) 
