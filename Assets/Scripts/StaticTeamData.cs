@@ -16,7 +16,7 @@ public class StaticTeamData : ScriptableObject
         int offset = 0;
         if (txtData.Length > 9) // some teams have an extra parameter for team name 2.
         { 
-            teamName2 = txtData[2];
+            teamName2 = FixUpStringName(txtData[2]);
             offset = 1; 
         }
         teamId = int.Parse(txtData[0]);
@@ -27,6 +27,10 @@ public class StaticTeamData : ScriptableObject
         ColorUtility.TryParseHtmlString("#" + txtData[8+offset], out awayTeam2ndColour);
 
         stadiumSeats = int.Parse(txtData[4+offset]);
-        teamName = txtData[1];
+        teamName = FixUpStringName(txtData[1]);
+    }
+    public string FixUpStringName(string name)
+    {
+        return name.Replace('_', ' ');
     }
 }
