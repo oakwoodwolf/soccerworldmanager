@@ -184,12 +184,17 @@ public class GameManager : MonoBehaviour
     }
     private void SaveGameData() { }
     private void LoadTeams() { }
-    private void LoadAndPrepareGame() 
+    public void LoadAndPrepareGame() 
     {
         bool loadGameSuccessful = LoadGameData();
         if (loadGameSuccessful)
         {
             BuildMatchSchedule(0);
+            GoToMenu(Enums.Screen.PreTurn);
+        }
+        else
+        {
+            GoToMenu(Enums.Screen.LoadGameError);
         }
     }
     /// <summary>
