@@ -382,7 +382,32 @@ public class GameManager : MonoBehaviour
 
     private void LoadPlayers()
     {
-        throw new NotImplementedException();
+        NumberOfPlayersInArrays = 0;
+        string path = "Assets/data/PlayerData.txt";
+        //Check if data file exists.
+        if (File.Exists(path))
+        {
+            StreamReader sr = new(path);
+            int teamCount = int.Parse(sr.ReadLine());
+            for (int i = 0; i < teamCount; i++) //Iterate through each line
+            {
+                string[] line = sr.ReadLine().Split();
+                if (line.Length == 5) // ensure its split enough
+                {
+                    //Add to the list of playerData.
+                    staticPlayersData[NumberOfPlayersInArrays] = ScriptableObject.CreateInstance<StaticPlayerData>();
+                    staticPlayersData[NumberOfPlayersInArrays].LoadStaticPlayerData(line);
+                    dynamicPlayersData[NumberOfPlayersInArrays] = ScriptableObject.CreateInstance<DynamicPlayerData>();
+                    dynamicPlayersData[NumberOfPlayersInArrays].LoadDynamicPlayerData(line);
+                    NumberOfPlayersInArrays++;
+                }
+                else // throw error. Invalid data
+                {
+                    Debug.LogError("Invalid data!");
+                }
+
+            }
+        }
     }
 
     private void LoadManagers()

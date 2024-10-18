@@ -165,6 +165,18 @@ public class Enums : MonoBehaviour
         kFormation541,
         kFormationMAX
     }
+
+    public enum PlayerFormation
+    {
+        Goalkeeper  = (1 << 0),
+        Defender    = (1 << 1),
+        MidFielder  = (1 << 2),
+        Attacker    = (1 << 3),
+        Substitute  = (1 << 4),
+        Left        = (1 << 5),
+        Right       = (1 << 6),
+        Center      = (1 << 7),
+    }
     public enum GameMode
     {
         Standard,
