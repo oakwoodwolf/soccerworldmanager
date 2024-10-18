@@ -185,7 +185,41 @@ public class GameManager : MonoBehaviour
         return true;
     }
     private void SaveGameData() { }
-    private void LoadTeams() { }
+    private void LoadTeams() 
+    {
+        NumberOfTeamsInArrays = 0;
+        string path = "Assets/data/teamdata.txt";
+        //Check if data file exists.
+        if (File.Exists(path))
+        {
+            StreamReader sr = new(path);
+            int teamCount = int.Parse(sr.ReadLine());
+            for (int i = 0; i < teamCount; i++) //Iterate through each line
+            {
+                string[] line = sr.ReadLine().Split();
+                if (line.Length > 8) // ensure its split enough
+                {
+                    int offset = 0;
+                    if (line.Length > 9) 
+                    {
+                        offset = 1;
+                    } // some teams have an extra parameter for team name 2.
+
+                    //Add to the list of leaguesData.
+                    staticTeamsData[NumberOfTeamsInArrays] = ScriptableObject.CreateInstance<StaticTeamData>();
+                    staticTeamsData[NumberOfTeamsInArrays].LoadStaticTeamData(line);
+                    dynamicTeamsData[NumberOfTeamsInArrays] = ScriptableObject.CreateInstance<DynamicTeamData>();
+                    dynamicTeamsData[NumberOfTeamsInArrays].LoadDynamicTeamData(line,offset);
+                    NumberOfTeamsInArrays++;
+                }
+                else // throw error. Invalid data
+                {
+                    Debug.LogError("Team ID is -1!");
+                }
+
+            }
+        }
+    }
     public void LoadAndPrepareGame() 
     {
         bool loadGameSuccessful = LoadGameData();

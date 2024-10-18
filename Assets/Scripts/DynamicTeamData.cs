@@ -3,20 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class DynamicTeamData : MonoBehaviour
+public class DynamicTeamData : ScriptableObject
 {
     public float fanMorale;
     public int cashBalance;
-    public short leagueID;
-    // Start is called before the first frame update
-    void Start()
+    public Enums.LeagueID leagueID;
+    public void LoadDynamicTeamData(string[] txtData, int offset = 0)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        leagueID = (Enums.LeagueID)int.Parse(txtData[2 + offset]);
+        cashBalance = int.Parse(txtData[3 + offset]);
     }
 }
