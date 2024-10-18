@@ -1,11 +1,11 @@
 using UnityEngine;
-
-public class ScenarioInfo : MonoBehaviour
+[CreateAssetMenu]
+public class ScenarioInfo : ScriptableObject
 {
-    public int leagueID;
+    public Enums.LeagueID leagueID;
     public int startPointsAdjust;
     public int startMoneyAdjust;
     public int yearsTillRetire;
-    public int leagueIDPromotion;
-    public int leagueIDRelegation;
+    public Enums.LeagueID leagueIDPromotion;
+    public Enums.LeagueID leagueIDRelegation;
 }

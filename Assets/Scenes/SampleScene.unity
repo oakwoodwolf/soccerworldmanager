@@ -6708,6 +6708,13 @@ MonoBehaviour:
   CurrentPage: 0
   CurrentNumberOfPage: 0
   ProcessMatchDataStartFrameCount: 0
+  scenarioData:
+  - {fileID: 11400000, guid: 713cdf99e1ec1934d92471dfe0a08821, type: 2}
+  - {fileID: 11400000, guid: 1adf489e7f9dd7b46ac9d6a087e09781, type: 2}
+  - {fileID: 11400000, guid: 9ad83108fa4ffe24e8b565f96fe594b0, type: 2}
+  - {fileID: 11400000, guid: 1d715b313865fe540b2b043d8aed5d2b, type: 2}
+  - {fileID: 11400000, guid: a6e8d19321bc7ea49a3f0a3f26393896, type: 2}
+  - {fileID: 11400000, guid: 56b418cad5b1e6b4d878a710b36ceb24, type: 2}
   StatsPrevLeaguePos: 0
   StatsTurnIncome: 0
   StatsTurnIncomeTicketSales: 0
@@ -16808,9 +16815,9 @@ MonoBehaviour:
   m_Vertical: 1
   m_MovementType: 1
   m_Elasticity: 0.1
-  m_Inertia: 1
+  m_Inertia: 0
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 2
+  m_ScrollSensitivity: 10
   m_Viewport: {fileID: 129036076}
   m_HorizontalScrollbar: {fileID: 514733051}
   m_VerticalScrollbar: {fileID: 1679176628}

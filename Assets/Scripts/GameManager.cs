@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 public class GameManager : MonoBehaviour
 {
@@ -26,6 +27,7 @@ public class GameManager : MonoBehaviour
     public int CurrentPage;
     public int CurrentNumberOfPage;
     public int ProcessMatchDataStartFrameCount;
+    public ScenarioInfo[] scenarioData;
     /// <summary>
     /// Stuff to keep track of for end of turn screen
     /// </summary>
@@ -294,9 +296,52 @@ public class GameManager : MonoBehaviour
     public void PrepareChooseTeamMenu(int scenarioId)
     {
         PlayersScenario = scenarioId;
+        PlayersLeague = (int)scenarioData[PlayersScenario].leagueID;
+        LoadLeagueData();
+        LoadTeams();
+        LoadPlayers();
+        LoadManagers();
+
+        NumTeamsInScenarioLeague = CountTeamsInLeague(PlayersLeague);
         //todo load league data, including teams, players and managers.
         GoToMenu(Enums.Screen.ChooseTeam);
     }
+
+    private int CountTeamsInLeague(int playersLeague)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void LoadLeagueData()
+    {
+        NumberOfLeaguesInArrays = 0;
+        int matches;
+        int leagueId;
+        float ticketValue;
+        int minSponsorIncomePerTurn;
+        int maxSponsorIncomePerTurn;
+        int tvIncomePerTurn;
+        int minStarRating;
+        int maxStarRating;
+        string path = "Assets/data/LeagueData.txt";
+        //Check if data file exists.
+        if (File.Exists(path))
+        {
+            StreamReader sr = new(path);
+            sr.ReadLine();
+        }
+    }
+
+    private void LoadPlayers()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void LoadManagers()
+    {
+        throw new NotImplementedException();
+    }
+
     private void CreateGameUsingTeam(int teamId, int scenarioId) { }
     private int getArrayIndexForTeam(int teamId) 
     {
