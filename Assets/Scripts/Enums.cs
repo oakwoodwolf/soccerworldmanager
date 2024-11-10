@@ -71,6 +71,28 @@ public class Enums : MonoBehaviour
 
         Max
     }
+    public enum MenuElement {
+        //	Terminate = -1,
+        NULL = 0,
+
+        TextBar,
+        TextBarHalf,           // half size/width version of TextBar
+        TextBarHalfDouble,     // half size/width version of TextBar
+        IconBar,
+        Button,
+        RadioButton,
+
+        ShadedBox,
+        StaticText,
+
+        TitleBar,
+
+        Graph,
+
+        ScrollBar,
+
+        Max
+    };
     public enum MatchStrategy { Defensive, Balanced, Attacking }
     public enum State
     {

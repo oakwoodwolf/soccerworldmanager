@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using static Enums;
 public class GameManager : MonoBehaviour
 {
     //Constants
@@ -95,7 +96,7 @@ public class GameManager : MonoBehaviour
     public int NumberOfLeaguesInArrays;
     public StaticLeagueData[] staticLeaguesData = new StaticLeagueData[MaxLeagues];
     public int NumberOfManagersInArrays;
-    public StaticManagerData[] staticManagersDatas = new StaticManagerData[MaxManagers];
+    public StaticManagerData[] staticManagersData = new StaticManagerData[MaxManagers];
     public int NumberOfTeamsInArrays;
     public StaticTeamData[] staticTeamsData = new StaticTeamData[MaxTeams];
     public int NumberOfPlayersInArrays;
@@ -104,7 +105,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Dynamic Soccer Data")]
     public int PlayersTeam;
-    public int PlayersLeague;
+    public Enums.LeagueID PlayersLeague;
     public int PlayersScenario;
     public int PlayerRating;
     public Enums.SponsorID PlayersSponsor;
@@ -220,6 +221,35 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+    private void LoadManagers()
+    {
+        NumberOfManagersInArrays = 0;
+        string path = "Assets/data/Manager_Data.txt";
+        //Check if data file exists.
+        if (File.Exists(path))
+        {
+            StreamReader sr = new(path);
+            int managerCount = int.Parse(sr.ReadLine());
+            for (int i = 0; i < managerCount; i++) //Iterate through each line
+            {
+                string[] line = sr.ReadLine().Split();
+                if (line.Length == 4) // ensure its split enough
+                {
+                    //Add to the list of leaguesData.
+                    staticManagersData[NumberOfManagersInArrays] = ScriptableObject.CreateInstance<StaticManagerData>();
+                    staticManagersData[NumberOfManagersInArrays].LoadStaticManagerData(line);
+                    dynamicManagersData[NumberOfManagersInArrays] = ScriptableObject.CreateInstance<DynamicManagerData>();
+                    dynamicManagersData[NumberOfManagersInArrays].LoadDynamicManagerData(line);
+                    NumberOfManagersInArrays++;
+                }
+                else // throw error. Invalid data
+                {
+                    Debug.LogError("Manager ID is -1!");
+                }
+
+            }
+        }
+    }
     public void LoadAndPrepareGame() 
     {
         bool loadGameSuccessful = LoadGameData();
@@ -330,20 +360,42 @@ public class GameManager : MonoBehaviour
     public void PrepareChooseTeamMenu(int scenarioId)
     {
         PlayersScenario = scenarioId;
-        PlayersLeague = (int)scenarioData[PlayersScenario].leagueID;
+        PlayersLeague = scenarioData[PlayersScenario].leagueID;
         LoadLeagueData();
         LoadTeams();
         LoadPlayers();
         LoadManagers();
-
+        // Filter the league players
         NumTeamsInScenarioLeague = CountTeamsInLeague(PlayersLeague);
-        //todo load league data, including teams, players and managers.
+        FillTeamsInLeagueArray(TeamIndexsForScenarioLeague, PlayersLeague);
+        // Dynamic menu work
+        int dynMenuIndex = 0;
+
         GoToMenu(Enums.Screen.ChooseTeam);
     }
 
-    private int CountTeamsInLeague(int playersLeague)
+    public int FillTeamsInLeagueArray(int[] pArray, Enums.LeagueID leagueID)
     {
-        throw new NotImplementedException();
+        int count = 0;
+        for (int i = 0; i < NumberOfTeamsInArrays; i++)
+        {
+            if (dynamicTeamsData[i].leagueID == leagueID) 
+            {
+                pArray[count] = i;
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int CountTeamsInLeague(Enums.LeagueID leagueID)
+    {
+        int count = 0;
+        for (int i = 0; i < NumberOfTeamsInArrays; i++)
+        {
+            if (dynamicTeamsData[i].leagueID == leagueID) { count++; }
+        }
+        return count;
     }
 
     /// <summary>
@@ -408,11 +460,6 @@ public class GameManager : MonoBehaviour
 
             }
         }
-    }
-
-    private void LoadManagers()
-    {
-        throw new NotImplementedException();
     }
 
     private void CreateGameUsingTeam(int teamId, int scenarioId) { }
