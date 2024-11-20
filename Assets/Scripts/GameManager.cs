@@ -22,7 +22,7 @@ public class GameManager : MonoBehaviour
 
     public Enums.Screen currentScreen;
     public GameObject[] Screens = new GameObject[(int)Enums.Screen.Max];
-
+    public MenuItemGenerator menuItemGenerator;
     public int FormationCycle;
     public Vector2 FormationSelectionScrollPos;
     public int CurrentPage;
