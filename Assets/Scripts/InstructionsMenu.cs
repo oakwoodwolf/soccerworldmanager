@@ -2,17 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class InstructionsMenu : MonoBehaviour
 {
-    public GameManager GameManager;
-    public const int maxInstructions = 4;
-    [Range(1, maxInstructions)]
-    public int InstructionScreen = 1;
+    [FormerlySerializedAs("GameManager")]
+    public GameManager gameManager;
+    public const int MaxInstructions = 4;
+    [FormerlySerializedAs("InstructionScreen")]
+    [Range(1, MaxInstructions)]
+    public int instructionScreen = 1;
 
     public TMP_Text instructions;
     [TextArea(5,8)]
-    public string[] instructionString = new string[maxInstructions];
+    public string[] instructionString = new string[MaxInstructions];
     // Start is called before the first frame update
     void Awake()
     {
@@ -21,17 +24,17 @@ public class InstructionsMenu : MonoBehaviour
 
     public void SetInstructionScreen(int screen)
     {
-        InstructionScreen = screen;
+        instructionScreen = screen;
         instructions.text = instructionString[screen - 1];
     }
     private void Exit()
     {
         SetInstructionScreen(1);
-        GameManager.GoToMenu(Enums.Screen.Title);
+        gameManager.GoToMenu(Enums.Screen.Title);
     }
     public void OnClick(bool reverse)
     {
-        int screenToGo = InstructionScreen;
+        int screenToGo = instructionScreen;
         if (reverse) //left
         {
             screenToGo--;
@@ -47,7 +50,7 @@ public class InstructionsMenu : MonoBehaviour
         else //right
         {
             screenToGo++;
-            if (screenToGo > maxInstructions)
+            if (screenToGo > MaxInstructions)
             {
                 Exit();
             }

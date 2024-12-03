@@ -2,30 +2,45 @@
 using System.Collections.Generic;
 using UnityEditor.Build.Player;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayersMatch : MonoBehaviour
 {
     public const int MaxTeamnameLength = 32;
+    [FormerlySerializedAs("HomeTeam")]
     [Header("Players Match Data")]
 
     [Header("Home")]
-    public int HomeTeam;
-    public Color HomeTeam1stColour;
-    public Color HomeTeam2ndColour;
-    public string HomeTeamName;
-    public Enums.Formation FormationTypeHomeTeam;
-    public int[] FormationHomeTeam = new int[14];
+    public int homeTeam;
+    [FormerlySerializedAs("HomeTeam1stColour")]
+    public Color homeTeam1StColour;
+    [FormerlySerializedAs("HomeTeam2ndColour")]
+    public Color homeTeam2NdColour;
+    [FormerlySerializedAs("HomeTeamName")]
+    public string homeTeamName;
+    [FormerlySerializedAs("FormationTypeHomeTeam")]
+    public Enums.Formation formationTypeHomeTeam;
+    [FormerlySerializedAs("FormationHomeTeam")]
+    public int[] formationHomeTeam = new int[14];
 
+    [FormerlySerializedAs("AwayTeam")]
     [Header("Away")]
-    public int AwayTeam;
-    public Color AwayTeam1stColour;
-    public Color AwayTeam2ndColour;
-    public string AwayTeamName;
-    public Enums.Formation FormationTypeAwayTeam;
-    public int[] FormationAwayTeam = new int[14];
+    public int awayTeam;
+    [FormerlySerializedAs("AwayTeam1stColour")]
+    public Color awayTeam1StColour;
+    [FormerlySerializedAs("AwayTeam2ndColour")]
+    public Color awayTeam2NdColour;
+    [FormerlySerializedAs("AwayTeamName")]
+    public string awayTeamName;
+    [FormerlySerializedAs("FormationTypeAwayTeam")]
+    public Enums.Formation formationTypeAwayTeam;
+    [FormerlySerializedAs("FormationAwayTeam")]
+    public int[] formationAwayTeam = new int[14];
 
-    public string ScourerName;
-    public string FoulerName;
+    [FormerlySerializedAs("ScourerName")]
+    public string scourerName;
+    [FormerlySerializedAs("FoulerName")]
+    public string foulerName;
 
     // Start is called before the first frame update
     void Start()

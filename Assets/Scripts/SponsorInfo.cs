@@ -1,7 +1,9 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class SponsorInfo : MonoBehaviour
 {
-    public Texture2D _textureId;
+    [FormerlySerializedAs("_textureId")]
+    public Texture2D textureId;
     public uint flags;
 }

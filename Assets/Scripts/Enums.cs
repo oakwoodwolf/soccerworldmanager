@@ -73,7 +73,7 @@ public class Enums : MonoBehaviour
     }
     public enum MenuElement {
         //	Terminate = -1,
-        NULL = 0,
+        Null = 0,
 
         TextBar,
         TextBarHalf,           // half size/width version of TextBar
@@ -151,7 +151,7 @@ public class Enums : MonoBehaviour
         Premium = 0,
         Chumpionship,
         Scotland = 10,
-        USA = 50,
+        Usa = 50,
     }
 
     public enum MatchBreakerFlags
@@ -171,21 +171,21 @@ public class Enums : MonoBehaviour
     public enum SponsorID
     {
         None = -1,
-        OGMInsurance = 0,   // lots of cash
+        OgmInsurance = 0,   // lots of cash
         MrMunchySnacks,  // slowly climbing income
         FootLoose,       // random income?
-        MAX
+        Max
     }
     public enum Formation
     {
-        kFormation442 = 0,
-        kFormation424,
-        kFormation433,
-        kFormation532,
-        kFormation514,
-        kFormation352,
-        kFormation541,
-        kFormationMAX
+        KFormation442 = 0,
+        KFormation424,
+        KFormation433,
+        KFormation532,
+        KFormation514,
+        KFormation352,
+        KFormation541,
+        KFormationMax
     }
 
     public enum PlayerFormation

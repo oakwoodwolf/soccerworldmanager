@@ -1,13 +1,18 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class StaticTeamData : ScriptableObject
 {
     public int teamId;
     public int stadiumSeats;
-    public Color homeTeam1stColour;
-    public Color homeTeam2ndColour;
-    public Color awayTeam1stColour;
-    public Color awayTeam2ndColour;
+    [FormerlySerializedAs("homeTeam1stColour")]
+    public Color homeTeam1StColour;
+    [FormerlySerializedAs("homeTeam2ndColour")]
+    public Color homeTeam2NdColour;
+    [FormerlySerializedAs("awayTeam1stColour")]
+    public Color awayTeam1StColour;
+    [FormerlySerializedAs("awayTeam2ndColour")]
+    public Color awayTeam2NdColour;
     public string teamName;
     public string teamName2;
 
@@ -21,10 +26,10 @@ public class StaticTeamData : ScriptableObject
         }
         teamId = int.Parse(txtData[0]);
         //Importing colours. TryParseHtmlString is the only way to import hex.
-        ColorUtility.TryParseHtmlString("#" + txtData[5+offset], out homeTeam1stColour);
-        ColorUtility.TryParseHtmlString("#" + txtData[6+offset], out homeTeam2ndColour);
-        ColorUtility.TryParseHtmlString("#" + txtData[7+offset], out awayTeam1stColour);
-        ColorUtility.TryParseHtmlString("#" + txtData[8+offset], out awayTeam2ndColour);
+        ColorUtility.TryParseHtmlString("#" + txtData[5+offset], out homeTeam1StColour);
+        ColorUtility.TryParseHtmlString("#" + txtData[6+offset], out homeTeam2NdColour);
+        ColorUtility.TryParseHtmlString("#" + txtData[7+offset], out awayTeam1StColour);
+        ColorUtility.TryParseHtmlString("#" + txtData[8+offset], out awayTeam2NdColour);
 
         stadiumSeats = int.Parse(txtData[4+offset]);
         teamName = FixUpStringName(txtData[1]);
