@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
 
     public Enums.Screen currentScreen;
     [FormerlySerializedAs("Screens")]
-    public GameObject[] screens = new GameObject[(int)Enums.Screen.Max];
+    public ScreenDefinition[] screens = new ScreenDefinition[(int)Enums.Screen.Max];
     public MenuItemGenerator menuItemGenerator;
     public int formationCycle;
     public Vector2 formationSelectionScrollPos;
@@ -152,12 +152,12 @@ public class GameManager : MonoBehaviour
         {
             if (screens[i] != null) 
             {
-                screens[i].SetActive(false); 
+                screens[i].gameObject.SetActive(false); 
             }
 
         }
         
-        screens[0].SetActive(true);
+        screens[0].gameObject.SetActive(true);
         currentScreen = Enums.Screen.Title;
         
     }
@@ -477,8 +477,8 @@ public class GameManager : MonoBehaviour
     {
         int oldScreen = (int)currentScreen;
         currentScreen = (Enums.Screen)newScreen;
-        GameObject screenToActivate = screens[newScreen];
-        GameObject screenToDeactivate = screens[oldScreen];
+        GameObject screenToActivate = screens[newScreen].gameObject;
+        GameObject screenToDeactivate = screens[oldScreen].gameObject;
         
         screenToActivate.SetActive(true);
         Debug.Log(screenToActivate.activeSelf);
@@ -492,8 +492,8 @@ public class GameManager : MonoBehaviour
     {
         Enums.Screen oldScreen = currentScreen;
         currentScreen = newScreen;
-        GameObject screenToActivate = screens[(int)newScreen];
-        GameObject screenToDeactivate = screens[(int)oldScreen];
+        GameObject screenToActivate = screens[(int)newScreen].gameObject;
+        GameObject screenToDeactivate = screens[(int)oldScreen].gameObject;
         screenToActivate.SetActive(true);
         screenToDeactivate.SetActive(false);
     }
