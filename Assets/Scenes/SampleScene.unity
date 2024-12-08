@@ -173,7 +173,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 320, y: 480}
   m_ScreenMatchMode: 1
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 1
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -6892,18 +6892,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentScreen: 0
   screens:
-  - {fileID: 852357930}
-  - {fileID: 1728873082}
-  - {fileID: 1765345367}
+  - {fileID: 852357935}
+  - {fileID: 1728873087}
+  - {fileID: 1765345373}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  - {fileID: 1079231041}
+  - {fileID: 1079231046}
   - {fileID: 0}
-  - {fileID: 1240176677}
-  - {fileID: 241343593}
+  - {fileID: 1240176682}
+  - {fileID: 241343598}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
@@ -6929,7 +6929,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 160929420}
-  menuItemGenerator: {fileID: 0}
+  menuItemGenerator: {fileID: 1268724604}
   formationCycle: 0
   formationSelectionScrollPos: {x: 0, y: 0}
   currentPage: 0
@@ -17305,11 +17305,11 @@ RectTransform:
   - {fileID: 1460922024}
   m_Father: {fileID: 241343594}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_SizeDelta: {x: 320, y: 480}
+  m_Pivot: {x: 0, y: 1}
 --- !u!1 &2021473036
 GameObject:
   m_ObjectHideFlags: 0

@@ -376,7 +376,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < numTeamsInScenarioLeague; i++)
         {
             int dataIndex = teamIndexsForScenarioLeague[i];
-            menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.ChooseTeam].transform,Enums.MenuElement.TextBar, new Vector2(0,-270+(menuItemGenerator.menuBarSpacing*i)),0,0,staticTeamsData[dataIndex].teamName, Enums.MenuAction.SelectTeamAndCreateGame, staticTeamsData[dataIndex].teamId);
+            menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.ChooseTeam],Enums.MenuElement.TextBar, new Vector2(0,-270+menuItemGenerator.menuBarSpacing*i),0,0,staticTeamsData[dataIndex].teamName, Enums.MenuAction.SelectTeamAndCreateGame, staticTeamsData[dataIndex].teamId);
         }
         
         GoToMenu(Enums.Screen.ChooseTeam);

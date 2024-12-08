@@ -25,11 +25,11 @@ public class MenuItemGenerator : MonoBehaviour
         menuBarSpacing = (menuBarSpace + menuBarHeight);
     }
 
-    public void GenerateMenuItem(Transform screen, Enums.MenuElement type, Vector2 pos, int align, uint flag, string text, Enums.MenuAction action, int param)
+    public void GenerateMenuItem(ScreenDefinition screen, Enums.MenuElement type, Vector2 pos, int align, uint flag, string text, Enums.MenuAction action, int param)
     {
-
-        GameObject newObj = Instantiate(prefabs[(int)type], screen, false);
-        newObj.transform.position = pos;
+        GameObject newObj = Instantiate(prefabs[(int)type], screen.MenuItems.transform, false);
+        RectTransform rectTransform = newObj.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = pos;
         newObj.name = text;
         MenuItem menuItem = newObj.GetComponent<MenuItem>();
         menuItem.SetText(text);
