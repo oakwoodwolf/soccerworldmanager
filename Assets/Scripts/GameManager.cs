@@ -110,6 +110,7 @@ public class GameManager : MonoBehaviour
     public LeagueID playersLeague;
     public int playersScenario;
     public int playerRating = 128;
+    [SerializeField] private int playerRatingStartValue = 128;
     public SponsorID playersSponsor;
     public int playersWeeksWithSponsor;
     public int playersMatchBreaker;
@@ -524,6 +525,48 @@ public class GameManager : MonoBehaviour
             dynamicManagersData[managerIndex].teamId = -1; // set unemployed
         }
         week = 0;
+
+        playerRating = playerRatingStartValue;
         playersSponsor = SponsorID.None;
+        playersWeeksWithSponsor = 0;
+        playersMatchBreaker = -1;
+        matchEngine.state = Enums.MatchEngineState.MatchOver;
+        playersMatchStrategy = Enums.MatchStrategy.Balanced;
+
+        ResetLeaguePoints();
+        
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            int playerId = StaticPlayerData[i].playerId;
+            int teamId = DynamicPlayerData[i].teamId;
+            if (teamId != -1)
+            {
+                
+            }
+            else
+            {
+
+            }
+        }
+    }
+
+    private void ResetLeaguePoints()
+    {
+        for (int i = 0; i < numTeamsInScenarioLeague; i++)
+        {
+            int dataIndex = teamIndexsForScenarioLeague[i];
+            premiumLeagueData[dataIndex].teamId = staticTeamsData[dataIndex].teamId;
+            premiumLeagueData[dataIndex].matchesPlayed = 0;
+            premiumLeagueData[dataIndex].goalsFor = 0;
+            premiumLeagueData[dataIndex].goalsAgainst = 0;
+            premiumLeagueData[dataIndex].goalDifference = 0;
+
+        }
+
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            premiumLeagueYellowCards[i] = 5 & 0x00ff;
+            //_PremiumLeagueYellowCards[i] = ( kPremiumLeague_YellowsUntilBan & kYellowCardsUntilBanMask );		// low=cards until ban, high= total card recieved (hence 0 at season start)
+        }
     }
 }
