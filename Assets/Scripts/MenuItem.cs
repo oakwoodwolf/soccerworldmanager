@@ -11,7 +11,7 @@ public class MenuItem : MonoBehaviour
 {
     [FormerlySerializedAs("m_Text")]
     [SerializeField]
-    private TMP_Text mText;
+    protected TMP_Text mText;
     [FormerlySerializedAs("_gameManager")]
     [SerializeField]
     GameManager gameManager;
@@ -20,21 +20,21 @@ public class MenuItem : MonoBehaviour
     public string text;
     public Enums.MenuAction menuAction;
     public Action<object> OnClick;
-    private Button _button;
+    protected Button Button;
     public int param;
     public void Awake()
     {
-        _button = GetComponent<Button>();
+        Button = GetComponent<Button>();
         gameManager = FindFirstObjectByType<GameManager>().GetComponent<GameManager>();
     }
     public virtual void AddListener(Enums.MenuAction action, int clickParam)
     { 
         this.param = clickParam;
         this.menuAction = action;
-        _button = GetComponent<Button>();
-        if (_button != null)
+        Button = GetComponent<Button>();
+        if (Button != null)
         {
-            _button.onClick.AddListener(HandleClick);
+            Button.onClick.AddListener(HandleClick);
             Debug.Log("Listener Attached");
         } else
         {
@@ -44,13 +44,13 @@ public class MenuItem : MonoBehaviour
     public virtual void SetText(string newText)
     {
         this.text = newText;
-        this.mText.text = newText;
+        if (this.mText != null) {this.mText.text = newText;}
         
     }
 
     public void OnDestroy()
     {
-        _button.onClick.RemoveAllListeners();
+        Button.onClick.RemoveAllListeners();
     }
 
     public virtual void HandleClick()

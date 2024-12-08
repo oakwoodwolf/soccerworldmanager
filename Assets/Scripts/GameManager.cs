@@ -373,13 +373,14 @@ public class GameManager : MonoBehaviour
         FillTeamsInLeagueArray(teamIndexsForScenarioLeague, playersLeague);
         // Dynamic menu work
         RectTransform items = screens[(int)Enums.Screen.ChooseTeam].MenuItems.GetComponent<RectTransform>();
-        items.sizeDelta = new Vector2(320f,menuItemGenerator.menuBarSpacing*numTeamsInScenarioLeague);
+        items.sizeDelta = new Vector2(320f,menuItemGenerator.menuBarSpacing*numTeamsInScenarioLeague+72);
         for (int i = 0; i < numTeamsInScenarioLeague; i++)
         {
             int dataIndex = teamIndexsForScenarioLeague[i];
-            menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.ChooseTeam],Enums.MenuElement.TextBar, new Vector2(0,-27-menuItemGenerator.menuBarSpacing*i),0,0,staticTeamsData[dataIndex].teamName, Enums.MenuAction.SelectTeamAndCreateGame, staticTeamsData[dataIndex].teamId);
+            menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.ChooseTeam],Enums.MenuElement.TextBar, new Vector2(0,-72-menuItemGenerator.menuBarSpacing*i),0,0,staticTeamsData[dataIndex].teamName, Enums.MenuAction.SelectTeamAndCreateGame, staticTeamsData[dataIndex].teamId);
         }
-        
+        menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.ChooseTeam],Enums.MenuElement.Button, new Vector2(8,-72-menuItemGenerator.menuBarSpacing*numTeamsInScenarioLeague),0,0,"backButton", Enums.MenuAction.GotoMenu, (int)Enums.Screen.ChooseLeague);
+
         GoToMenu(Enums.Screen.ChooseTeam);
     }
 
