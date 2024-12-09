@@ -120,7 +120,7 @@ public class GameManager : MonoBehaviour
     public int[] playersBalance = new int[MaxWeeks];
     public int week;
     public Formation formationType;
-    public FormationInfo[] formations = new FormationInfo[(int)Formation.KFormationMax];
+    public FormationData[] formations = new FormationData[(int)Formation.KFormationMax];
     public int playersYearsToRetire;
 
     public DynamicManagerData[] dynamicManagersData = new DynamicManagerData[MaxManagers];

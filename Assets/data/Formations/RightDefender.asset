@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ac562b35d38487cbd9c68156dfa8f13, type: 3}
   m_Name: RightDefender
   m_EditorClassIdentifier: 
-  pos: {x: -0.23, y: 0.35}
-  formation: 2
-  direction: 32
-  value: 34
+  pos: {x: 0.23, y: 0.2}
+  formation: 66
+  value: 66

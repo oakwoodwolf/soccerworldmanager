@@ -13,6 +13,5 @@ MonoBehaviour:
   m_Name: MidDefender1
   m_EditorClassIdentifier: 
   pos: {x: -0.1, y: 0.2}
-  formation: 2
-  direction: 128
+  formation: 130
   value: 130
