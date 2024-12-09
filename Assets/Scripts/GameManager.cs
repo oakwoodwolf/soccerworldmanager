@@ -614,17 +614,159 @@ public class GameManager : MonoBehaviour
         {
             formation[i] = -1;
         }
-        var formationInfo = formations[(int)formationType];
+        var formationData = formations[(int)formationType];
         for (int i = 0; i < MaxPlayersInSquad; i++)
         {
             int playerId = -1;
-           // int formPosType = (int)formationInfo;
-            switch (formationType)
+           int formPosType = (int)formationData.formations[i].formation;
+           if ((formPosType & (int)PlayerFormation.Substitute) !=0)
+           {
+               int subnum = i - 11;
+               int style = (int)GetEnumManagerStyleForTeamId(teamId);
+               if (style > 0)
+               {
+                   subnum++;
+               }
+
+               subnum &= 3;
+               formPosType = 1 << subnum;
+           }
+           if ((formPosType & (int)PlayerFormation.Goalkeeper) !=0)
+           {
+               playerId = AssignSquad(formation, playerIds, numPlayers, formPosType);
+           }
+        }
+    }
+
+    private int AssignSquad(int[] formation, int[] playerIds, int numPlayers, int formPosType)
+    {
+        switch ((PlayerFormation)formPosType)
+        {
+            case PlayerFormation.Goalkeeper:
+                return ChooseGoalKeeperForFormation(formation, playerIds, numPlayers);
+                break;
+        }
+
+        return -1;
+    }
+/// <summary>
+/// Determine the goalkeeper candidate for the formation
+/// </summary>
+/// <param name="formation"></param>
+/// <param name="playerIds"></param>
+/// <param name="numPlayers"></param>
+/// <returns>the index for the player to assign goalkeeper.</returns>
+    private int ChooseGoalKeeperForFormation(int[] formation, int[] playerIds, int numPlayers)
+    {
+        int resultIndex = -1;
+        float resultRating = 0.0f;
+
+        for (int i = 0; i < numPlayers; i++)
+        {
+            int playerId = playerIds[i];
+            for (int j = 0; j < MaxPlayersInSquad; j++)
             {
-                case Formation.KFormation442:
-                    break;
+                if (formation[j] == playerId) playerId = -1; // player was already in the squad.
+            }
+            
+            //Check if player is already assigned
+            if (playerId != -1)
+            {
+                int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                float starsRating = GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
+                
+                float positionScale = 1.0f;
+                float outOfPositionScale = 1.0f;
+                if ((int)CheckPlayerIndexIsHappyInPosition(playerId, PlayerFormation.Goalkeeper) < 1)
+                {
+                    outOfPositionScale = 0.5f;
+                }
+                
+                if (dynamicPlayersData[dataIndex].weeksBannedOrInjured > 0)
+                {
+                    starsRating = 0.0f;
+                }
+
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Goalkeeper) > 0)
+                {
+                    positionScale = 2.0f;
+                }
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Defender) > 0)
+                {
+                    positionScale = 1.5f;
+                }
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.MidFielder) > 0)
+                {
+                    positionScale = 0.75f;
+                }
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Attacker) > 0)
+                {
+                    positionScale = 0.5f;
+                }
+                starsRating += starsRating * dynamicPlayersData[dataIndex].condition*outOfPositionScale*positionScale;
+                if (starsRating > resultRating)
+                {
+                    resultRating = starsRating;
+                    resultIndex = dataIndex;
+                }
             }
         }
+        return resultIndex;
+    }
+
+    private PlayerFormation CheckPlayerIndexIsHappyInPosition(int playerId, PlayerFormation position)
+    {
+        int playerIndex = GetPlayerDataIndexForPlayerID(playerId);
+        if (position == PlayerFormation.Substitute) return PlayerFormation.Substitute;
+        return staticPlayersData[playerIndex].playerPositionFlags & position;
+    }   
+
+    private ManagementStyle GetEnumManagerStyleForTeamId(int teamId)
+    {
+        
+        int managerIndex = GetIndexToManagerForTeamID(teamId);
+        float style = staticManagersData[managerIndex].styleOffset;
+        if (style is <= 4.9f and >= -4.9f)
+        {
+            return ManagementStyle.Balanced;
+        }
+        else
+        {
+            if (style < -9.9f)
+            {
+                return ManagementStyle.VeryDefensive;
+            }
+            else if (style < -4.9f)
+            {
+                return ManagementStyle.Defensive;
+            }
+            else if (style > 9.9f)
+            {
+                return ManagementStyle.StrongAttacking;
+            }
+            else if (style > 4.9f)
+            {
+                return ManagementStyle.Attacking;
+            }
+        }
+        return ManagementStyle.Balanced;
+    }
+    
+    /// <param name="teamId">The team to retrive the manager of</param>
+    /// <returns>the index to the manager for a given teamId, note this is the index of the manager, NOT the ID!!! </returns>
+    private int GetIndexToManagerForTeamID(int teamId)
+    {
+        int result = -1;
+        Debug.Assert(numberOfManagersInArrays > 0);
+        for (int i = 0; i < numberOfManagersInArrays; i++)
+        {
+            if (dynamicManagersData[i].teamId == teamId)
+            {
+                result = i;
+                break;
+            }
+        }
+        return result;
     }
 
     private int FillTeamPlayerArray(int[] playerArray, int teamId)
@@ -662,12 +804,58 @@ public class GameManager : MonoBehaviour
 
     private int GetPlayerDataIndexForPlayerID(int playerId)
     {
-        throw new NotImplementedException();
+        int playerIndex = -1;
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            if (staticPlayersData[i].playerId == playerId)
+            {
+                playerIndex = i;
+                break;
+            }
+        }
+        Debug.Assert(playerIndex != -1);
+        return playerIndex;
     }
-
+/// <summary>
+/// determine the stars rating for a player, adjusted for their team and league
+/// </summary>
+/// <param name="dataIndex">the playerdata's index</param>
+/// <returns>A player's star rating</returns>
     private float GetTeamLeagueAdjustedStarsRatingForPlayerIndex(int dataIndex)
     {
-        throw new NotImplementedException();
+        float stars = dynamicPlayersData[dataIndex].starsRating;
+        int leagueIndex = GetIndexToLeagueData((int)playersLeague);
+        int teamId = dynamicPlayersData[dataIndex].teamId;
+        if (teamId != -1)
+        {
+            int leagueId = GetTeamsLeagueID(teamId);
+            leagueIndex = GetIndexToLeagueData(leagueId);
+        }
+
+        stars -= staticLeaguesData[leagueIndex].minStarRating;
+        if (stars < 0.0f)
+        {
+            stars = 0.0f;
+        }
+        else if (stars >= 5.9f)
+        {
+            stars = 5.9f;
+        }
+        return stars;
+    }
+
+    private int GetIndexToLeagueData(int leagueId)
+    {
+        int result = -1;
+        for (int i = 0; i < numberOfLeaguesInArrays; i++)
+        {
+            if ((int)staticLeaguesData[i].leagueId == leagueId)
+            {
+                result = i;
+                break;
+            }
+        }
+        return result;
     }
 
     private int GetTeamsLeagueID(int currentTeamId)

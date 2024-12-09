@@ -5,9 +5,9 @@
     public class FormationInfo : ScriptableObject
     {
         [SerializeField]
-        private Vector2 pos;
+        public Vector2 pos;
         [SerializeField]
-        private Enums.PlayerFormation formation;
+        public Enums.PlayerFormation formation;
       
 
         [SerializeField] public int value;
