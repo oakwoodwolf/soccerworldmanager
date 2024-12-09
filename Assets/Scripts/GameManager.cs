@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 using static Enums;
 public class GameManager : MonoBehaviour
@@ -119,6 +120,7 @@ public class GameManager : MonoBehaviour
     public int[] playersBalance = new int[MaxWeeks];
     public int week;
     public Formation formationType;
+    public FormationInfo[] formations = new FormationInfo[(int)Formation.KFormationMax];
     public int playersYearsToRetire;
 
     public DynamicManagerData[] dynamicManagersData = new DynamicManagerData[MaxManagers];
@@ -135,9 +137,35 @@ public class GameManager : MonoBehaviour
     public int[] teamIndexsForScenarioLeague = new int[MaxTeamsInLeague];
     public ushort[] premiumLeagueYellowCards = new ushort[MaxPlayers];
     public int[,] PremiumLeagueMatchesPlayed = new int[MaxTeamsInLeague, MaxTeamsInLeague];
-    
-    
-    
+
+    [Tooltip("The player value relative to the league index.")]
+    public int[] leagueToPlayerValue =
+    {
+        1000, 800, 0, 0, 0, 0, 0, 0, 0, 0,
+        800, // kLeagueId_Scotland = 10
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        500 //kLeagueId_USA,
+    };
+
+    [Tooltip(
+        "these values are multiplied by a players stars value (at the start of a season) to determine a weekly salary")]
+    public float[] leagueToPlayerSalaryRatio =
+    {
+        0.0045f, //kLeagueId_Premium = 0,
+        0.00055f, //kLeagueId_Chumpionship,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0.00055f, //kLeagueId_Scotland = 10
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0.00065f, //kLeagueId_USA,
+    };
+
+   
     
     
     private void Awake()
@@ -537,17 +565,139 @@ public class GameManager : MonoBehaviour
         
         for (int i = 0; i < numberOfPlayersInArrays; i++)
         {
-            int playerId = StaticPlayerData[i].playerId;
-            int teamId = DynamicPlayerData[i].teamId;
-            if (teamId != -1)
+            int playerId = staticPlayersData[i].playerId;
+            int currentTeamId = dynamicPlayersData[i].teamId;
+            if (currentTeamId != -1)
             {
-                
+                int leagueId = GetTeamsLeagueID(currentTeamId);
+                int playerValue = DetermineValueOfPlayerID(playerId, leagueId);
+                dynamicPlayersData[i].weeklySalary = (short)(playerValue * leagueToPlayerSalaryRatio[leagueId]);
+                if (dynamicPlayersData[i].weeklySalary <= 0) dynamicPlayersData[i].weeklySalary = 1;
             }
             else
             {
-
+                dynamicPlayersData[i].weeklySalary = 0;
             }
         }
+
+        playersYearsToRetire = scenarioData[playersScenario].yearsTillRetire;
+        int teamIndex = GetTeamDataIndexForTeamID(playersTeam);
+        dynamicTeamsData[teamIndex].cashBalance += scenarioData[playersScenario].startMoneyAdjust;
+
+        int teamLeagueIndex = -1;
+        for (int i = 0; i < numTeamsInScenarioLeague; i++)
+        {
+            if (premiumLeagueData[i].teamId == playersTeam)
+            {
+                teamLeagueIndex = i;
+                break;
+            }
+        }
+
+        if (teamLeagueIndex != -1)
+        {
+            premiumLeagueData[teamLeagueIndex].leaguePoints = scenarioData[scenarioId].startMoneyAdjust; // Initial scenario points
+        }
+        
+        numPlayersInPlayersTeam = FillTeamPlayerArray(playersTeamPlayerIds, playersTeam);  
+        AutofillFormationFromPlayerIDs(playersInFormation, playersTeamPlayerIds, numPlayersInPlayersTeam, Formation.KFormation442, playersTeam);
+        
+        SaveGameData();
+        GoToMenu(Enums.Screen.PreTurn);
+        lastSponsorUpdateTurn = -1;
+        lastMatchbreakerUpdateTurn = -1;
+    }
+
+    private void AutofillFormationFromPlayerIDs(int[] formation, int[] playerIds, int numPlayers, Formation formationType, int teamId)
+    {
+        for (int i = 0; i < MaxPlayersInSquad; i++)
+        {
+            formation[i] = -1;
+        }
+        var formationInfo = formations[(int)formationType];
+        for (int i = 0; i < MaxPlayersInSquad; i++)
+        {
+            int playerId = -1;
+           // int formPosType = (int)formationInfo;
+            switch (formationType)
+            {
+                case Formation.KFormation442:
+                    break;
+            }
+        }
+    }
+
+    private int FillTeamPlayerArray(int[] playerArray, int teamId)
+    {
+        int numPlayersFound = 0;
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            if (dynamicPlayersData[i].teamId == teamId)
+            {
+                if (numPlayersFound < MaxPlayersInATeam)
+                {
+                    playerArray[numPlayersFound] = staticPlayersData[i].playerId;
+                    numPlayersFound++;
+                }
+                else
+                {
+                    Debug.LogError("Team ID " + teamId + " is out of range!");
+                }
+            }
+        }
+        return numPlayersFound;
+    }
+
+    private int DetermineValueOfPlayerID(int playerId, int leagueId)
+    {
+        
+        int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+        float starsRating = GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
+        
+        int result = 0;
+        result = (int)(starsRating * leagueToPlayerValue[leagueId]);
+        result *= (int)dynamicPlayersData[dataIndex].condition;
+        return result;
+    }
+
+    private int GetPlayerDataIndexForPlayerID(int playerId)
+    {
+        throw new NotImplementedException();
+    }
+
+    private float GetTeamLeagueAdjustedStarsRatingForPlayerIndex(int dataIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    private int GetTeamsLeagueID(int currentTeamId)
+    {
+        int dataIndex = GetTeamDataIndexForTeamID(currentTeamId);
+        if (dataIndex != -1)
+        {
+            return (int)dynamicTeamsData[dataIndex].leagueID;
+        }
+        else
+        {
+            return -1;
+        }
+        
+    }
+
+    private int GetTeamDataIndexForTeamID(int teamId)
+    {
+        int teamIndex = -1;
+        for (int i = 0; i < numberOfTeamsInArrays; i++)
+        {
+            if (staticTeamsData[i].teamId == teamId)
+            {
+                teamIndex = i;
+                break;
+            }
+        }
+
+        Debug.Assert(teamIndex != -1);
+        return teamIndex;
     }
 
     private void ResetLeaguePoints()

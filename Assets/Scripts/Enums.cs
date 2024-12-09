@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Enums : MonoBehaviour
@@ -188,6 +189,7 @@ public class Enums : MonoBehaviour
         KFormationMax
     }
 
+    [Flags]
     public enum PlayerFormation
     {
         Goalkeeper  = (1 << 0),
