@@ -34,6 +34,7 @@ public class MenuItem : MonoBehaviour
         Button = GetComponent<Button>();
         if (Button != null)
         {
+            Button.onClick.RemoveAllListeners();
             Button.onClick.AddListener(HandleClick);
             Debug.Log("Listener Attached");
         } else

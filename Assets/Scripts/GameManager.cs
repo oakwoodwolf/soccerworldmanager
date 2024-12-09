@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -165,8 +166,19 @@ public class GameManager : MonoBehaviour
         0.00065f, //kLeagueId_USA,
     };
 
-   
-    
+
+    [Header("SaveData")] 
+    public string usernameDefaultKey = "userName";
+    public string highScoresDefaultKey = "highScores";
+    public string highScoresMarathonKey = "highScoresMarathon";
+    public string soccerSaveDataKey = "soccerSaveData";
+    public string soccerSaveLeagueDataKey = "soccerLeagueSaveData";
+    public string soccerLeagueYellowCardDataKey = "soccerLeagueYellowCardData";
+    public string soccerPlayerFormationDataKey = "soccerPlayerFormationData";
+    public string soccerBalanceHistoryDataKey = "soccerBalanceHistoryData";
+    public string soccerDynamicTeamDataKey = "soccerDynamicTeamData";
+    public string soccerDynamicPlayerDataKey = "soccerDynamicPlayerData";
+    public string soccerDynamicManagerDataKey = "soccerDynamicManagerData";
     
     private void Awake()
     {
@@ -204,20 +216,296 @@ public class GameManager : MonoBehaviour
     public bool LoadGameData()
     {
         int checkSaveDataType = -1;
-        List<int> scores = new();
-        Dictionary<int, int> dictionary = new();
-        if (scores.Count > 0)
+        string jsonforData = PlayerPrefs.GetString(soccerSaveDataKey);
+        if (string.IsNullOrEmpty(jsonforData))
         {
-            //dictionary = scores[];
-
-        }
-        else
-        {
+            Debug.Log("No data found");
             return false;
         }
+        List<Dictionary<string, object>> scores = JsonUtility.FromJson<List<Dictionary<string, object>>>(jsonforData);
+
+        if (scores.Count > 0)
+        {
+            Dictionary<string, object> mainData = scores[0];
+
+            if (mainData.ContainsKey("SaveDataType"))
+            {
+                checkSaveDataType = (int)(mainData["SaveDataType"]);
+                if (checkSaveDataType != 5 && checkSaveDataType != 4 && checkSaveDataType != 3)
+                {
+                    Debug.Log("Unsupported save data type.");
+                
+                    return false;
+                }
+            }
+            else
+            {
+                Debug.Log("SaveDataType key is missing.");
+                return false;
+            }
+            playersTeam = (int)mainData["PlayersTeam"];
+            playersLeague = (LeagueID)mainData["PlayersLeague"];
+            playersYearsToRetire = (int)mainData["PlayersYearsToRetire"];
+            playersScenario = (int)mainData["PlayersScenario"];
+            week = (int)mainData["Week"];
+            formationType = (Formation)mainData["Formation"];
+            numTeamsInScenarioLeague = (int)mainData["TeamsInScenarioLeague"];
+            playerRating  = (int)mainData["PlayerRating"];
+            playersSponsor  = (SponsorID)mainData["PlayerSponsor"];
+            playersWeeksWithSponsor  = (int)mainData["PlayersWeeksWithSponsor"];
+            playersMatchBreaker  = (int)mainData["PlayersMatchBreaker"];
+            playersMatchStrategy  = (MatchStrategy)mainData["PlayersMatchStratergy"];
+            
+            LoadLeagueData();
+            LoadTeams();
+            LoadPlayers();
+            LoadManagers();
+            
+            string  balanceHistoryJson = PlayerPrefs.GetString(soccerBalanceHistoryDataKey);
+            List<Dictionary<string, object>> balanceHistoryData = JsonUtility.FromJson<List<Dictionary<string, object>>>(balanceHistoryJson);
+           
+            if (balanceHistoryData.Count > 0)
+            {
+                if (balanceHistoryData.Count != week)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < balanceHistoryData.Count; i++)
+                {
+                    Dictionary<string, object> dictionary = balanceHistoryData[i];
+                    playersBalance[i] = (int)dictionary["PlayersBalance"];
+                }
+            }
+            
+            //Load Dynamic Team Data
+            string  dynamicTeamJson = PlayerPrefs.GetString(soccerDynamicTeamDataKey);
+            List<Dictionary<string, object>> dynamicTeamData = JsonUtility.FromJson<List<Dictionary<string, object>>>(dynamicTeamJson);
+           
+            if (dynamicTeamData.Count > 0)
+            {
+                if (dynamicTeamData.Count != numberOfTeamsInArrays)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < dynamicTeamData.Count; i++)
+                {
+                    Dictionary<string, object> dictionary = dynamicTeamData[i];
+                    int teamId = (int)dictionary["teamId"];
+                    int dataIndex = GetArrayIndexForTeam(teamId);
+                    if (dataIndex == -1)
+                    {
+                        return false;
+                    }
+                    
+                    dynamicTeamsData[dataIndex].leagueID = (LeagueID)dictionary["leagueId"];
+                    dynamicTeamsData[dataIndex].cashBalance = (int)dictionary["cashBalance"];
+                    dynamicTeamsData[dataIndex].fanMorale = (float)dictionary["fanMorale"];
+                }
+            }
+            //Load Dynamic player Data
+            string  dynamicPlayerJson = PlayerPrefs.GetString(soccerDynamicPlayerDataKey);
+            List<Dictionary<string, object>> dynamicPlayerData = JsonUtility.FromJson<List<Dictionary<string, object>>>(dynamicPlayerJson);
+           
+            if (dynamicPlayerData.Count > 0)
+            {
+                if (dynamicPlayerData.Count != numberOfPlayersInArrays)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < dynamicPlayerData.Count; i++)
+                {
+                    Dictionary<string, object> dictionary = dynamicPlayerData[i];
+                    int playerId = (int)dictionary["playerId"];
+                    int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                    if (dataIndex == -1)
+                    {
+                        return false;
+                    }
+                    
+                    dynamicPlayersData[dataIndex].starsRating = (float)dictionary["starsRating"];
+                    dynamicPlayersData[dataIndex].condition = (float)dictionary["condition"];
+                    dynamicPlayersData[dataIndex].trainingTransfer = (short)dictionary["trainingtransfer"];
+                    dynamicPlayersData[dataIndex].teamId = (short)dictionary["teamId"];
+                    dynamicPlayersData[dataIndex].weeklySalary = (short)dictionary["weeklySalary"];
+                    dynamicPlayersData[dataIndex].morale = (short)dictionary["morale"];
+                    dynamicPlayersData[dataIndex].weeksBannedOrInjured = (short)dictionary["weeksBannedOrInjured"];
+                    dynamicPlayersData[dataIndex].flags = (ushort)dictionary["flags"];
+                }
+            }
+            //Load Dynamic Manager Data
+            string  dynamicManagerJson = PlayerPrefs.GetString(soccerDynamicTeamDataKey);
+            List<Dictionary<string, object>> dynamicManagerData = JsonUtility.FromJson<List<Dictionary<string, object>>>(dynamicManagerJson);
+           
+            if (dynamicManagerData.Count > 0)
+            {
+                if (dynamicManagerData.Count != numberOfTeamsInArrays)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < dynamicManagerData.Count; i++)
+                {
+                    Dictionary<string, object> dictionary = dynamicManagerData[i];
+                    int managerId = (int)dictionary["managerId"];
+                    int dataIndex = GetIndexToManagerForTeamID(managerId);
+                    if (dataIndex == -1)
+                    {
+                        return false;
+                    }
+                    
+                    dynamicManagersData[dataIndex].teamId = (int)dictionary["teamId"];
+                }
+            }
+
+            int managerIndex = GetIndexToManagerForTeamID(playersTeam);
+            if (managerIndex != -1)
+            {
+                dynamicManagersData[managerIndex].teamId = -1;
+            }
+            FillTeamsInLeagueArray(teamIndexsForScenarioLeague, playersLeague);
+            numPlayersInPlayersTeam = FillTeamPlayerArray(playersTeamPlayerIds, playersTeam);
+            AutofillFormationFromPlayerIDs(playersInFormation,playersTeamPlayerIds,numPlayersInPlayersTeam,formationType,playersTeam);
+        }
+        else 
+        {
+            Debug.Log("No scores found in saved data.");
+            return false;
+        }
+
+        
         return true;
     }
-    private void SaveGameData() { }
+    private void SaveGameData()
+    {
+        string name = PlayerPrefs.GetString(usernameDefaultKey, "Player");
+        DateTime date = DateTime.Now;
+        
+        List<Dictionary<string, object>> scores = new List<Dictionary<string, object>>
+        {
+            new Dictionary<string, object>
+            {
+                { "name", name },
+                { "date", date.ToString(CultureInfo.InvariantCulture) },
+                { "SaveDataType", 5 },
+                { "PlayersTeam", playersTeam },
+                { "PlayersScenario", playersScenario },
+                { "PlayersLeague", playersLeague },
+                { "PlayersWeeksWithSponsor", playersWeeksWithSponsor },
+                { "PlayersSponsor", playersSponsor },
+                { "PlayersMatchStrategy", playersMatchStrategy },
+                { "PlayersMatchBreaker", playersMatchBreaker },
+                { "PlayersYearsToRetire", playersYearsToRetire },
+                { "Week", week },
+                { "Formation", formationType },
+                { "TeamsInScenarioLeague", numTeamsInScenarioLeague },
+                { "PlayerRating", playerRating }
+            }
+        };
+        PlayerPrefs.SetString(soccerSaveDataKey, JsonUtility.ToJson(scores));
+        //Balance history
+        List<Dictionary<string, object>> balanceHistory = new List<Dictionary<string, object>>();
+        for (int i = 0; i < week; i++)
+        {
+            balanceHistory.Add(new Dictionary<string, object>
+            {
+                { "name", name },
+                { "PlayersBalance", playersBalance[i] }
+            });
+        }
+        PlayerPrefs.SetString(soccerBalanceHistoryDataKey, JsonUtility.ToJson(balanceHistory));
+        //Player Formation
+        List<Dictionary<string, object>> playerFormationData = new List<Dictionary<string, object>>();
+        for (int i = 0; i < MaxPlayersInSquad; i++)
+        {
+            playerFormationData.Add(new Dictionary<string, object>
+            {
+                { "name", name },
+                { "playerId", playersInFormation[i] }
+            });
+        }
+        PlayerPrefs.SetString(soccerPlayerFormationDataKey, JsonUtility.ToJson(playerFormationData));
+        //League data
+        List<Dictionary<string, object>> leagueData = new List<Dictionary<string, object>>();
+        for (int i = 0; i < numTeamsInScenarioLeague; i++)
+        {
+            leagueData.Add(new Dictionary<string, object>
+            {
+                { "name", name },
+                { "teamId", premiumLeagueData[i].teamId },
+                { "matchesPlayed", premiumLeagueData[i].matchesPlayed },
+                { "goalsFor", premiumLeagueData[i].goalsFor },
+                { "goalsAgainst", premiumLeagueData[i].goalsAgainst },
+                { "goalDifference", premiumLeagueData[i].goalDifference },
+                { "leaguePoints", premiumLeagueData[i].leaguePoints }
+            });
+        }
+        PlayerPrefs.SetString(soccerSaveLeagueDataKey, JsonUtility.ToJson(leagueData));
+        //Dynamic team data
+        List<Dictionary<string, object>> dynamicTeamData = new List<Dictionary<string, object>>();
+        for (int i = 0; i < numberOfTeamsInArrays; i++)
+        {
+            dynamicTeamData.Add(new Dictionary<string, object>
+            {
+                { "name", name },
+                { "teamId", staticTeamsData[i].teamId },
+                { "leagueId", dynamicTeamsData[i].leagueID },
+                { "cashBalance", dynamicTeamsData[i].cashBalance },
+                { "fanMorale", dynamicTeamsData[i].fanMorale },
+            });
+        }
+        PlayerPrefs.SetString(soccerDynamicTeamDataKey, JsonUtility.ToJson(dynamicTeamData));
+        //Dynamic player data
+        List<Dictionary<string, object>> dynamicPlayerData = new List<Dictionary<string, object>>();
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            dynamicPlayerData.Add(new Dictionary<string, object>
+            {
+                { "name", name },
+                { "playerId", staticPlayersData[i].playerId },
+                { "starsRating", dynamicPlayersData[i].starsRating },
+                { "condition", dynamicPlayersData[i].condition },
+                { "trainingTransfer", dynamicPlayersData[i].trainingTransfer },
+                { "weeklySalary", dynamicPlayersData[i].weeklySalary },
+                { "teamID", dynamicPlayersData[i].teamId },
+                { "morale", dynamicPlayersData[i].morale },
+                { "weeksBannedOrInjured", dynamicPlayersData[i].weeksBannedOrInjured },
+                { "flags", dynamicPlayersData[i].flags },
+            });
+        }
+        PlayerPrefs.SetString(soccerDynamicPlayerDataKey, JsonUtility.ToJson(dynamicPlayerData));
+        //Dynamic manager data
+        List<Dictionary<string, object>> dynamicManagerData = new List<Dictionary<string, object>>();
+        for (int i = 0; i < numberOfManagersInArrays; i++)
+        {
+            dynamicManagerData.Add(new Dictionary<string, object>
+            {
+                { "name", name },
+                { "managerId", staticManagersData[i].managerId },
+                { "teamId", dynamicManagersData[i].teamId },
+            });
+        }
+        PlayerPrefs.SetString(soccerDynamicManagerDataKey, JsonUtility.ToJson(dynamicManagerData));
+        //Dynamic manager data
+        List<Dictionary<string, object>> yellowCardData = new List<Dictionary<string, object>>();
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            yellowCardData.Add(new Dictionary<string, object>
+            {
+                { "name", name },
+                { "playerId", staticPlayersData[i].playerId },
+                { "yellowCards", premiumLeagueYellowCards[i] },
+            });
+        }
+        PlayerPrefs.SetString(soccerLeagueYellowCardDataKey, JsonUtility.ToJson(yellowCardData));
+        PlayerPrefs.Save();
+        //Reset some match parameters
+        lastOppositionTeamAssignmentId = -1;
+        matchEngine.maxAwayTeamPlayersOnPitch = 11;
+        matchEngine.maxHomeTeamPlayersOnPitch = 11;
+    }
     private void LoadTeams() 
     {
         numberOfTeamsInArrays = 0;
@@ -413,14 +701,15 @@ public class GameManager : MonoBehaviour
         GoToMenu(Enums.Screen.ChooseTeam);
     }
 
-    public int FillTeamsInLeagueArray(int[] pArray, Enums.LeagueID leagueID)
+    public int FillTeamsInLeagueArray(int[] teamIndexes, Enums.LeagueID leagueID)
     {
         int count = 0;
         for (int i = 0; i < numberOfTeamsInArrays; i++)
         {
+            Debug.Log(leagueID + " " + count);
             if (dynamicTeamsData[i].leagueID == leagueID) 
             {
-                pArray[count] = i;
+                teamIndexes[count] = i;
                 count++;
             }
         }
@@ -893,6 +1182,8 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < numTeamsInScenarioLeague; i++)
         {
             int dataIndex = teamIndexsForScenarioLeague[i];
+            Debug.Log(dataIndex);
+            premiumLeagueData[dataIndex] = ScriptableObject.CreateInstance<DynamicLeagueData>();
             premiumLeagueData[dataIndex].teamId = staticTeamsData[dataIndex].teamId;
             premiumLeagueData[dataIndex].matchesPlayed = 0;
             premiumLeagueData[dataIndex].goalsFor = 0;
@@ -906,5 +1197,29 @@ public class GameManager : MonoBehaviour
             premiumLeagueYellowCards[i] = 5 & 0x00ff;
             //_PremiumLeagueYellowCards[i] = ( kPremiumLeague_YellowsUntilBan & kYellowCardsUntilBanMask );		// low=cards until ban, high= total card recieved (hence 0 at season start)
         }
+    }
+
+    public void SwapLeagueTableEntry(int team1, int team2)
+    {
+        int teamId = premiumLeagueData[team1].teamId;
+        int matchesPlayed = premiumLeagueData[team1].matchesPlayed;
+        int goalsFor = premiumLeagueData[team1].goalsFor;
+        int goalsAgainst = premiumLeagueData[team1].goalsAgainst;
+        int goalDifference = premiumLeagueData[team1].goalDifference;
+        int leaguePoints = premiumLeagueData[team1].leaguePoints;
+        
+        premiumLeagueData[team1].teamId =  premiumLeagueData[team2].teamId;
+        premiumLeagueData[team1].matchesPlayed = premiumLeagueData[team2].matchesPlayed;
+        premiumLeagueData[team1].goalsFor = premiumLeagueData[team2].goalsFor;
+        premiumLeagueData[team1].goalsAgainst = premiumLeagueData[team2].goalsAgainst;
+        premiumLeagueData[team1].goalDifference = premiumLeagueData[team2].goalDifference;
+        premiumLeagueData[team1].leaguePoints = premiumLeagueData[team2].leaguePoints;
+        
+        premiumLeagueData[team2].teamId = teamId;
+        premiumLeagueData[team2].matchesPlayed = matchesPlayed;
+        premiumLeagueData[team2].goalsFor = goalsFor;
+        premiumLeagueData[team2].goalsAgainst = goalsAgainst;
+        premiumLeagueData[team2].goalDifference = goalDifference;
+        premiumLeagueData[team2].leaguePoints = leaguePoints;
     }
 }

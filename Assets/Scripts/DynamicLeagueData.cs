@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class DynamicLeagueData : MonoBehaviour
+public class DynamicLeagueData : ScriptableObject
 {
     public int teamId;
     public int matchesPlayed;
