@@ -15,6 +15,9 @@ public class MenuItem : MonoBehaviour
     [FormerlySerializedAs("_gameManager")]
     [SerializeField]
     GameManager gameManager;
+
+    public Enums.MenuElement type;
+    public Vector2 pos;
     public int alignment;
     public uint flags;
     public string text;
@@ -26,6 +29,7 @@ public class MenuItem : MonoBehaviour
     {
         Button = GetComponent<Button>();
         gameManager = FindFirstObjectByType<GameManager>().GetComponent<GameManager>();
+        AddListener(menuAction, param);
     }
     public virtual void AddListener(Enums.MenuAction action, int clickParam)
     { 
@@ -42,10 +46,20 @@ public class MenuItem : MonoBehaviour
             Debug.LogError("No button component attached");
         }
     }
+
+    public virtual void OnValidate()
+    {
+        if (mText.text != text)
+        {
+            mText.text = text;
+        }
+        
+    }
+
     public virtual void SetText(string newText)
     {
-        this.text = newText;
-        if (this.mText != null) {this.mText.text = newText;}
+        text = newText;
+        if (mText != null) {mText.text = newText;}
         
     }
 

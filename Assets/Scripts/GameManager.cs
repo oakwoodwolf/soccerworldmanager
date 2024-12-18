@@ -1182,13 +1182,13 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < numTeamsInScenarioLeague; i++)
         {
             int dataIndex = teamIndexsForScenarioLeague[i];
-            Debug.Log(dataIndex);
-            premiumLeagueData[dataIndex] = ScriptableObject.CreateInstance<DynamicLeagueData>();
-            premiumLeagueData[dataIndex].teamId = staticTeamsData[dataIndex].teamId;
-            premiumLeagueData[dataIndex].matchesPlayed = 0;
-            premiumLeagueData[dataIndex].goalsFor = 0;
-            premiumLeagueData[dataIndex].goalsAgainst = 0;
-            premiumLeagueData[dataIndex].goalDifference = 0;
+            Debug.Log(premiumLeagueData.Length + " " + staticTeamsData.Length + " " + dataIndex);
+            premiumLeagueData[i] = ScriptableObject.CreateInstance<DynamicLeagueData>();
+            premiumLeagueData[i].teamId = staticTeamsData[dataIndex].teamId;
+            premiumLeagueData[i].matchesPlayed = 0;
+            premiumLeagueData[i].goalsFor = 0;
+            premiumLeagueData[i].goalsAgainst = 0;
+            premiumLeagueData[i].goalDifference = 0;
 
         }
 

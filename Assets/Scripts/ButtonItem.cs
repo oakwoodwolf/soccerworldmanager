@@ -13,8 +13,12 @@ public class ButtonItem : MenuItem
         [SerializeField]
         private Image image;
 
-            
 
+        public override void OnValidate()
+        {
+            SetText(this.text);
+            
+        }
         public override void SetText(string newText)
         {
             _rectTransform = GetComponent<RectTransform>();
