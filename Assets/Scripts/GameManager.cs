@@ -22,6 +22,9 @@ public class GameManager : MonoBehaviour
     public const int MaxPlayersInFormation = 11;
     public const int MaxNumberOfSubsOnBench = 3;
     public const int MaxPlayersInSquad = MaxPlayersInFormation + MaxNumberOfSubsOnBench;
+    
+    public const int PremiumLeagueYellowsUntilBan = 5;
+    public const int YellowCardsUntilBanMask = 0x00ff;
 
     public Enums.Screen currentScreen;
     [FormerlySerializedAs("Screens")]
@@ -822,8 +825,8 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void StartGame()
     {
-        List<int> savedata = new();
-        if (savedata.Count > 0) //savedata is present
+        string jsonforData = PlayerPrefs.GetString(soccerSaveDataKey);
+        if (!string.IsNullOrEmpty(jsonforData)) //savedata is present
         {
             GoToMenu(Enums.Screen.Confirm);
         }
@@ -1191,11 +1194,9 @@ public class GameManager : MonoBehaviour
             premiumLeagueData[i].goalDifference = 0;
 
         }
-
         for (int i = 0; i < numberOfPlayersInArrays; i++)
         {
-            premiumLeagueYellowCards[i] = 5 & 0x00ff;
-            //_PremiumLeagueYellowCards[i] = ( kPremiumLeague_YellowsUntilBan & kYellowCardsUntilBanMask );		// low=cards until ban, high= total card recieved (hence 0 at season start)
+            premiumLeagueYellowCards[i] = PremiumLeagueYellowsUntilBan & YellowCardsUntilBanMask;
         }
     }
 
