@@ -36,5 +36,6 @@ public class MenuItemGenerator : MonoBehaviour
         menuItem.alignment = align;
         menuItem.SetText(text);
         menuItem.AddListener(action, param);
+        Debug.Log("Generated menu item");
     }
 }

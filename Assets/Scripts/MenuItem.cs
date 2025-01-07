@@ -9,15 +9,17 @@ using UnityEngine.UI;
 
 public class MenuItem : MonoBehaviour
 {
+    [Header("References")]
+    public Vector2 pos;
+
     [FormerlySerializedAs("m_Text")]
     [SerializeField]
     protected TMP_Text mText;
     [FormerlySerializedAs("_gameManager")]
     [SerializeField]
     GameManager gameManager;
-
+    [Header("Values")]
     public Enums.MenuElement type;
-    public Vector2 pos;
     public int alignment;
     public uint flags;
     public string text;
@@ -25,9 +27,12 @@ public class MenuItem : MonoBehaviour
     public Action<object> OnClick;
     protected Button Button;
     public int param;
+    protected RectTransform RectTransform;
+    
     public void Awake()
     {
         Button = GetComponent<Button>();
+        RectTransform = GetComponent<RectTransform>();
         gameManager = FindFirstObjectByType<GameManager>().GetComponent<GameManager>();
         AddListener(menuAction, param);
     }
@@ -53,7 +58,23 @@ public class MenuItem : MonoBehaviour
         {
             mText.text = text;
         }
-        
+        AdjustPosition();
+    }
+    
+    /// <summary>
+    /// This uses the position of menuItem to set Unity's RectTransform, allowing you to feed the old position values into Unity
+    /// </summary>
+    protected void AdjustPosition()
+    {
+        if (RectTransform == null)
+            RectTransform = GetComponent<RectTransform>();
+        if (!Mathf.Approximately(RectTransform.transform.position.x, pos.x) || !Mathf.Approximately(RectTransform.transform.position.y, -pos.y))
+        {
+            RectTransform.anchorMax = new Vector2(0,1);
+            RectTransform.anchorMin = new Vector2(0,1);
+            RectTransform.anchoredPosition = new Vector3(pos.x, -pos.y, RectTransform.transform.position.z);
+        }
+
     }
 
     public virtual void SetText(string newText)
@@ -86,6 +107,9 @@ public class MenuItem : MonoBehaviour
             case Enums.MenuAction.LoadAndContinueGame:
                 gameManager.LoadAndPrepareGame();
                 break;
+            case Enums.MenuAction.CallFunction:
+                gameManager.StartGame();
+                break;
             case Enums.MenuAction.CyclePlayerTraining:
                 break;
             case Enums.MenuAction.CyclePlayerTransferStatus:
@@ -111,6 +135,14 @@ public class MenuItem : MonoBehaviour
             case Enums.MenuAction.CheckTeamBeforeGotoMenu:
                 break;
             case Enums.MenuAction.RadioSelectOptions:
+                switch (param)
+                {
+                    case 0: gameManager.SFXEnabled = false; break;
+                    case 1: gameManager.SFXEnabled = true; break;
+                    case 2: gameManager.VibrationEnabled = false; break;
+                    case 3: gameManager.VibrationEnabled = true; break;
+                }
+                this.flags = 1;
                 break;
             case Enums.MenuAction.RadioSelectMatchBalance:
                 break;

@@ -134,10 +134,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94d62c3098c1476c9736cd5eb76aea57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pos: {x: 0, y: 0}
   mText: {fileID: 9043145001966623311}
   gameManager: {fileID: 0}
   type: 5
-  pos: {x: 0, y: 0}
   alignment: 0
   flags: 0
   text: nextButton
@@ -146,6 +146,7 @@ MonoBehaviour:
   images:
   - {fileID: 21300000, guid: 369350d3d6c38934690ff1b37c71fd4d, type: 3}
   - {fileID: 21300000, guid: f936a00c87b46034dac3cc3e78111a29, type: 3}
+  - {fileID: 21300000, guid: 50b6439160efb544e86c30bc935f8027, type: 3}
   image: {fileID: 4396003630838234472}
 --- !u!1 &9160781842079224558
 GameObject:

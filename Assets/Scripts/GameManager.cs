@@ -25,11 +25,14 @@ public class GameManager : MonoBehaviour
     
     public const int PremiumLeagueYellowsUntilBan = 5;
     public const int YellowCardsUntilBanMask = 0x00ff;
+    public bool SFXEnabled = true;
+    public bool VibrationEnabled = true;
 
     public Enums.Screen currentScreen;
     [FormerlySerializedAs("Screens")]
     public ScreenDefinition[] screens = new ScreenDefinition[(int)Enums.Screen.Max];
     public MenuItemGenerator menuItemGenerator;
+    public List<MenuItem> currentMenuItems;
     public int formationCycle;
     public Vector2 formationSelectionScrollPos;
     public int currentPage;
@@ -813,12 +816,29 @@ public class GameManager : MonoBehaviour
     }
     public void GoToMenu(Enums.Screen newScreen)
     {
+        if (newScreen == currentScreen) { return; }
         Enums.Screen oldScreen = currentScreen;
         currentScreen = newScreen;
-        GameObject screenToActivate = screens[(int)newScreen].gameObject;
+        ScreenDefinition screenToActivate = screens[(int)newScreen];
         GameObject screenToDeactivate = screens[(int)oldScreen].gameObject;
-        screenToActivate.SetActive(true);
         screenToDeactivate.SetActive(false);
+        screenToActivate.gameObject.SetActive(true);
+        currentMenuItems.Clear();
+        MenuItem[] menuItems = screenToActivate.MenuItems.GetComponentsInChildren<MenuItem>();
+        
+        HandleCurrentScreen(newScreen,menuItems);
+    }
+
+    public void HandleCurrentScreen(Enums.Screen newScreen, MenuItem[] menuItems)
+    {
+        switch (newScreen)
+        {
+            case Enums.Screen.PreTurn:
+                Debug.Log(menuItems.Length + " " + menuItems);
+                string playerCashBalance = "Cashy balancy";
+                menuItems[6].SetText(playerCashBalance);
+                break;
+        }
     }
     /// <summary>
     /// This is a translation of the old test function, used when starting a new game.
@@ -826,7 +846,8 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         string jsonforData = PlayerPrefs.GetString(soccerSaveDataKey);
-        if (!string.IsNullOrEmpty(jsonforData)) //savedata is present
+        Debug.Log(jsonforData);
+        if (!string.IsNullOrEmpty(jsonforData) && !jsonforData.Equals("{}")) //savedata is present
         {
             GoToMenu(Enums.Screen.Confirm);
         }

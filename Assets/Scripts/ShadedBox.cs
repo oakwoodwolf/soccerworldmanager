@@ -17,6 +17,7 @@
 
         public override void OnValidate()
         {
-            SetText(text);
+            //SetText(text);
+            AdjustPosition();
         }
     }

@@ -17,7 +17,7 @@ public class ButtonItem : MenuItem
         public override void OnValidate()
         {
             SetText(this.text);
-            
+            AdjustPosition();
         }
         public override void SetText(string newText)
         {
@@ -48,6 +48,31 @@ public class ButtonItem : MenuItem
                 case "quitButton":
                     this.mText.text = "Quit Game";
                     image.sprite = images[0];
+                    _rectTransform.sizeDelta = new Vector2(96, 32);
+                    break;
+                case "optionOffButton":
+                    this.mText.text = "Off";
+                    if (flags == 1)
+                    {
+                        image.sprite = images[2];
+                    }
+                    else
+                    {
+                        image.sprite = images[0];
+                    }
+                    _rectTransform.sizeDelta = new Vector2(96, 32);
+                    break;
+                case "optionOnButton":
+                    this.mText.text = "On";
+                    if (flags == 1)
+                    {
+                        image.sprite = images[2];
+                    }
+                    else
+                    {
+                        image.sprite = images[0];
+                    }
+                    
                     _rectTransform.sizeDelta = new Vector2(96, 32);
                     break;
                 default:
