@@ -6,7 +6,6 @@ public class StaticManagerData : ScriptableObject
     public float styleOffset;
     public string managerSurname;
 
-
     public void LoadStaticManagerData(string[] txtData)
     {
         managerId = int.Parse(txtData[0]);

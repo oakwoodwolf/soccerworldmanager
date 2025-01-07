@@ -32,7 +32,7 @@ public class GameManager : MonoBehaviour
     [FormerlySerializedAs("Screens")]
     public ScreenDefinition[] screens = new ScreenDefinition[(int)Enums.Screen.Max];
     public MenuItemGenerator menuItemGenerator;
-    public List<MenuItem> currentMenuItems;
+    public MenuItem[] currentMenuItems;
     public int formationCycle;
     public Vector2 formationSelectionScrollPos;
     public int currentPage;
@@ -103,6 +103,7 @@ public class GameManager : MonoBehaviour
     public Formation[] playersInOppositionFormation = new Formation[MaxPlayersInSquad];
 
     [Header("Static Soccer Data")]
+    public LeagueInfo[] leagueDetails;
     public int numberOfLeaguesInArrays;
     public StaticLeagueData[] staticLeaguesData = new StaticLeagueData[MaxLeagues];
     public int numberOfManagersInArrays;
@@ -823,10 +824,9 @@ public class GameManager : MonoBehaviour
         GameObject screenToDeactivate = screens[(int)oldScreen].gameObject;
         screenToDeactivate.SetActive(false);
         screenToActivate.gameObject.SetActive(true);
-        currentMenuItems.Clear();
-        MenuItem[] menuItems = screenToActivate.MenuItems.GetComponentsInChildren<MenuItem>();
+        currentMenuItems = screenToActivate.MenuItems.GetComponentsInChildren<MenuItem>();
         
-        HandleCurrentScreen(newScreen,menuItems);
+        HandleCurrentScreen(currentScreen,currentMenuItems);
     }
 
     public void HandleCurrentScreen(Enums.Screen newScreen, MenuItem[] menuItems)
@@ -834,10 +834,64 @@ public class GameManager : MonoBehaviour
         switch (newScreen)
         {
             case Enums.Screen.PreTurn:
-                Debug.Log(menuItems.Length + " " + menuItems);
-                string playerCashBalance = "Cashy balancy";
+                LeagueInfo info = GetLeagueInfoForId(playersLeague); 
+                string scenarioAndWeek = info.leagueName + "\nWeek " + (week+1) + " of " + ((numTeamsInScenarioLeague-1)*2);
+                menuItems[2].SetText(scenarioAndWeek);
+                string playerCashBalance = "Cash Balance: \n" + GetTeamCashBalance(playersTeam) + "k";
                 menuItems[6].SetText(playerCashBalance);
+                string[] managerRatingStrings =
+                {
+                    "Looking Grim",
+                    "Not Going Well",
+                    "Not Too Bad",
+                    "Somewhat Dull",
+                    "Better Than Dull",
+                    "Progressing Well",
+                    "Impressive",
+                    // overflow strings
+                    "Very Impressive",
+                    "Godlike!",
+                };
+                string currentPlayerRating = "Manager Rating:\n" + managerRatingStrings[playerRating/(256/7)];
+                menuItems[4].SetText(currentPlayerRating);
                 break;
+           
+        }
+    }
+    LeagueInfo GetLeagueInfoForId(LeagueID leagueId)
+    {
+        foreach (LeagueInfo info in leagueDetails)
+        {
+            if (info.leagueId == leagueId)
+            {
+                return info;
+            }
+        }
+        return null;
+    }
+    int GetTeamCashBalance(int teamId)
+    {
+        int dataIndex = GetTeamDataIndexForTeamID(teamId);
+        if (dataIndex != -1)
+        {
+            return dynamicTeamsData[dataIndex].cashBalance;    
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    int AddTeamCashBalance(int teamId, int value)
+    {
+        int dataIndex = GetTeamDataIndexForTeamID(teamId);
+        if (dataIndex != -1)
+        {
+            dynamicTeamsData[dataIndex].cashBalance += value;   
+            return dynamicTeamsData[dataIndex].cashBalance; 
+        }
+        else
+        {
+            return 0;
         }
     }
     /// <summary>
