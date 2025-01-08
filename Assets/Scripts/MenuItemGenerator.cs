@@ -10,7 +10,7 @@ public class MenuItemGenerator : MonoBehaviour
 {
 
     [SerializeField]
-    private GameObject[] prefabs = new GameObject[(int)Enums.MenuElement.Max];
+    private GameObject[] prefabs;
     [SerializeField]
     public int menuBarHeight = 32;
     [SerializeField]
@@ -37,5 +37,15 @@ public class MenuItemGenerator : MonoBehaviour
         menuItem.SetText(text);
         menuItem.AddListener(action, param);
         Debug.Log("Generated menu item");
+    }
+    public void CreateStandings(ScreenDefinition screen, Vector2 pos, int teamId, bool isSelf, string nameText, int matchesPlayed, int leaguePoints, int goalDifference)
+    {
+        GameObject newObj = Instantiate(prefabs[12], screen.MenuItems.transform, false);
+        TeamStandings standings = newObj.GetComponent<TeamStandings>();
+        RectTransform rectTransform = newObj.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = pos;
+        newObj.name = nameText;
+        standings.FillTeamValues(teamId, nameText, matchesPlayed, goalDifference, leaguePoints, isSelf);
+        Debug.Log("Created standings for " + standings.teamName);
     }
 }

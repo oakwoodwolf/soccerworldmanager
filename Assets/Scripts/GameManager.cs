@@ -205,8 +205,7 @@ public class GameManager : MonoBehaviour
 
         }
         
-        screens[0].gameObject.SetActive(true);
-        currentScreen = Enums.Screen.Title;
+        GoToMenu(Enums.Screen.Title);
         
     }
 
@@ -219,16 +218,27 @@ public class GameManager : MonoBehaviour
     {
         
     }
+    public bool CheckGameData()
+    {
+        int checkSaveDataType = -1;
+        string jsonforData = PlayerPrefs.GetString(soccerSaveDataKey);
+        List<Dictionary<string, object>> scores = JsonUtility.FromJson<List<Dictionary<string, object>>>(jsonforData);
 
+        if (scores.Count > 0)
+        {
+            Debug.Log(scores[0]["score"].ToString());
+            return true;
+        }
+        else 
+        {
+            Debug.Log("No scores found in saved data.");
+            return false;
+        }
+    }
     public bool LoadGameData()
     {
         int checkSaveDataType = -1;
         string jsonforData = PlayerPrefs.GetString(soccerSaveDataKey);
-        if (string.IsNullOrEmpty(jsonforData))
-        {
-            Debug.Log("No data found");
-            return false;
-        }
         List<Dictionary<string, object>> scores = JsonUtility.FromJson<List<Dictionary<string, object>>>(jsonforData);
 
         if (scores.Count > 0)
@@ -548,6 +558,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+ 
     private void LoadManagers()
     {
         numberOfManagersInArrays = 0;
@@ -796,9 +807,19 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private int GetArrayIndexForTeam(int teamId) 
+    private int GetArrayIndexForTeam(int teamId)
     {
-        return 0;
+        int result = -1;
+        for (int i = 0; i < numberOfTeamsInArrays; i++)
+        {
+            if (staticTeamsData[i].teamId == teamId)
+            {
+                result = i;
+                break;
+            }
+        }
+        return result;
+        
     }
     public void GoToMenu(int newScreen=0)
     {
@@ -808,16 +829,14 @@ public class GameManager : MonoBehaviour
         GameObject screenToDeactivate = screens[oldScreen].gameObject;
         
         screenToActivate.SetActive(true);
-        Debug.Log(screenToActivate.activeSelf);
         if (screenToDeactivate != null)
         {
             screenToDeactivate.SetActive(false);
         }
-       
+        HandleCurrentScreen(currentScreen,currentMenuItems);
     }
     public void GoToMenu(Enums.Screen newScreen)
     {
-        if (newScreen == currentScreen) { return; }
         Enums.Screen oldScreen = currentScreen;
         currentScreen = newScreen;
         ScreenDefinition screenToActivate = screens[(int)newScreen];
@@ -829,10 +848,26 @@ public class GameManager : MonoBehaviour
         HandleCurrentScreen(currentScreen,currentMenuItems);
     }
 
+    /// <summary>
+    /// This handles preprocessing on screen transition.
+    /// </summary>
+    /// <param name="newScreen">The now-current screen</param>
+    /// <param name="menuItems">An array of menuitems to be altered.</param>
     public void HandleCurrentScreen(Enums.Screen newScreen, MenuItem[] menuItems)
     {
         switch (newScreen)
         {
+            case Enums.Screen.Title:
+                if (CheckGameData())
+                {
+                    menuItems[0].gameObject.SetActive(true);
+                }
+                else
+                {
+                    menuItems[0].gameObject.SetActive(false);
+                }
+                
+                break;
             case Enums.Screen.PreTurn:
                 LeagueInfo info = GetLeagueInfoForId(playersLeague); 
                 string scenarioAndWeek = info.leagueName + "\nWeek " + (week+1) + " of " + ((numTeamsInScenarioLeague-1)*2);
@@ -854,9 +889,48 @@ public class GameManager : MonoBehaviour
                 };
                 string currentPlayerRating = "Manager Rating:\n" + managerRatingStrings[playerRating/(256/7)];
                 menuItems[4].SetText(currentPlayerRating);
+                menuItems[0].SetText(staticTeamsData[GetArrayIndexForTeam(playersTeam)].teamName);
+                playersBalance[week] = GetTeamCashBalance(playersTeam);
+                //reset turn values
+                statsTurnIncome = 0;
+                statsTurnIncomeTicketSales = 0;
+                statsTurnIncomeSponsorsTV = 0;
+                statsTurnExpend = 0;
+                statsTurnExpendSalary = 0;
+
+                statsPrevLeaguePos = GetPositionInLeagueTableForTeamId(playersTeam);
+
+                if (week >= ((numTeamsInScenarioLeague - 1) * 2))
+                {
+                    GoToMenu(Enums.Screen.LeagueFinished);
+                }
                 break;
-           
+           case Enums.Screen.Standings:
+                float yOff = 0.0f;
+                for (int i = 0; i < numTeamsInScenarioLeague; i++)
+                {
+                    int teamIndex = GetTeamDataIndexForTeamID(premiumLeagueData[i].teamId);
+                    int teamNo = i + 1;
+                    bool isSelf = premiumLeagueData[i].teamId == playersTeam;
+                    menuItemGenerator.CreateStandings(screens[(int)Enums.Screen.Standings], new Vector2(0.0f, yOff), teamNo, isSelf, staticTeamsData[teamIndex].teamName, premiumLeagueData[i].matchesPlayed, premiumLeagueData[i].leaguePoints, premiumLeagueData[i].goalDifference);
+                    yOff -= 32;
+                }
+                break;
         }
+    }
+    int GetPositionInLeagueTableForTeamId(int teamId)
+    {
+        int result = -1;
+
+        for (int team = 0; team < numTeamsInScenarioLeague; team++)
+        {
+            if (premiumLeagueData[team].teamId == teamId)
+            {
+                result = team + 1;
+                break;
+            }
+        }
+        return result;
     }
     LeagueInfo GetLeagueInfoForId(LeagueID leagueId)
     {
@@ -914,6 +988,7 @@ public class GameManager : MonoBehaviour
     public void CreateGameUsingTeam(int teamId, int scenarioId) 
     {
         playersTeam = teamId;
+        Debug.Log(staticTeamsData[GetArrayIndexForTeam(teamId)].teamName);
         int managerIndex = 0;
         if (managerIndex != -1)
         {
