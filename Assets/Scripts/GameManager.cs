@@ -59,6 +59,8 @@ public class GameManager : MonoBehaviour
     public int statsAttendance;
     [Tooltip("Number of seats at last match.")]
     public int statsStadiumSeats;
+    [Tooltip("Number of seats at last match.")]
+    public string statsPreturn;
 
     [Header("League End")]
     [Tooltip("Keep track of the league the user is in.")]
@@ -825,10 +827,11 @@ public class GameManager : MonoBehaviour
     {
         int oldScreen = (int)currentScreen;
         currentScreen = (Enums.Screen)newScreen;
-        GameObject screenToActivate = screens[newScreen].gameObject;
+        ScreenDefinition screenToActivate = screens[(int)newScreen];
         GameObject screenToDeactivate = screens[oldScreen].gameObject;
-        
-        screenToActivate.SetActive(true);
+
+        screenToActivate.gameObject.SetActive(true);
+        currentMenuItems = screenToActivate.MenuItems.GetComponentsInChildren<MenuItem>();
         if (screenToDeactivate != null)
         {
             screenToDeactivate.SetActive(false);
@@ -870,8 +873,8 @@ public class GameManager : MonoBehaviour
                 break;
             case Enums.Screen.PreTurn:
                 LeagueInfo info = GetLeagueInfoForId(playersLeague); 
-                string scenarioAndWeek = info.leagueName + "\nWeek " + (week+1) + " of " + ((numTeamsInScenarioLeague-1)*2);
-                menuItems[2].SetText(scenarioAndWeek);
+                statsPreturn = info.leagueName + "\nWeek " + (week+1) + " of " + ((numTeamsInScenarioLeague-1)*2);
+                menuItems[2].SetText(statsPreturn);
                 string playerCashBalance = "Cash Balance: \n" + GetTeamCashBalance(playersTeam) + "k";
                 menuItems[6].SetText(playerCashBalance);
                 string[] managerRatingStrings =
@@ -906,15 +909,18 @@ public class GameManager : MonoBehaviour
                 }
                 break;
            case Enums.Screen.Standings:
-                float yOff = 0.0f;
+                menuItems[5].SetText(statsPreturn);
+                float yOff = -72f;
                 for (int i = 0; i < numTeamsInScenarioLeague; i++)
                 {
                     int teamIndex = GetTeamDataIndexForTeamID(premiumLeagueData[i].teamId);
                     int teamNo = i + 1;
                     bool isSelf = premiumLeagueData[i].teamId == playersTeam;
-                    menuItemGenerator.CreateStandings(screens[(int)Enums.Screen.Standings], new Vector2(0.0f, yOff), teamNo, isSelf, staticTeamsData[teamIndex].teamName, premiumLeagueData[i].matchesPlayed, premiumLeagueData[i].leaguePoints, premiumLeagueData[i].goalDifference);
+                    menuItemGenerator.CreateStandings(screens[(int)currentScreen], new Vector2(0.0f, yOff), teamNo, isSelf, staticTeamsData[teamIndex].teamName, premiumLeagueData[i].matchesPlayed, premiumLeagueData[i].leaguePoints, premiumLeagueData[i].goalDifference);
                     yOff -= 32;
                 }
+                RectTransform items = screens[(int)currentScreen].MenuItems.transform.GetChild(0).GetComponent<RectTransform>();
+                items.sizeDelta = new Vector2(320f,-yOff+240);
                 break;
         }
     }

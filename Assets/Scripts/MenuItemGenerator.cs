@@ -40,7 +40,8 @@ public class MenuItemGenerator : MonoBehaviour
     }
     public void CreateStandings(ScreenDefinition screen, Vector2 pos, int teamId, bool isSelf, string nameText, int matchesPlayed, int leaguePoints, int goalDifference)
     {
-        GameObject newObj = Instantiate(prefabs[12], screen.MenuItems.transform, false);
+        Transform child = screen.MenuItems.transform.GetChild(0);
+        GameObject newObj = Instantiate(prefabs[12], child, false);
         TeamStandings standings = newObj.GetComponent<TeamStandings>();
         RectTransform rectTransform = newObj.GetComponent<RectTransform>();
         rectTransform.anchoredPosition = pos;
