@@ -49,4 +49,13 @@ public class MenuItemGenerator : MonoBehaviour
         standings.FillTeamValues(teamId, nameText, matchesPlayed, goalDifference, leaguePoints, isSelf);
         Debug.Log("Created standings for " + standings.teamName);
     }
+    public void CreateWeekPreview(ScreenDefinition screen, Vector2 pos, string nameText)
+    {
+        GameObject newObj = Instantiate(prefabs[13], screen.MenuItems.transform, false);
+        WeekPreview weekPreview = newObj.GetComponent<WeekPreview>();
+        RectTransform rectTransform = newObj.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = pos;
+        newObj.name = nameText;
+        weekPreview.UpdateText(nameText);
+    }
 }

@@ -611,7 +611,9 @@ public class GameManager : MonoBehaviour
     {
         int totalRounds = numTeamsInLeague - 1;
         int matchesPerRound = numTeamsInLeague / 2;
+        
         MatchInfo[,] rounds = new MatchInfo[totalRounds,matchesPerRound];
+        Debug.Log("Rounds: " + rounds.Length + " " + totalRounds + " " + matchesPerRound);
         for (int round = 0; round < totalRounds; round++)
         {   //Assign home and away team for each match
             for (int match = 0; match < matchesPerRound; match++)
@@ -622,8 +624,11 @@ public class GameManager : MonoBehaviour
                 {
                     away = numTeamsInLeague - 1;
                 }
-                rounds[round, match].homeTeam = home;
-                rounds[round, match].awayTeam = away;
+                rounds[round, match] = new MatchInfo
+                {
+                    homeTeam = home,
+                    awayTeam = away
+                };
             }
         }
         // Interleave so that home and away games are fairly evenly dispersed
@@ -908,6 +913,26 @@ public class GameManager : MonoBehaviour
                     GoToMenu(Enums.Screen.LeagueFinished);
                 }
                 break;
+            case Enums.Screen.WeekPreview:
+                menuItems[2].SetText(statsPreturn);
+                float yOffset = -72f;
+                for (int home = 0; home < numTeamsInScenarioLeague; home++)
+                {
+                    for (int away = 0; away < numTeamsInScenarioLeague; away++)
+                    {
+                        if (PremiumLeagueMatchesPlayed[home, away] == week)
+                        {
+                            int homeTeamIndex = teamIndexsForScenarioLeague[home];
+                            int awayTeamIndex = teamIndexsForScenarioLeague[away];
+                            int homeTeamId = staticTeamsData[homeTeamIndex].teamId;
+                            int awayTeamId = staticTeamsData[awayTeamIndex].teamId;
+                            string previewString = staticTeamsData[homeTeamIndex].teamName + " vs " + staticTeamsData[awayTeamIndex].teamName;
+                            menuItemGenerator.CreateWeekPreview(screens[(int)currentScreen], new Vector2(0.0f, yOffset), previewString);
+                            yOffset -= 32;
+                        }
+                    }
+                }
+                break;
            case Enums.Screen.Standings:
                 menuItems[5].SetText(statsPreturn);
                 float yOff = -72f;
@@ -1049,7 +1074,7 @@ public class GameManager : MonoBehaviour
         
         numPlayersInPlayersTeam = FillTeamPlayerArray(playersTeamPlayerIds, playersTeam);  
         AutofillFormationFromPlayerIDs(playersInFormation, playersTeamPlayerIds, numPlayersInPlayersTeam, Formation.KFormation442, playersTeam);
-        
+        BuildMatchSchedule(numTeamsInScenarioLeague);
         SaveGameData();
         GoToMenu(Enums.Screen.PreTurn);
         lastSponsorUpdateTurn = -1;

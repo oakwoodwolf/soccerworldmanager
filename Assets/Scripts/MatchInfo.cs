@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MatchInfo : MonoBehaviour
+public class MatchInfo
 {
     public int homeTeam;
     public int awayTeam;
