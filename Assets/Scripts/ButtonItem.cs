@@ -22,36 +22,51 @@ public class ButtonItem : MenuItem
         public override void SetText(string newText)
         {
             _rectTransform = GetComponent<RectTransform>();
-            this.text = newText;
+            text = newText;
             switch (newText)
             {
+                case "pageButton":
+                    mText.text = "Page 1/3";
+                    image.sprite = images[0];
+                    _rectTransform.sizeDelta = new Vector2(96, 32);
+                    break;
+                case "pageButtonPrev":
+                    mText.text = "";
+                    image.sprite = images[3];
+                    _rectTransform.sizeDelta = new Vector2(32, 32);
+                    break;
+                case "pageButtonNext":
+                    mText.text = "";
+                    image.sprite = images[4];
+                    _rectTransform.sizeDelta = new Vector2(32, 32);
+                    break;
                 case "nextButton":
-                    this.mText.text = "Next>";
+                    mText.text = "Next>";
                     image.sprite = images[1];
                     _rectTransform.sizeDelta = new Vector2(64, 32);
                     break;
                 case "backButton":
-                    this.mText.text = "<Back";
+                    mText.text = "<Back";
                     image.sprite = images[1];
                     _rectTransform.sizeDelta = new Vector2(64, 32);
                     break;
                 case "yesButton":
-                    this.mText.text = "Yes";
+                    mText.text = "Yes";
                     image.sprite = images[1];
                     _rectTransform.sizeDelta = new Vector2(64, 32);
                     break;
                 case "noButton":
-                    this.mText.text = "No";
+                    mText.text = "No";
                     image.sprite = images[1];
                     _rectTransform.sizeDelta = new Vector2(64, 32);
                     break;
                 case "quitButton":
-                    this.mText.text = "Quit Game";
+                    mText.text = "Quit Game";
                     image.sprite = images[0];
                     _rectTransform.sizeDelta = new Vector2(96, 32);
                     break;
                 case "optionOffButton":
-                    this.mText.text = "Off";
+                    mText.text = "Off";
                     if (flags == 1)
                     {
                         image.sprite = images[2];
@@ -63,7 +78,7 @@ public class ButtonItem : MenuItem
                     _rectTransform.sizeDelta = new Vector2(96, 32);
                     break;
                 case "optionOnButton":
-                    this.mText.text = "On";
+                    mText.text = "On";
                     if (flags == 1)
                     {
                         image.sprite = images[2];
@@ -76,7 +91,7 @@ public class ButtonItem : MenuItem
                     _rectTransform.sizeDelta = new Vector2(96, 32);
                     break;
                 default:
-                    this.mText.text = newText;
+                    mText.text = newText;
                     image.sprite = images[0];
                     _rectTransform.sizeDelta = new Vector2(96, 32);
                     break;

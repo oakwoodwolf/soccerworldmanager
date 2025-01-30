@@ -22,13 +22,31 @@ public class GameManager : MonoBehaviour
     public const int MaxMatchbreakers = 3;
     public const int MaxNumOfMatchbreakers = 10;
     public const int MaxPlayers = 3096;
+    public const int MaxPlayersInList = 32;
     public const int MaxPlayersInATeam = 64;
     public const int MaxPlayersInFormation = 11;
     public const int MaxNumberOfSubsOnBench = 3;
     public const int MaxPlayersInSquad = MaxPlayersInFormation + MaxNumberOfSubsOnBench;
-    
+    public const int MaxSheets = 3;
     public const int PremiumLeagueYellowsUntilBan = 5;
     public const int YellowCardsUntilBanMask = 0x00ff;
+    public const int YellowCardsInTournamentMask = 0xff00;
+    public const int YellowCardsInTournamentBitShift = 8;
+    public const int trainingMask = 0xff;
+    public const int transferMask = 0xff00;
+    public const int transferBitShift = 8;
+    public const int injuryMask = 0x00ff;
+    public const int bannedMask = 0xff00;
+    public const int bannedBitShift = 8;
+    
+    public const int YellowCardMask= 3 << 0;
+    public const int RedCardMask= 1 << 2;
+    public const int WarningMask= 1 << 3;
+    public const int BeenOnPitchMask = 1 << 4;
+
+
+
+    
     public bool SFXEnabled = true;
     public bool VibrationEnabled = true;
 
@@ -97,11 +115,25 @@ public class GameManager : MonoBehaviour
     public SponsorID[] sponsorIDs = new SponsorID[MaxSponsors];
     public SponsorInfo[] sponsorInfo = new SponsorInfo[1];
     public int[] availableSponsors = new int[MaxSponsors];
+    
     [Header("Matchbreaker Data")]
     public int lastMatchbreakerUpdateTurn;
     public int[] availableMatchbreakers = new int[MaxMatchbreakers];
     public MatchBreakerInfo[] matchbreakerInfo;
 
+    [Header("Training info")] 
+    public const float MaxPlayerCondition = 1.0f;
+    public const float ShowInjuredRatio = 0.33f;
+    public const float IntensiveTrainingStarsRating = 0.05f;
+    public const float IntensiveTrainingCondition = -0.2f;
+    public const float LightTrainingStarsRating = -0.002f;
+    public const float LightTrainingCondition = 0.02f;
+    public const float NoTrainingStarsRating = -0.05f;
+    public const float NoTrainingCondition = 0.2f;
+    public const float ConditionAdjustPerTurn = -0.016f;
+    public const float ConditionAdjustRecoverOverWeek = 0.2055f;
+
+    
     [Header("Opposition Team Data")]
     [Tooltip("Attempt to prevent opposition players/formation from being regenerated due to menu re-navigation")]
     public int lastOppositionTeamAssignmentId;
@@ -198,6 +230,8 @@ public class GameManager : MonoBehaviour
     [Header("Audio")]
     public AudioSource aSource;
     public AudioClip[] aClip;
+
+    
     private void Awake()
     {
         matchEngine = GetComponent<MatchEngine>();
@@ -961,6 +995,49 @@ public class GameManager : MonoBehaviour
                 if (playersSponsor == -1)
                 {
                     GoToMenu(Enums.Screen.AssignSponsor);
+                }
+               break;
+           case Enums.Screen.TrainPlayers:
+                RectTransform itemsForTraining = screens[(int)Enums.Screen.ChooseTeam].MenuItems.transform.GetChild(0).GetComponent<RectTransform>();
+                
+               
+               float yOffTrain = 0.0f;
+                int maxItems = numPlayersInPlayersTeam - (currentPage * MaxPlayersInList);
+                if (maxItems > MaxPlayersInList) maxItems = MaxPlayersInList;
+                itemsForTraining.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+120+(22*maxItems));
+                for (int j = 0; j < MaxPlayersInATeam; j++)
+                {
+                    menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.TrainPlayers],MenuElement.TextBarHalf, new Vector2(0,-1*(395-menuItemGenerator.playerTrainingYOffset-(22*j))),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j,itemsForTraining);
+                } 
+                for (int i = 0; i < maxItems; i++)
+                {
+                    int playerId = playersTeamPlayerIds[i + currentPage * MaxPlayersInList];
+                    int playerDataIndex = GetPlayerDataIndexForPlayerID(playerId);
+
+                    int textIndex = (int)(dynamicPlayersData[playerDataIndex].condition * 10.0f);
+                    if (textIndex < 0) textIndex = 0; if (textIndex > 9) textIndex = 9;
+                    int stars = (int)GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerDataIndex);
+                    if (stars < 0) stars = 0; if (stars > 5) stars = 5;
+                    int training = dynamicPlayersData[playerDataIndex].trainingTransfer & trainingMask;
+                    int flag = 0;
+                    if ((dynamicPlayersData[playerDataIndex].weeksBannedOrInjured & injuryMask) != 0)
+                    {
+                        flag = 0;
+                    }
+                    else if ((dynamicPlayersData[playerDataIndex].weeksBannedOrInjured & bannedMask) != 0)
+                    {
+                        flag = 1;
+                    }
+                    else if ((dynamicPlayersData[playerDataIndex].flags & YellowCardMask) != 0)
+                    {
+                        flag = 2;
+                    }
+                    if (dynamicPlayersData[playerDataIndex].condition < ShowInjuredRatio)
+                    {
+                        flag = 0;
+                    }
+                    menuItemGenerator.CreatePlayerTrainings(screens[(int)currentScreen], new Vector2(0.0f, yOffTrain), stars, training, flag, textIndex);
+                    yOffTrain -= 22f;
                 }
                break;
             case Enums.Screen.AssignSponsor:
