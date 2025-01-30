@@ -1,9 +1,7 @@
 using UnityEngine;
 using UnityEngine.Serialization;
-
-public class SponsorInfo : MonoBehaviour
+[CreateAssetMenu]
+public class SponsorInfo : MenuIconBar
 {
-    [FormerlySerializedAs("_textureId")]
-    public Texture2D textureId;
-    public uint flags;
+    public uint flags; // unused
 }

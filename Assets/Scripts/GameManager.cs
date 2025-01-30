@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
 {
     //Constants
     public const int MaxSponsors = 3;
+    public const int MaxNumOfSponsors = 20;
     public const int MaxLeagues = 8;
     public const int MaxManagers = 128;
     public const int MaxTeams = 128;
@@ -93,8 +94,9 @@ public class GameManager : MonoBehaviour
 
     [Header("Sponsor Data")]
     public int lastSponsorUpdateTurn;
-    public Enums.SponsorID[] sponsorIDs = new Enums.SponsorID[MaxSponsors];
-
+    public SponsorID[] sponsorIDs = new SponsorID[MaxSponsors];
+    public SponsorInfo[] sponsorInfo = new SponsorInfo[1];
+    public int[] availableSponsors = new int[MaxSponsors];
     [Header("Matchbreaker Data")]
     public int lastMatchbreakerUpdateTurn;
     public int[] availableMatchbreakers = new int[MaxMatchbreakers];
@@ -127,7 +129,7 @@ public class GameManager : MonoBehaviour
     public int playersScenario;
     public int playerRating = 128;
     [SerializeField] private int playerRatingStartValue = 128;
-    public SponsorID playersSponsor;
+    public int playersSponsor;
     public int playersWeeksWithSponsor;
     public int playersMatchBreaker;
     public MatchStrategy playersMatchStrategy;
@@ -278,7 +280,7 @@ public class GameManager : MonoBehaviour
             formationType = (Formation)mainData["Formation"];
             numTeamsInScenarioLeague = (int)mainData["TeamsInScenarioLeague"];
             playerRating  = (int)mainData["PlayerRating"];
-            playersSponsor  = (SponsorID)mainData["PlayerSponsor"];
+            playersSponsor  = (int)mainData["PlayerSponsor"];
             playersWeeksWithSponsor  = (int)mainData["PlayersWeeksWithSponsor"];
             playersMatchBreaker  = (int)mainData["PlayersMatchBreaker"];
             playersMatchStrategy  = (MatchStrategy)mainData["PlayersMatchStratergy"];
@@ -955,6 +957,32 @@ public class GameManager : MonoBehaviour
                 RectTransform items = screens[(int)currentScreen].MenuItems.transform.GetChild(0).GetComponent<RectTransform>();
                 items.sizeDelta = new Vector2(320f,-yOff+240);
                 break;
+           case Enums.Screen.OtherBusiness:
+                if (playersSponsor == -1)
+                {
+                    GoToMenu(Enums.Screen.AssignSponsor);
+                }
+               break;
+            case Enums.Screen.AssignSponsor:
+            
+                if (lastSponsorUpdateTurn != week)
+                {
+                    FillAvailableSponsorsList();
+                    lastSponsorUpdateTurn = week;
+                }
+               
+                int sponsorId = availableSponsors[0];
+                IconBar sbar = menuItems[3].GetComponent<IconBar>();
+                sbar.Populate(sponsorInfo[sponsorId].texture,sponsorInfo[sponsorId].textBig,sponsorInfo[sponsorId].textSmall);
+                
+                sponsorId = availableSponsors[1];
+                sbar = menuItems[4].GetComponent<IconBar>();
+                sbar.Populate(sponsorInfo[sponsorId].texture,sponsorInfo[sponsorId].textBig,sponsorInfo[sponsorId].textSmall);
+                 
+                sponsorId = availableSponsors[2];
+                sbar = menuItems[5].GetComponent<IconBar>();
+                sbar.Populate(sponsorInfo[sponsorId].texture,sponsorInfo[sponsorId].textBig,sponsorInfo[sponsorId].textSmall);
+               break;
            case Enums.Screen.BuyMatchBreaker:
                 if (lastMatchbreakerUpdateTurn != week)
                 {
@@ -985,6 +1013,30 @@ public class GameManager : MonoBehaviour
         }
     }
     
+    private void FillAvailableSponsorsList()
+    {
+        for (int i = 0; i < MaxSponsors; i++)
+        {
+            availableSponsors[i] = -1;
+            int ind;
+            bool bFree = true;
+
+            do
+            {
+                bFree = true;
+                ind = (int)(Random.value * MaxNumOfSponsors);
+                for (int k = 0; k < MaxSponsors; k++)
+                {
+                    if (availableSponsors[k] == ind)
+                    {
+                        bFree = false;
+                    }
+                }
+            } while (!bFree);
+            availableSponsors[i] = ind;
+        }
+    }
+
     private void FillAvailableMatchbreakersList()
     {
         for (int i = 0; i < MaxMatchbreakers; i++)
@@ -1088,7 +1140,7 @@ public class GameManager : MonoBehaviour
         week = 0;
 
         playerRating = playerRatingStartValue;
-        playersSponsor = SponsorID.None;
+        playersSponsor = -1;
         playersWeeksWithSponsor = 0;
         playersMatchBreaker = -1;
         matchEngine.state = Enums.MatchEngineState.MatchOver;
@@ -1482,6 +1534,16 @@ public class GameManager : MonoBehaviour
         {
             SoundEngine_StartEffect(Sounds.BadInput);
         }
+       
+    }
+    
+    public void BuySponsor(int index)
+    {
+        int oldSponsor = playersSponsor;
+        playersSponsor = availableSponsors[index];
+        if (oldSponsor != playersSponsor) playersWeeksWithSponsor = 0;
+        SaveGameData();
+        GoToMenu(Enums.Screen.OtherBusiness);
        
     }
 

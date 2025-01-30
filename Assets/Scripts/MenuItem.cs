@@ -123,6 +123,7 @@ public class MenuItem : MonoBehaviour
             case Enums.MenuAction.UpdateCurrentPage:
                 break;
             case Enums.MenuAction.AssignSponsor:
+                gameManager.BuySponsor(param);
                 break;
             case Enums.MenuAction.BuyMatchbreaker:
                 gameManager.BuyMatchbreaker(param);
