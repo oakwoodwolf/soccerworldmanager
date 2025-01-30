@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 using static Enums;
+using Random = UnityEngine.Random;
+
 public class GameManager : MonoBehaviour
 {
     //Constants
@@ -17,6 +19,7 @@ public class GameManager : MonoBehaviour
     public const int MaxTeamsInLeague = 32;
     public const int MaxWeeks = MaxTeamsInLeague * 2;
     public const int MaxMatchbreakers = 3;
+    public const int MaxNumOfMatchbreakers = 10;
     public const int MaxPlayers = 3096;
     public const int MaxPlayersInATeam = 64;
     public const int MaxPlayersInFormation = 11;
@@ -39,6 +42,7 @@ public class GameManager : MonoBehaviour
     public int currentNumberOfPage;
     public int processMatchDataStartFrameCount;
     public ScenarioInfo[] scenarioData;
+
     /// <summary>
     /// Stuff to keep track of for end of turn screen
     /// </summary>
@@ -94,6 +98,7 @@ public class GameManager : MonoBehaviour
     [Header("Matchbreaker Data")]
     public int lastMatchbreakerUpdateTurn;
     public int[] availableMatchbreakers = new int[MaxMatchbreakers];
+    public MatchBreakerInfo[] matchbreakerInfo;
 
     [Header("Opposition Team Data")]
     [Tooltip("Attempt to prevent opposition players/formation from being regenerated due to menu re-navigation")]
@@ -947,8 +952,60 @@ public class GameManager : MonoBehaviour
                 RectTransform items = screens[(int)currentScreen].MenuItems.transform.GetChild(0).GetComponent<RectTransform>();
                 items.sizeDelta = new Vector2(320f,-yOff+240);
                 break;
+           case Enums.Screen.BuyMatchBreaker:
+                if (lastMatchbreakerUpdateTurn != week)
+                {
+                    FillAvailableMatchbreakersList();
+                    lastMatchbreakerUpdateTurn = week;
+                }
+               
+                int mbId = availableMatchbreakers[0];
+                IconBar bar = menuItems[3].GetComponent<IconBar>();
+                MenuItem price = menuItems[6].GetComponent<MenuItem>();
+                price.SetText("$"+matchbreakerInfo[mbId].cost+"k");
+                bar.Populate(matchbreakerInfo[mbId].texture,matchbreakerInfo[mbId].textBig,matchbreakerInfo[mbId].textSmall);
+                
+                mbId = availableMatchbreakers[1];
+                bar = menuItems[4].GetComponent<IconBar>();
+                bar.Populate(matchbreakerInfo[mbId].texture,matchbreakerInfo[mbId].textBig,matchbreakerInfo[mbId].textSmall);
+                price = menuItems[7].GetComponent<MenuItem>();
+                price.SetText("$"+matchbreakerInfo[mbId].cost+"k");
+                
+                mbId = availableMatchbreakers[2];
+                bar = menuItems[5].GetComponent<IconBar>();
+                bar.Populate(matchbreakerInfo[mbId].texture,matchbreakerInfo[mbId].textBig,matchbreakerInfo[mbId].textSmall);
+                price = menuItems[7].GetComponent<MenuItem>();
+                price.SetText("$"+matchbreakerInfo[mbId].cost+"k");
+                string matchbreakerCashTxt = "Cash: " + GetTeamCashBalance(playersTeam) + "k";
+                menuItems[9].SetText(matchbreakerCashTxt);
+                break;
         }
     }
+    
+    private void FillAvailableMatchbreakersList()
+    {
+        for (int i = 0; i < MaxMatchbreakers; i++)
+        {
+            availableMatchbreakers[i] = -1;
+            int ind;
+            bool bFree = true;
+
+            do
+            {
+                bFree = true;
+                ind = (int)(Random.value * MaxNumOfMatchbreakers);
+                for (int k = 0; k < MaxMatchbreakers; k++)
+                {
+                    if (availableMatchbreakers[k] == ind)
+                    {
+                        bFree = false;
+                    }
+                }
+            } while (!bFree);
+            availableMatchbreakers[i] = ind;
+        }
+    }
+
     int GetPositionInLeagueTableForTeamId(int teamId)
     {
         int result = -1;

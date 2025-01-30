@@ -154,7 +154,7 @@ public class Enums : MonoBehaviour
         Scotland = 10,
         Usa = 50,
     }
-
+[Flags]
     public enum MatchBreakerFlags
     {
         GuaranteedPossession20Mins = 1,

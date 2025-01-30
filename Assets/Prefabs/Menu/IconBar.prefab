@@ -381,6 +381,7 @@ MonoBehaviour:
   menuAction: 3
   param: 0
   smallText: {fileID: 521350077604959330}
+  bigText: {fileID: 7357009031471004273}
   image: {fileID: 1054643785274833894}
   iconBarBigFontScale: 1
   iconBarSmallFontScale: 0.8
@@ -388,6 +389,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: bcf44c0e97eb35e439ce012749d3c378, type: 3}
   - {fileID: 21300000, guid: 60863728c937c6948aac5b93f1abba56, type: 3}
   - {fileID: 21300000, guid: 19a031878f41a54468bffcf10898fa89, type: 3}
+  - {fileID: 21300000, guid: 7809ca0032fab214e83e90a15c680b19, type: 3}
 --- !u!1 &8254360529020896963
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,6 +11,8 @@ public class IconBar : MenuItem
     [SerializeField]
     private TMP_Text smallText;
     [SerializeField]
+    private TMP_Text bigText;
+    [SerializeField]
     private Image image;
     [SerializeField]
     public float iconBarBigFontScale = 1.0f;
@@ -53,11 +55,34 @@ public class IconBar : MenuItem
                 image.sprite = icons[0];
                 param = 4;
                 break;
+            
+            case "Dog It":
+                smallText.text = "A cunningly timed dog on the pitch.";
+                image.sprite = icons[3];
+                param = 0;
+                break;
+            case "Spectacles":
+                smallText.text = "Did you see that?";
+                image.sprite = icons[3];
+                param = 1;
+                break; 
+            case "Foot Loose":
+                smallText.text = "Getting away with anything?";
+                image.sprite = icons[3];
+                param = 2;
+                break;
         }
     }
     public override void OnValidate()
     {
         SetText(this.text);
         AdjustPosition();
+    }
+
+    public void Populate(Sprite icon, string bigText, string smallText)
+    {
+        image.sprite = icon;
+        this.bigText.text = bigText;
+        this.smallText.text = smallText;
     }
 }
