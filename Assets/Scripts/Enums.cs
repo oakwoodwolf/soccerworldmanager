@@ -189,6 +189,35 @@ public class Enums : MonoBehaviour
         KFormationMax
     }
 
+    public enum Sounds
+    {
+        Start = 0,
+        Success,
+        Chomp,
+        Belch,
+        Hic,
+        Bomb,
+        Toot,
+        Splat,
+        CrowdAw,
+        Eat,	
+        DropItem,	
+        LevelUp,	
+        MenuClick,	
+        UseMatchBreaker,				// pressing the button
+        MatchBreakerEffect,			// when something happens during the mysterious match....
+        BadInput,					// user tries to do something they can't do - such as buy a matchbreaker beyond budget
+        Crowd1,
+        Crowd2,
+        Crowd3,
+        Crowd_Goal,
+        Crowd_MissedGoal,
+        Whistle_Foul,
+        Whistle_EndHalf,
+        Whistle_EndGame,
+        Whistle,
+    }
+
     [Flags]
     public enum PlayerFormation
     {

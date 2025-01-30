@@ -92,7 +92,7 @@ public class MenuItem : MonoBehaviour
     public virtual void HandleClick()
     {
         Debug.Log($"Button clicked with action: {menuAction}, param: {param}");
-
+        if (menuAction != Enums.MenuAction.Null) gameManager.SoundEngine_StartEffect(Enums.Sounds.MenuClick);
         switch (menuAction) 
         {
             case Enums.MenuAction.SelectTeamAndCreateGame:
@@ -125,6 +125,7 @@ public class MenuItem : MonoBehaviour
             case Enums.MenuAction.AssignSponsor:
                 break;
             case Enums.MenuAction.BuyMatchbreaker:
+                gameManager.BuyMatchbreaker(param);
                 break;
             case Enums.MenuAction.UseMatchBreaker:
                 break;

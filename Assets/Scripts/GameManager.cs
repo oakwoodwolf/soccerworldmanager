@@ -193,10 +193,13 @@ public class GameManager : MonoBehaviour
     public string soccerDynamicTeamDataKey = "soccerDynamicTeamData";
     public string soccerDynamicPlayerDataKey = "soccerDynamicPlayerData";
     public string soccerDynamicManagerDataKey = "soccerDynamicManagerData";
-    
+    [Header("Audio")]
+    public AudioSource aSource;
+    public AudioClip[] aClip;
     private void Awake()
     {
         matchEngine = GetComponent<MatchEngine>();
+        aSource = GetComponent<AudioSource>();
         playersMatch = GetComponent<PlayersMatch>();
         menuItemGenerator = GetComponent<MenuItemGenerator>();
     }
@@ -1460,5 +1463,33 @@ public class GameManager : MonoBehaviour
         premiumLeagueData[team2].goalsAgainst = goalsAgainst;
         premiumLeagueData[team2].goalDifference = goalDifference;
         premiumLeagueData[team2].leaguePoints = leaguePoints;
+    }
+
+    public void BuyMatchbreaker(int index)
+    {
+        int mbIndex = availableMatchbreakers[index];
+        int cash = GetTeamCashBalance(playersTeam);
+        int cost = matchbreakerInfo[mbIndex].cost;
+        if (cash > cost)
+        {
+            AddTeamCashBalance(playersTeam, -cost);
+            statsTurnExpend += cost;
+            playersMatchBreaker = mbIndex;
+            SaveGameData();
+            GoToMenu(Enums.Screen.OtherBusiness);
+        }
+        else
+        {
+            SoundEngine_StartEffect(Sounds.BadInput);
+        }
+       
+    }
+
+    public void SoundEngine_StartEffect(Sounds sound)
+    {
+        if (SFXEnabled)
+        {
+            aSource.PlayOneShot(aClip[(int)sound]);
+        }
     }
 }
