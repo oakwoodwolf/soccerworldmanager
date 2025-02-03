@@ -46,9 +46,6 @@ public class MenuItem : MonoBehaviour
             Button.onClick.RemoveAllListeners();
             Button.onClick.AddListener(HandleClick);
             Debug.Log("Listener Attached");
-        } else
-        {
-            Debug.LogError("No button component attached");
         }
     }
 
@@ -86,7 +83,7 @@ public class MenuItem : MonoBehaviour
 
     public void OnDestroy()
     {
-        Button.onClick.RemoveAllListeners();
+        if (Button != null) {Button.onClick.RemoveAllListeners();}
     }
 
     public virtual void HandleClick()

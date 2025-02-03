@@ -6,6 +6,10 @@ public class PlayerTraining : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     [SerializeField]
+    private TMP_Text nameText;
+    [SerializeField]
+    private TMP_Text statusText;
+    [SerializeField]
     private Image starsSprite;
     public Sprite[] starsArray;
     [SerializeField]
@@ -23,23 +27,23 @@ public class PlayerTraining : MonoBehaviour
     public int textIndex;
     public int flags;
     public int training;
+    public string nameStr;
+    public string teamLikesPositionStr;
+    public Color nameColor;
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public void FillPlayerValues(int training,int flags,int stars, int textIndex)
+    public void FillPlayerValues(int training,int flags,int stars, int textIndex, string nameStr, Color color, string teamLikesPositionStr)
     {
         this.stars = stars;
         this.textIndex = textIndex;
         this.flags = flags;
         this.training = training;
+        this.nameStr = nameStr;
+        nameColor = color;
+        this.teamLikesPositionStr = teamLikesPositionStr;
         UpdateText();
     }
     
@@ -50,5 +54,8 @@ public class PlayerTraining : MonoBehaviour
         starsSprite.sprite = starsArray[stars];
         piesSprite.sprite = piesArray[textIndex];
         statusSprite.sprite = statusArray[training];
+        nameText.text = nameStr;
+        nameText.color = nameColor;
+        statusText.text = teamLikesPositionStr;
     }
 }

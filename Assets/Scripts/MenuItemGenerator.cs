@@ -61,13 +61,13 @@ public class MenuItemGenerator : MonoBehaviour
         weekPreview.UpdateText(nameText);
     }
 
-    public void CreatePlayerTrainings(ScreenDefinition screen, Vector2 pos, int stars, int training, int flags, int textIndex)
+    public void CreatePlayerTrainings(ScreenDefinition screen, Vector2 pos, int stars, int training, int flags, int textIndex, string nameString, Color color, string statusString)
     {
         Transform child = screen.MenuItems.transform.GetChild(0);
         GameObject newObj = Instantiate(prefabs[14], child, false);
         RectTransform rectTransform = newObj.GetComponent<RectTransform>();
         PlayerTraining playerTraining = newObj.GetComponent<PlayerTraining>();
         rectTransform.anchoredPosition = pos;
-        playerTraining.FillPlayerValues(training,flags,stars,textIndex);
+        playerTraining.FillPlayerValues(training,flags,stars,textIndex,nameString,color,statusString);
     }
 }

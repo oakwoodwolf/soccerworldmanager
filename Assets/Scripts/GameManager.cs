@@ -998,22 +998,47 @@ public class GameManager : MonoBehaviour
                 }
                break;
            case Enums.Screen.TrainPlayers:
-                RectTransform itemsForTraining = screens[(int)Enums.Screen.ChooseTeam].MenuItems.transform.GetChild(0).GetComponent<RectTransform>();
-                
-               
+
+                currentNumberOfPage = (numPlayersInPlayersTeam / MaxPlayersInList) + 1;
+                if (currentPage >= currentNumberOfPage)
+                {
+                    currentPage = currentNumberOfPage - 1;
+                }
+               //Generate List
+               RectTransform itemsForTraining = screens[(int)Enums.Screen.ChooseTeam].MenuItems.transform.GetChild(0).GetComponent<RectTransform>(); 
                float yOffTrain = 0.0f;
                 int maxItems = numPlayersInPlayersTeam - (currentPage * MaxPlayersInList);
                 if (maxItems > MaxPlayersInList) maxItems = MaxPlayersInList;
-                itemsForTraining.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+120+(22*maxItems));
+                itemsForTraining.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+395+(22*maxItems));
                 for (int j = 0; j < MaxPlayersInATeam; j++)
                 {
-                    menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.TrainPlayers],MenuElement.TextBarHalf, new Vector2(0,-1*(395-menuItemGenerator.playerTrainingYOffset-(22*j))),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j,itemsForTraining);
+                    menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.TrainPlayers],MenuElement.TextBarHalf, new Vector2(0,-1*(395-menuItemGenerator.playerTrainingYOffset-22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j);
                 } 
                 for (int i = 0; i < maxItems; i++)
                 {
                     int playerId = playersTeamPlayerIds[i + currentPage * MaxPlayersInList];
                     int playerDataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                   string nameString = String.Empty;
+                   string playerLikesPositionString = String.Empty;
+                   Color color = Color.white;
+                    if (playerDataIndex != -1) // Handle Player name
+                    {
+                        string positionString = "--";
+                       
+                        playerLikesPositionString = FillPlayerLikesStringForPlayerIndex(playerDataIndex);
+                        int formationIndex = FillPositionStringForPlayerIndexs(playerDataIndex, formations[(int)formationType], ref positionString);
+                        if (formationIndex != -1) // Turn yellow
+                        {
+                            color = new Color(1.0f,1.0f,0.8f,1.0f);
+                        }
 
+                        if (dynamicPlayersData[playerDataIndex].weeksBannedOrInjured != 0) // Turn Red
+                        {
+                            color = new Color(1.0f,0.0f,0.0f,1.0f);
+                        }
+                        nameString = "("+positionString+") "+staticPlayersData[playerDataIndex].playerSurname;
+                    }
+                    
                     int textIndex = (int)(dynamicPlayersData[playerDataIndex].condition * 10.0f);
                     if (textIndex < 0) textIndex = 0; if (textIndex > 9) textIndex = 9;
                     int stars = (int)GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerDataIndex);
@@ -1036,7 +1061,7 @@ public class GameManager : MonoBehaviour
                     {
                         flag = 0;
                     }
-                    menuItemGenerator.CreatePlayerTrainings(screens[(int)currentScreen], new Vector2(0.0f, yOffTrain), stars, training, flag, textIndex);
+                    menuItemGenerator.CreatePlayerTrainings(screens[(int)currentScreen], new Vector2(0.0f, yOffTrain), stars, training, flag, textIndex, nameString,color,playerLikesPositionString);
                     yOffTrain -= 22f;
                 }
                break;
@@ -1089,7 +1114,109 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
-    
+
+    private string FillPlayerLikesStringForPlayerIndex(int playerIndex)
+    {
+        char[] playerLikesPositionString = new char[24];
+        int playerLikesStringOffset = 0;
+        if ((staticPlayersData[playerIndex].playerPositionFlags & PlayerFormation.Goalkeeper) != 0)
+        {
+            playerLikesPositionString[0] = 'G';
+            playerLikesPositionString[1] = 'K';
+            playerLikesStringOffset = 2;
+        }
+        if ((staticPlayersData[playerIndex].playerPositionFlags & PlayerFormation.Defender) != 0)
+        {
+            playerLikesPositionString[playerLikesStringOffset++] = 'D';
+        }
+        if ((staticPlayersData[playerIndex].playerPositionFlags & PlayerFormation.MidFielder) != 0)
+        {
+            playerLikesPositionString[playerLikesStringOffset++] = 'M';
+        }
+        if ((staticPlayersData[playerIndex].playerPositionFlags & PlayerFormation.Attacker) != 0)
+        {
+            playerLikesPositionString[playerLikesStringOffset++] = 'F';
+        }
+        if ((staticPlayersData[playerIndex].playerPositionFlags & PlayerFormation.Left) != 0)
+        {
+            playerLikesPositionString[playerLikesStringOffset++] = 'L';
+        }
+        if ((staticPlayersData[playerIndex].playerPositionFlags & PlayerFormation.Center) != 0)
+        {
+            playerLikesPositionString[playerLikesStringOffset++] = 'C';
+        }
+        if ((staticPlayersData[playerIndex].playerPositionFlags & PlayerFormation.Right) != 0)
+        {
+            playerLikesPositionString[playerLikesStringOffset++] = 'R';
+        }
+
+        return new string(playerLikesPositionString);
+    }
+
+    private int FillPositionStringForPlayerIndexs(int playerIndex, FormationData playersFormation, ref string positionString)
+    {
+        int formationIndex = -1;
+        for (int inFormation = 0; inFormation < MaxPlayersInSquad; inFormation++)
+        {
+            if (playerIndex == playersInFormation[inFormation])
+            {
+                formationIndex = inFormation;
+                break;
+            }
+        }
+        if (formationIndex != -1) // has a formation
+        {
+            FormationInfo newPlayersFormation = playersFormation.formations[formationIndex];
+     
+            if ((newPlayersFormation.formation & PlayerFormation.Substitute) != 0)
+            {
+                positionString = "SUB";
+            }
+            if ((newPlayersFormation.formation & PlayerFormation.Goalkeeper) != 0)
+            {
+                positionString = "GK";
+            }
+            if ((newPlayersFormation.formation & PlayerFormation.Defender) != 0)
+            {
+                positionString = "D";
+            }
+            if ((newPlayersFormation.formation & PlayerFormation.MidFielder) != 0)
+            {
+                positionString = "M";
+            }
+            if ((newPlayersFormation.formation & PlayerFormation.Attacker) != 0)
+            {
+                positionString = "F";
+            }
+            if ((newPlayersFormation.formation & PlayerFormation.Left) != 0)
+            {
+                positionString += "L";
+            }
+            if ((newPlayersFormation.formation & PlayerFormation.Center) != 0)
+            {
+                positionString += "C";
+            }
+            if ((newPlayersFormation.formation & PlayerFormation.Right) != 0)
+            {
+                positionString += "R";
+            }
+            
+               
+        }
+
+        if ((dynamicPlayersData[playerIndex].weeksBannedOrInjured & bannedMask) != 0)
+        {
+            positionString = "BAN";
+        }
+        if ((dynamicPlayersData[playerIndex].weeksBannedOrInjured & injuryMask) != 0)
+        {
+            positionString = "INJ";
+        }
+       
+        return formationIndex;
+        
+    }
+
     private void FillAvailableSponsorsList()
     {
         for (int i = 0; i < MaxSponsors; i++)

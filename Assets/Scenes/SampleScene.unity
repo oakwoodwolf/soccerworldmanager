@@ -16642,7 +16642,7 @@ MonoBehaviour:
   - {fileID: 6709948606914668062, guid: 01b139ee92a572e48ae37249ca7eb832, type: 3}
   - {fileID: 6709948606914668062, guid: af489ea58b9a7424fa432ddc5403e360, type: 3}
   - {fileID: 6709948606914668062, guid: ddb45479fa0f817499b707871836b690, type: 3}
-  playerTrainingYOffset: 32
+  playerTrainingYOffset: 96
   menuBarHeight: 32
   menuBarSpace: 16
   menuBarSpacing: 48
