@@ -29,6 +29,8 @@ public class MenuItem : MonoBehaviour
     public int param;
     protected RectTransform RectTransform;
     
+    [Header("Scroll")]
+    public bool affectedByScroll;
     public void Awake()
     {
         Button = GetComponent<Button>();
@@ -74,6 +76,12 @@ public class MenuItem : MonoBehaviour
 
     }
 
+    public void Update()
+    {
+        if (!affectedByScroll) return;
+        RectTransform.anchoredPosition = new Vector3(pos.x, -pos.y-gameManager.menuScrollY, RectTransform.transform.position.z);
+    }
+
     public virtual void SetText(string newText)
     {
         text = newText;
@@ -111,13 +119,21 @@ public class MenuItem : MonoBehaviour
                 break;
             case Enums.MenuAction.CyclePlayerTransferStatus:
                 break;
-            case Enums.MenuAction.SetCurrentPage:
-                break;
             case Enums.MenuAction.BuyPlayerReview:
                 break;
             case Enums.MenuAction.BuyPlayerUpdateOffer:
                 break;
             case Enums.MenuAction.UpdateCurrentPage:
+                gameManager.currentPage += param;
+                if (gameManager.currentPage < 0)
+                    gameManager.currentPage = gameManager.currentNumberOfPage - 1;
+                if (gameManager.currentPage > gameManager.currentNumberOfPage - 1)
+                    gameManager.currentPage = 0;
+                gameManager.GoToMenu(gameManager.currentScreen);
+                break;
+            case Enums.MenuAction.SetCurrentPage:
+                gameManager.currentPage = param;
+                gameManager.GoToMenu(gameManager.currentScreen);
                 break;
             case Enums.MenuAction.AssignSponsor:
                 gameManager.BuySponsor(param);
@@ -137,7 +153,10 @@ public class MenuItem : MonoBehaviour
                 switch (param)
                 {
                     case 0: gameManager.SFXEnabled = false; break;
-                    case 1: gameManager.SFXEnabled = true; break;
+                    case 1:
+                        gameManager.SFXEnabled = true;
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.Splat);
+                        break;
                     case 2: gameManager.VibrationEnabled = false; break;
                     case 3: gameManager.VibrationEnabled = true; break;
                 }

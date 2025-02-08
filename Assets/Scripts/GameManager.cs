@@ -61,6 +61,7 @@ public class GameManager : MonoBehaviour
     public int currentNumberOfPage;
     public int processMatchDataStartFrameCount;
     public ScenarioInfo[] scenarioData;
+    public int menuScrollY;
 
     /// <summary>
     /// Stuff to keep track of for end of turn screen
@@ -878,7 +879,7 @@ public class GameManager : MonoBehaviour
         currentScreen = (Enums.Screen)newScreen;
         ScreenDefinition screenToActivate = screens[(int)newScreen];
         GameObject screenToDeactivate = screens[oldScreen].gameObject;
-
+        
         screenToActivate.gameObject.SetActive(true);
         currentMenuItems = screenToActivate.MenuItems.GetComponentsInChildren<MenuItem>();
         if (screenToDeactivate != null)
@@ -1112,6 +1113,71 @@ public class GameManager : MonoBehaviour
                 string matchbreakerCashTxt = "Cash: " + GetTeamCashBalance(playersTeam) + "k";
                 menuItems[9].SetText(matchbreakerCashTxt);
                 break;
+           case Enums.Screen.PreMatchReview:
+                for (int home = 0; home < numTeamsInScenarioLeague; home++)
+                {
+                    for (int away = 0; away < numTeamsInScenarioLeague; away++)
+                    {
+                        if (PremiumLeagueMatchesPlayed[home, away] == week)
+                        {
+                            bool foundPlayersMatch = false;
+                            int homeTeamIndex = teamIndexsForScenarioLeague[home];
+                            int awayTeamIndex = teamIndexsForScenarioLeague[away];
+                            int homeTeamId = staticTeamsData[homeTeamIndex].teamId;
+                            int awayTeamId = staticTeamsData[awayTeamIndex].teamId;
+
+                            if (playersTeam == homeTeamId)
+                            {
+                                foundPlayersMatch = true;
+                                oppositionTeamId = awayTeamId;
+                            }
+
+                            if (playersTeam == awayTeamId)
+                            {
+                                foundPlayersMatch = true;
+                                oppositionTeamId = homeTeamId;
+                            }
+
+                            if (foundPlayersMatch)
+                            {
+                                playersMatch.homeTeam = homeTeamId;
+                                playersMatch.awayTeam = awayTeamId;
+                                string preMatchTeams = staticTeamsData[homeTeamIndex].teamName+"\nvs\n"+staticTeamsData[awayTeamIndex].teamName;
+                                menuItems[2].SetText(preMatchTeams);
+                                playersMatch.homeTeamName = staticTeamsData[homeTeamIndex].teamName;
+                                playersMatch.awayTeamName = staticTeamsData[awayTeamIndex].teamName;
+                                
+                                playersMatch.homeTeam1StColour = staticTeamsData[homeTeamIndex].homeTeam1StColour;
+                                playersMatch.homeTeam2NdColour = staticTeamsData[homeTeamIndex].homeTeam2NdColour; 
+                                playersMatch.awayTeam1StColour = staticTeamsData[awayTeamIndex].awayTeam1StColour;
+                                playersMatch.awayTeam2NdColour = staticTeamsData[awayTeamIndex].awayTeam2NdColour;
+
+                                int managerIndex = GetIndexToManagerForTeamID(oppositionTeamId);
+                                float style = staticManagersData[managerIndex].styleOffset;
+                                string styleText = "Balanced";
+                                if (style <= 4.9f && style >= 4.9f)
+                                {
+                                    styleText = "Balanced";
+                                }
+                                else
+                                {
+                                    styleText = style switch
+                                    {
+                                        < -9.9f => "Very Defensive",
+                                        < -4.9f => "Defensive",
+                                        > 9.9f => "Strong Attacking",
+                                        > 4.9f => "Attacking",
+                                        _ => ""
+                                    };
+                                }
+
+                                string scoutReport = "Previous matches would indicate "+staticManagersData[managerIndex].managerSurname+" prefers to use a "+styleText+" style of play.";
+                                menuItems[5].SetText(scoutReport);
+                            }
+                        }
+                    }
+                }
+               break;
         }
     }
 

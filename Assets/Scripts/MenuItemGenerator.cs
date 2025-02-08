@@ -34,7 +34,7 @@ public class MenuItemGenerator : MonoBehaviour
         newObj.name = text;
         MenuItem menuItem = newObj.GetComponent<MenuItem>();
         menuItem.type = type;
-        menuItem.pos = pos;
+        menuItem.pos = new Vector2(pos.x, -pos.y);
         menuItem.alignment = align;
         menuItem.SetText(text);
         menuItem.AddListener(action, param);
