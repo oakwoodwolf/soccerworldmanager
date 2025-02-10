@@ -51,6 +51,7 @@ public class GameManager : MonoBehaviour
     public bool VibrationEnabled = true;
 
     public Enums.Screen currentScreen;
+    public ScreenDefinition currentScreenDefinition;
     [FormerlySerializedAs("Screens")]
     public ScreenDefinition[] screens = new ScreenDefinition[(int)Enums.Screen.Max];
     public MenuItemGenerator menuItemGenerator;
@@ -895,6 +896,7 @@ public class GameManager : MonoBehaviour
         ScreenDefinition screenToActivate = screens[(int)newScreen];
         GameObject screenToDeactivate = screens[(int)oldScreen].gameObject;
         screenToDeactivate.SetActive(false);
+        
         screenToActivate.gameObject.SetActive(true);
         currentMenuItems = screenToActivate.MenuItems.GetComponentsInChildren<MenuItem>();
         
