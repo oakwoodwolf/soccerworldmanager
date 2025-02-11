@@ -1033,7 +1033,10 @@ public class GameManager : MonoBehaviour
                 menuItems[4].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
                 //Training screen menu stuff
                 itemsForTraining.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+395+(22*maxItems));
-               
+                for (int j = 0; j < maxItems; j++)
+                {
+                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j);
+                } 
                 for (int i = 0; i < maxItems; i++)
                 {
                     int playerId = playersTeamPlayerIds[i + currentPage * MaxPlayersInList];
@@ -1059,35 +1062,13 @@ public class GameManager : MonoBehaviour
                         nameString = "("+positionString+") "+staticPlayersData[playerDataIndex].playerSurname;
                     }
                     
-                    int textIndex = (int)(dynamicPlayersData[playerDataIndex].condition * 10.0f);
-                    if (textIndex < 0) textIndex = 0; if (textIndex > 9) textIndex = 9;
+                   
                     int stars = (int)GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerDataIndex);
                     if (stars < 0) stars = 0; if (stars > 5) stars = 5;
-                    int training = dynamicPlayersData[playerDataIndex].trainingTransfer & trainingMask;
-                    int flag = 0;
-                    if ((dynamicPlayersData[playerDataIndex].weeksBannedOrInjured & injuryMask) != 0)
-                    {
-                        flag = 0;
-                    }
-                    else if ((dynamicPlayersData[playerDataIndex].weeksBannedOrInjured & bannedMask) != 0)
-                    {
-                        flag = 1;
-                    }
-                    else if ((dynamicPlayersData[playerDataIndex].flags & YellowCardMask) != 0)
-                    {
-                        flag = 2;
-                    }
-                    if (dynamicPlayersData[playerDataIndex].condition < ShowInjuredRatio)
-                    {
-                        flag = 0;
-                    }
-                    menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffTrain), stars, training, flag, textIndex, nameString,color,playerLikesPositionString);
+                    menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffTrain), stars, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
                     yOffTrain -= 22f;
                 }
-                for (int j = 0; j < maxItems; j++)
-                {
-                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j);
-                } 
+               
                 break;
             case Enums.Screen.AssignSponsor:
             
@@ -1238,7 +1219,7 @@ public class GameManager : MonoBehaviour
         {
             playerLikesPositionString[playerLikesStringOffset++] = 'R';
         }
-
+        Debug.Log(playerLikesPositionString);
         return new string(playerLikesPositionString);
     }
 
@@ -1680,7 +1661,7 @@ public class GameManager : MonoBehaviour
         return result;
     }
 
-    private int GetPlayerDataIndexForPlayerID(int playerId)
+    public int GetPlayerDataIndexForPlayerID(int playerId)
     {
         int playerIndex = -1;
         for (int i = 0; i < numberOfPlayersInArrays; i++)

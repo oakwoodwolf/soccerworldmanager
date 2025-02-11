@@ -168,7 +168,14 @@ public class Enums : MonoBehaviour
         SponsorBonus = 1024,
         Stalemate = 4096,
     }
-    
+
+    public enum Training
+    {
+        None = 0,
+        Light,
+        Normal,
+        Intensive,
+    }
     [Flags]
     public enum MenuElementFlag
     {

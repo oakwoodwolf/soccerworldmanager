@@ -6,7 +6,7 @@ public class DynamicPlayerData : ScriptableObject
     public float starsRating;
     public float condition;
     public short teamId;
-    public short trainingTransfer;
+    public int trainingTransfer;
     public short weeklySalary;
     public short morale;
     public short weeksBannedOrInjured;

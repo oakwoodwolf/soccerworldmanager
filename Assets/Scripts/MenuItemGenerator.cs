@@ -65,7 +65,7 @@ public class MenuItemGenerator : MonoBehaviour
         weekPreview.UpdateText(nameText);
     }
 
-    public void CreatePlayerTrainings(ScreenDefinition screen, Vector2 pos, int stars, int training, int flags, int textIndex, string nameString, Color color, string statusString)
+    public void CreatePlayerTrainings(ScreenDefinition screen, Vector2 pos, int stars, string nameString, Color color, string statusString, DynamicPlayerData playerData)
     {
         Transform child = screen.MenuItems.transform;
         GameObject newObj = Instantiate(prefabs[14], child, false);
@@ -73,7 +73,7 @@ public class MenuItemGenerator : MonoBehaviour
         PlayerTraining playerTraining = newObj.GetComponent<PlayerTraining>();
         rectTransform.anchoredPosition = pos;
         playerTraining.pos = new Vector2(pos.x, -pos.y);
-        playerTraining.FillPlayerValues(training,flags,stars,textIndex,nameString,color,statusString);
+        playerTraining.FillPlayerValues(stars,nameString,color,statusString, playerData);
         playerTraining.transform.SetSiblingIndex(1);
     }
 }

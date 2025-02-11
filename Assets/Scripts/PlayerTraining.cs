@@ -23,6 +23,7 @@ public class PlayerTraining : MenuItem
     private Image flagsSprite;
     public Sprite[] flagsArray;
     public RectTransform rectTransform;
+    public DynamicPlayerData playerData;
     
     public int stars;
     public int textIndex;
@@ -36,12 +37,42 @@ public class PlayerTraining : MenuItem
         rectTransform = GetComponent<RectTransform>();
     }
 
-    public void FillPlayerValues(int training,int flags,int stars, int textIndex, string nameStr, Color color, string teamLikesPositionStr)
+    public override void Update()
+    {
+        base.Update();
+        UpdateFlags();
+        textIndex = (int)(playerData.condition * 10.0f);
+        if (textIndex < 0) textIndex = 0; if (textIndex > 9) textIndex = 9;
+        statusSprite.sprite = statusArray[training];
+        training = playerData.trainingTransfer & GameManager.trainingMask;
+        statusSprite.sprite = statusArray[training];
+    }
+
+    private void UpdateFlags()
+    {
+        if ((playerData.weeksBannedOrInjured &  GameManager.injuryMask) != 0)
+        {
+            playerFlags = 0;
+        }
+        else if ((playerData.weeksBannedOrInjured &  GameManager.bannedMask) != 0)
+        {
+            playerFlags = 1;
+        }
+        else if ((playerData.flags & GameManager.YellowCardMask) != 0)
+        {
+            playerFlags = 2;
+        }
+        if (playerData.condition <  GameManager.ShowInjuredRatio)
+        {
+            playerFlags = 0;
+        }
+        flagsSprite.sprite = flagsArray[playerFlags];
+    }
+
+    public void FillPlayerValues(int stars, string nameStr, Color color, string teamLikesPositionStr, DynamicPlayerData playerData)
     {
         this.stars = stars;
-        this.textIndex = textIndex;
-        this.playerFlags = flags;
-        this.training = training;
+        this.playerData = playerData;
         this.nameStr = nameStr;
         nameColor = color;
         this.teamLikesPositionStr = teamLikesPositionStr;

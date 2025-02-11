@@ -53,11 +53,11 @@ public class MenuItem : MonoBehaviour
 
     public virtual void OnValidate()
     {
+        AdjustPosition();
         if (mText.text != text)
         {
             mText.text = text;
         }
-        AdjustPosition();
     }
     
     /// <summary>
@@ -116,6 +116,16 @@ public class MenuItem : MonoBehaviour
                 gameManager.StartGame();
                 break;
             case Enums.MenuAction.CyclePlayerTraining:
+                int playerIndex = param;
+                playerIndex += gameManager.currentPage * GameManager.MaxPlayersInList;
+                int playerId = gameManager.playersTeamPlayerIds[playerIndex];
+                int dataIndex = gameManager.GetPlayerDataIndexForPlayerID(playerId);
+                int training = gameManager.dynamicPlayersData[dataIndex].trainingTransfer & GameManager.trainingMask;
+                training++;
+                if (training > (int)Enums.Training.Intensive)
+                    training = (int)Enums.Training.None;
+                gameManager.dynamicPlayersData[dataIndex].trainingTransfer &= GameManager.transferMask;
+                gameManager.dynamicPlayersData[dataIndex].trainingTransfer |= training;
                 break;
             case Enums.MenuAction.CyclePlayerTransferStatus:
                 break;
