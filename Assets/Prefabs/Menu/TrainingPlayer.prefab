@@ -363,11 +363,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20426344b8464f40841e64d8e9e7cde3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pos: {x: 0, y: 0}
+  mText: {fileID: 0}
+  gameManager: {fileID: 0}
+  type: 0
+  alignment: 0
+  flags: 0
+  text: 
+  menuAction: 0
+  param: 0
+  affectedByScroll: 1
   nameText: {fileID: 1307045519015751649}
   statusText: {fileID: 1324867679044792193}
   starsSprite: {fileID: 3623128895572030892}
   starsArray:
-  - {fileID: 21300000, guid: ac38a960b3bd54542b7ef35d3c8fff18, type: 3}
+  - {fileID: -2720922381176439266, guid: 404420fb10d031849b2b9ae8bd48c2c9, type: 3}
   - {fileID: 21300000, guid: c8dfcf83cab9e5541a777ebd87c94838, type: 3}
   - {fileID: 21300000, guid: 9b3f64af44230744e93c07cc214aa6bf, type: 3}
   - {fileID: 21300000, guid: 814f4d6530d1c7d4581dab908207234a, type: 3}
@@ -393,7 +403,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 9b6cd8ace46f1c44abbc8e0351ab849e, type: 3}
   flagsSprite: {fileID: 815078865209120205}
   flagsArray:
-  - {fileID: 21300000, guid: ac38a960b3bd54542b7ef35d3c8fff18, type: 3}
+  - {fileID: -2720922381176439266, guid: 404420fb10d031849b2b9ae8bd48c2c9, type: 3}
   - {fileID: 21300000, guid: 1e4c344b7490bdc4189af7d452028912, type: 3}
   - {fileID: 21300000, guid: 080d9fea90e4b584296f621eef22e900, type: 3}
   - {fileID: 21300000, guid: c663a43692194054c82a7c09cb99217c, type: 3}
@@ -401,7 +411,7 @@ MonoBehaviour:
   rectTransform: {fileID: 8647860744761728058}
   stars: 0
   textIndex: 0
-  flags: 0
+  playerFlags: 0
   training: 0
   nameStr: 
   teamLikesPositionStr: 

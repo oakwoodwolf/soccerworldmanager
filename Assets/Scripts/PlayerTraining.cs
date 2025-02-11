@@ -1,8 +1,9 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class PlayerTraining : MonoBehaviour
+public class PlayerTraining : MenuItem
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     [SerializeField]
@@ -25,7 +26,7 @@ public class PlayerTraining : MonoBehaviour
     
     public int stars;
     public int textIndex;
-    public int flags;
+    public new int playerFlags;
     public int training;
     public string nameStr;
     public string teamLikesPositionStr;
@@ -39,7 +40,7 @@ public class PlayerTraining : MonoBehaviour
     {
         this.stars = stars;
         this.textIndex = textIndex;
-        this.flags = flags;
+        this.playerFlags = flags;
         this.training = training;
         this.nameStr = nameStr;
         nameColor = color;
@@ -50,7 +51,7 @@ public class PlayerTraining : MonoBehaviour
     public void UpdateText()
     {
         
-        flagsSprite.sprite = flagsArray[flags];
+        flagsSprite.sprite = flagsArray[playerFlags];
         starsSprite.sprite = starsArray[stars];
         piesSprite.sprite = piesArray[textIndex];
         statusSprite.sprite = statusArray[training];

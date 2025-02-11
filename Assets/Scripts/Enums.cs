@@ -168,6 +168,17 @@ public class Enums : MonoBehaviour
         SponsorBonus = 1024,
         Stalemate = 4096,
     }
+    
+    [Flags]
+    public enum MenuElementFlag
+    {
+        HideItem				=(1<<0),
+        ButtonSmallerFont		=(1<<1),
+        MatchEngineTitleBar	=(1<<2),
+        Size64TitleBarIcon	=(1<<3),
+        HideTextItem			=(1<<4),	
+        NotSelectable			=(1<<5),	
+    }
 
     public enum SponsorID
     {

@@ -380,6 +380,7 @@ MonoBehaviour:
   text: English Premium League
   menuAction: 3
   param: 0
+  affectedByScroll: 1
   smallText: {fileID: 521350077604959330}
   bigText: {fileID: 7357009031471004273}
   image: {fileID: 1054643785274833894}

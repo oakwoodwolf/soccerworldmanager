@@ -67,7 +67,7 @@ public class ButtonItem : MenuItem
                     break;
                 case "optionOffButton":
                     mText.text = "Off";
-                    if (flags == 1)
+                    if (flags == Enums.MenuElementFlag.HideItem)
                     {
                         image.sprite = images[2];
                     }
@@ -79,7 +79,7 @@ public class ButtonItem : MenuItem
                     break;
                 case "optionOnButton":
                     mText.text = "On";
-                    if (flags == 1)
+                    if (flags == Enums.MenuElementFlag.HideItem)
                     {
                         image.sprite = images[2];
                     }

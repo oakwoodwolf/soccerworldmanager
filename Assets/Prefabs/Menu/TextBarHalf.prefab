@@ -143,6 +143,7 @@ MonoBehaviour:
   text: ' 1)'
   menuAction: 6
   param: 0
+  affectedByScroll: 1
 --- !u!1 &3951749962806551370
 GameObject:
   m_ObjectHideFlags: 0

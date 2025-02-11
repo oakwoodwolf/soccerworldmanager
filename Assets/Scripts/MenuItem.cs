@@ -17,11 +17,11 @@ public class MenuItem : MonoBehaviour
     protected TMP_Text mText;
     [FormerlySerializedAs("_gameManager")]
     [SerializeField]
-    GameManager gameManager;
+    protected GameManager gameManager;
     [Header("Values")]
     public Enums.MenuElement type;
     public int alignment;
-    public uint flags;
+    public Enums.MenuElementFlag flags;
     public string text;
     public Enums.MenuAction menuAction;
     public Action<object> OnClick;
@@ -31,7 +31,7 @@ public class MenuItem : MonoBehaviour
     
     [Header("Scroll")]
     public bool affectedByScroll;
-    public void Awake()
+    public virtual void Awake()
     {
         Button = GetComponent<Button>();
         RectTransform = GetComponent<RectTransform>();
@@ -76,7 +76,7 @@ public class MenuItem : MonoBehaviour
 
     }
 
-    public void Update()
+    public virtual void Update()
     {
         if (!affectedByScroll) return;
         RectTransform.anchoredPosition = new Vector3(pos.x, -pos.y-gameManager.menuScrollY, RectTransform.transform.position.z);
@@ -160,7 +160,7 @@ public class MenuItem : MonoBehaviour
                     case 2: gameManager.VibrationEnabled = false; break;
                     case 3: gameManager.VibrationEnabled = true; break;
                 }
-                this.flags = 1;
+                this.flags = Enums.MenuElementFlag.HideItem;
                 break;
             case Enums.MenuAction.RadioSelectMatchBalance:
                 break;

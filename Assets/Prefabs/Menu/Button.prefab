@@ -143,6 +143,7 @@ MonoBehaviour:
   text: nextButton
   menuAction: 0
   param: 0
+  affectedByScroll: 0
   images:
   - {fileID: 21300000, guid: 369350d3d6c38934690ff1b37c71fd4d, type: 3}
   - {fileID: 21300000, guid: f936a00c87b46034dac3cc3e78111a29, type: 3}

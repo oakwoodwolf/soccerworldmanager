@@ -1055,7 +1055,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 795267293376531120, guid: 1593f9c15283d8b41966050499c3c7a5, type: 3}
       propertyPath: text
-      value: Team 1\nvs\nTeam 2
+      value: 'Scout''s Report:'
       objectReference: {fileID: 0}
     - target: {fileID: 795267293376531120, guid: 1593f9c15283d8b41966050499c3c7a5, type: 3}
       propertyPath: type
@@ -1071,7 +1071,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1088103748359177918, guid: 1593f9c15283d8b41966050499c3c7a5, type: 3}
       propertyPath: m_text
-      value: Team 1\nvs\nTeam 2
+      value: 'Scout''s Report:'
       objectReference: {fileID: 0}
     - target: {fileID: 1088103748359177918, guid: 1593f9c15283d8b41966050499c3c7a5, type: 3}
       propertyPath: m_HorizontalAlignment

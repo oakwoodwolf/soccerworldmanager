@@ -472,11 +472,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6e3dd6c88ebcf44a8126c1b8c725665, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pos: {x: 0, y: 0}
+  mText: {fileID: 0}
+  gameManager: {fileID: 0}
+  type: 0
+  alignment: 0
+  flags: 0
+  text: 
+  menuAction: 0
+  param: 0
+  affectedByScroll: 1
   teamText: {fileID: 7357009031471004273}
   teamNameText: {fileID: 9086194022061331755}
   matchesPlayedText: {fileID: 2747225333740736294}
   goalDifferenceText: {fileID: 8267383361088760114}
   leaguePointsText: {fileID: 4292978119259962591}
+  rectTransform: {fileID: 0}
+  teamNumber: 0
+  teamName: 
+  matchesPlayed: 0
+  goalDifference: 0
+  leaguePoints: 0
 --- !u!1 &7397625979441292865
 GameObject:
   m_ObjectHideFlags: 0

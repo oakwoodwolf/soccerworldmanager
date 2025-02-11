@@ -196,5 +196,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0796cae346a846c7ab1142245f02b96b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pos: {x: 0, y: 0}
+  mText: {fileID: 0}
+  gameManager: {fileID: 0}
+  type: 0
+  alignment: 0
+  flags: 0
+  text: 
+  menuAction: 0
+  param: 0
+  affectedByScroll: 1
   teamText: {fileID: 7357009031471004273}
   rectTransform: {fileID: 8647860744761728058}

@@ -62,7 +62,11 @@ public class GameManager : MonoBehaviour
     public int currentNumberOfPage;
     public int processMatchDataStartFrameCount;
     public ScenarioInfo[] scenarioData;
-    public int menuScrollY;
+    public float menuScrollY;
+    public MenuScrollBar activeMenuScrollBar;
+    public float scrollSpeed = 10f;
+    private Vector2 lastTouchPosition;
+    private bool isTouching = false;
     public Transform menuTransform;
 
     /// <summary>
@@ -252,8 +256,34 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        HandleMoveTap();
     }
+
+    private void HandleMoveTap()
+    {
+        if (Input.touchCount > 0 && activeMenuScrollBar)
+        {
+            Touch touch = Input.GetTouch(0);
+
+            if (touch.phase == TouchPhase.Began)
+            {
+                lastTouchPosition = touch.position;
+                isTouching = true;
+            }
+            else if (touch.phase == TouchPhase.Moved && isTouching)
+            {
+                float deltaY = touch.position.y - lastTouchPosition.y;
+                menuScrollY += deltaY * 0.4f; // Adjust sensitivity
+                lastTouchPosition = touch.position;
+                Debug.Log("menuScrollY: " + menuScrollY);
+            }
+            else if (touch.phase == TouchPhase.Ended)
+            {
+                isTouching = false;
+            }
+        }
+    }
+
     void FixedUpdate()
     {
         
@@ -880,6 +910,7 @@ public class GameManager : MonoBehaviour
     public void GoToMenu(Enums.Screen newScreen)
     {
         currentScreen = newScreen;
+        menuScrollY = 0;
         ScreenDefinition screenToActivate = screens[(int)newScreen];
         ScreenDefinition screenToDeactivate = currentScreenDefinition;
         Destroy(screenToDeactivate?.gameObject);
@@ -998,11 +1029,11 @@ public class GameManager : MonoBehaviour
                float yOffTrain = 0.0f;
                 int maxItems = numPlayersInPlayersTeam - (currentPage * MaxPlayersInList);
                 if (maxItems > MaxPlayersInList) maxItems = MaxPlayersInList;
+                //update Page ?/? text
+                menuItems[4].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
+                //Training screen menu stuff
                 itemsForTraining.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+395+(22*maxItems));
-                for (int j = 0; j < MaxPlayersInATeam; j++)
-                {
-                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(395-menuItemGenerator.playerTrainingYOffset-22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j);
-                } 
+               
                 for (int i = 0; i < maxItems; i++)
                 {
                     int playerId = playersTeamPlayerIds[i + currentPage * MaxPlayersInList];
@@ -1053,7 +1084,11 @@ public class GameManager : MonoBehaviour
                     menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffTrain), stars, training, flag, textIndex, nameString,color,playerLikesPositionString);
                     yOffTrain -= 22f;
                 }
-               break;
+                for (int j = 0; j < maxItems; j++)
+                {
+                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j);
+                } 
+                break;
             case Enums.Screen.AssignSponsor:
             
                 if (lastSponsorUpdateTurn != week)
