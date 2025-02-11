@@ -63,6 +63,7 @@ public class GameManager : MonoBehaviour
     public int processMatchDataStartFrameCount;
     public ScenarioInfo[] scenarioData;
     public int menuScrollY;
+    public Transform menuTransform;
 
     /// <summary>
     /// Stuff to keep track of for end of turn screen
@@ -244,15 +245,6 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        for (int i = 1; i < screens.Length; i++)
-        {
-            if (screens[i] != null) 
-            {
-                screens[i].gameObject.SetActive(false); 
-            }
-
-        }
-        
         GoToMenu(Enums.Screen.Title);
         
     }
@@ -760,16 +752,16 @@ public class GameManager : MonoBehaviour
         numTeamsInScenarioLeague = CountTeamsInLeague(playersLeague);
         FillTeamsInLeagueArray(teamIndexsForScenarioLeague, playersLeague);
         // Dynamic menu work
-        RectTransform items = screens[(int)Enums.Screen.ChooseTeam].MenuItems.GetComponent<RectTransform>();
+        GoToMenu(Enums.Screen.ChooseTeam);
+        RectTransform items = currentScreenDefinition.MenuItems.GetComponent<RectTransform>();
         items.sizeDelta = new Vector2(320f,menuItemGenerator.menuBarSpacing*numTeamsInScenarioLeague+72);
         for (int i = 0; i < numTeamsInScenarioLeague; i++)
         {
             int dataIndex = teamIndexsForScenarioLeague[i];
-            menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.ChooseTeam],Enums.MenuElement.TextBar, new Vector2(0,-72-menuItemGenerator.menuBarSpacing*i),0,0,staticTeamsData[dataIndex].teamName, Enums.MenuAction.SelectTeamAndCreateGame, staticTeamsData[dataIndex].teamId);
+            menuItemGenerator.GenerateMenuItem(currentScreenDefinition,Enums.MenuElement.TextBar, new Vector2(0,-72-menuItemGenerator.menuBarSpacing*i),0,0,staticTeamsData[dataIndex].teamName, Enums.MenuAction.SelectTeamAndCreateGame, staticTeamsData[dataIndex].teamId);
         }
-        menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.ChooseTeam],Enums.MenuElement.Button, new Vector2(8,-72-menuItemGenerator.menuBarSpacing*numTeamsInScenarioLeague),0,0,"backButton", Enums.MenuAction.GotoMenu, (int)Enums.Screen.ChooseLeague);
+        menuItemGenerator.GenerateMenuItem(currentScreenDefinition,Enums.MenuElement.Button, new Vector2(8,-72-menuItemGenerator.menuBarSpacing*numTeamsInScenarioLeague),0,0,"backButton", Enums.MenuAction.GotoMenu, (int)Enums.Screen.ChooseLeague);
 
-        GoToMenu(Enums.Screen.ChooseTeam);
     }
 
     public int FillTeamsInLeagueArray(int[] teamIndexes, Enums.LeagueID leagueID)
@@ -876,30 +868,24 @@ public class GameManager : MonoBehaviour
     }
     public void GoToMenu(int newScreen=0)
     {
-        int oldScreen = (int)currentScreen;
         currentScreen = (Enums.Screen)newScreen;
         ScreenDefinition screenToActivate = screens[(int)newScreen];
-        GameObject screenToDeactivate = screens[oldScreen].gameObject;
-        
-        screenToActivate.gameObject.SetActive(true);
-        currentMenuItems = screenToActivate.MenuItems.GetComponentsInChildren<MenuItem>();
-        if (screenToDeactivate != null)
-        {
-            screenToDeactivate.SetActive(false);
-        }
+        ScreenDefinition screenToDeactivate = currentScreenDefinition;
+        Destroy(screenToDeactivate?.gameObject);
+        currentScreenDefinition = Instantiate(screenToActivate, menuTransform);
+        currentScreenDefinition.gameObject.SetActive(true);
+        currentMenuItems = currentScreenDefinition.MenuItems.GetComponentsInChildren<MenuItem>();
         HandleCurrentScreen(currentScreen,currentMenuItems);
     }
     public void GoToMenu(Enums.Screen newScreen)
     {
-        Enums.Screen oldScreen = currentScreen;
         currentScreen = newScreen;
         ScreenDefinition screenToActivate = screens[(int)newScreen];
-        GameObject screenToDeactivate = screens[(int)oldScreen].gameObject;
-        screenToDeactivate.SetActive(false);
-        
-        screenToActivate.gameObject.SetActive(true);
-        currentMenuItems = screenToActivate.MenuItems.GetComponentsInChildren<MenuItem>();
-        
+        ScreenDefinition screenToDeactivate = currentScreenDefinition;
+        Destroy(screenToDeactivate?.gameObject);
+        currentScreenDefinition = Instantiate(screenToActivate, menuTransform);
+        currentScreenDefinition.gameObject.SetActive(true);
+        currentMenuItems = currentScreenDefinition.MenuItems.GetComponentsInChildren<MenuItem>();
         HandleCurrentScreen(currentScreen,currentMenuItems);
     }
 
@@ -974,7 +960,7 @@ public class GameManager : MonoBehaviour
                             int homeTeamId = staticTeamsData[homeTeamIndex].teamId;
                             int awayTeamId = staticTeamsData[awayTeamIndex].teamId;
                             string previewString = staticTeamsData[homeTeamIndex].teamName + " vs " + staticTeamsData[awayTeamIndex].teamName;
-                            menuItemGenerator.CreateWeekPreview(screens[(int)currentScreen], new Vector2(0.0f, yOffset), previewString);
+                            menuItemGenerator.CreateWeekPreview(currentScreenDefinition, new Vector2(0.0f, yOffset), previewString);
                             yOffset -= 32;
                         }
                     }
@@ -988,10 +974,10 @@ public class GameManager : MonoBehaviour
                     int teamIndex = GetTeamDataIndexForTeamID(premiumLeagueData[i].teamId);
                     int teamNo = i + 1;
                     bool isSelf = premiumLeagueData[i].teamId == playersTeam;
-                    menuItemGenerator.CreateStandings(screens[(int)currentScreen], new Vector2(0.0f, yOff), teamNo, isSelf, staticTeamsData[teamIndex].teamName, premiumLeagueData[i].matchesPlayed, premiumLeagueData[i].leaguePoints, premiumLeagueData[i].goalDifference);
+                    menuItemGenerator.CreateStandings(currentScreenDefinition, new Vector2(0.0f, yOff), teamNo, isSelf, staticTeamsData[teamIndex].teamName, premiumLeagueData[i].matchesPlayed, premiumLeagueData[i].leaguePoints, premiumLeagueData[i].goalDifference);
                     yOff -= 32;
                 }
-                RectTransform items = screens[(int)currentScreen].MenuItems.transform.GetChild(0).GetComponent<RectTransform>();
+                RectTransform items = currentScreenDefinition.MenuItems.transform.GetChild(0).GetComponent<RectTransform>();
                 items.sizeDelta = new Vector2(320f,-yOff+240);
                 break;
            case Enums.Screen.OtherBusiness:
@@ -1008,14 +994,14 @@ public class GameManager : MonoBehaviour
                     currentPage = currentNumberOfPage - 1;
                 }
                //Generate List
-               RectTransform itemsForTraining = screens[(int)Enums.Screen.ChooseTeam].MenuItems.transform.GetChild(0).GetComponent<RectTransform>(); 
+               RectTransform itemsForTraining = currentScreenDefinition.MenuItems.transform.GetChild(0).GetComponent<RectTransform>(); 
                float yOffTrain = 0.0f;
                 int maxItems = numPlayersInPlayersTeam - (currentPage * MaxPlayersInList);
                 if (maxItems > MaxPlayersInList) maxItems = MaxPlayersInList;
                 itemsForTraining.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+395+(22*maxItems));
                 for (int j = 0; j < MaxPlayersInATeam; j++)
                 {
-                    menuItemGenerator.GenerateMenuItem(screens[(int)Enums.Screen.TrainPlayers],MenuElement.TextBarHalf, new Vector2(0,-1*(395-menuItemGenerator.playerTrainingYOffset-22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j);
+                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(395-menuItemGenerator.playerTrainingYOffset-22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j);
                 } 
                 for (int i = 0; i < maxItems; i++)
                 {
@@ -1064,7 +1050,7 @@ public class GameManager : MonoBehaviour
                     {
                         flag = 0;
                     }
-                    menuItemGenerator.CreatePlayerTrainings(screens[(int)currentScreen], new Vector2(0.0f, yOffTrain), stars, training, flag, textIndex, nameString,color,playerLikesPositionString);
+                    menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffTrain), stars, training, flag, textIndex, nameString,color,playerLikesPositionString);
                     yOffTrain -= 22f;
                 }
                break;
