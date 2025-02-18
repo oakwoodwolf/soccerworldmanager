@@ -1317,7 +1317,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3357049138219034932, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_text
-      value: Buy Match Breaker
+      value: Title Selection
       objectReference: {fileID: 0}
     - target: {fileID: 6286069871423168839, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_Pivot.x

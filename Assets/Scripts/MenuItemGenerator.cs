@@ -43,7 +43,7 @@ public class MenuItemGenerator : MonoBehaviour
     }
     public void CreateStandings(ScreenDefinition screen, Vector2 pos, int teamId, bool isSelf, string nameText, int matchesPlayed, int leaguePoints, int goalDifference)
     {
-        Transform child = screen.MenuItems.transform.GetChild(0);
+        Transform child = screen.MenuItems.transform;
         GameObject newObj = Instantiate(prefabs[12], child, false);
         TeamStandings standings = newObj.GetComponent<TeamStandings>();
         RectTransform rectTransform = newObj.GetComponent<RectTransform>();
@@ -52,7 +52,6 @@ public class MenuItemGenerator : MonoBehaviour
         standings.pos = new Vector2(pos.x, -pos.y);
         standings.FillTeamValues(teamId, nameText, matchesPlayed, goalDifference, leaguePoints, isSelf);
         Debug.Log("Created standings for " + standings.teamName);
-        standings.transform.SetSiblingIndex(1);
     }
     public void CreateWeekPreview(ScreenDefinition screen, Vector2 pos, string nameText)
     {

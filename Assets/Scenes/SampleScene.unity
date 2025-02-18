@@ -641,6 +641,7 @@ MonoBehaviour:
   SFXEnabled: 1
   VibrationEnabled: 1
   currentScreen: 0
+  currentScreenSubState: 0
   currentScreenDefinition: {fileID: 0}
   screens:
   - {fileID: 1475449013125638232, guid: 14904d3befd077048b88f2f58db7054d, type: 3}
@@ -667,8 +668,8 @@ MonoBehaviour:
   - {fileID: 5704184187391086288, guid: 8a30b85c054b0dd4f97eb9701d28073d, type: 3}
   - {fileID: 4363045185956736453, guid: cf6d21e3b8270b74f91e7968db4d2e5b, type: 3}
   - {fileID: 4336807017266414877, guid: dc59a4681b3af394c98b0d337e6bdd4b, type: 3}
-  - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
-  - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
+  - {fileID: 7041521475674927063, guid: 3a651181b6bb5614da0fcddab00a730b, type: 3}
+  - {fileID: 4492726995509620097, guid: 0ed6ff465701bd94ba28beba63f9cf6a, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}

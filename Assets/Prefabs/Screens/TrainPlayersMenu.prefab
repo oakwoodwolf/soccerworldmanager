@@ -250,7 +250,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8486032215513446793, guid: cff60c02e3e1ce045a8198afb476698a, type: 3}
       propertyPath: param
-      value: 16
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: -8486032215513446793, guid: cff60c02e3e1ce045a8198afb476698a, type: 3}
       propertyPath: pos.x
@@ -654,7 +654,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8486032215513446793, guid: cff60c02e3e1ce045a8198afb476698a, type: 3}
       propertyPath: menuAction
-      value: 8
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 4396003630838234472, guid: cff60c02e3e1ce045a8198afb476698a, type: 3}
       propertyPath: m_Sprite
@@ -898,7 +898,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 171172335418177232, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
       propertyPath: pos.x
-      value: 312
+      value: 310
+      objectReference: {fileID: 0}
+    - target: {fileID: 171172335418177232, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
+      propertyPath: pos.y
+      value: 240
       objectReference: {fileID: 0}
     - target: {fileID: 171172335418177232, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
       propertyPath: minMaxRange.x
@@ -974,11 +978,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7177218407338049546, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 3
+      value: 310
       objectReference: {fileID: 0}
     - target: {fileID: 7177218407338049546, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -240
       objectReference: {fileID: 0}
     - target: {fileID: 7177218407338049546, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1015,12 +1019,20 @@ PrefabInstance:
       value: Player Training
       objectReference: {fileID: 0}
     - target: {fileID: -4944656086224595951, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
+      propertyPath: flags
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: -4944656086224595951, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: pos.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 529267945245105470, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
+      propertyPath: flags
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 3357049138219034932, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_text
-      value: Player Training
+      value: Title Selection
       objectReference: {fileID: 0}
     - target: {fileID: 6286069871423168839, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_Pivot.x

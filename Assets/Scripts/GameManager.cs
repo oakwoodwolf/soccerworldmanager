@@ -51,6 +51,7 @@ public class GameManager : MonoBehaviour
     public bool VibrationEnabled = true;
 
     public Enums.Screen currentScreen;
+    public int currentScreenSubState;
     public ScreenDefinition currentScreenDefinition;
     [FormerlySerializedAs("Screens")]
     public ScreenDefinition[] screens = new ScreenDefinition[(int)Enums.Screen.Max];
@@ -68,7 +69,7 @@ public class GameManager : MonoBehaviour
     private Vector2 lastTouchPosition;
     private bool isTouching = false;
     public Transform menuTransform;
-
+    public float[] playerNameUVOffsets = new float[MaxPlayersInATeam+1];
     /// <summary>
     /// Stuff to keep track of for end of turn screen
     /// </summary>
@@ -177,6 +178,17 @@ public class GameManager : MonoBehaviour
     public int week;
     public Formation formationType;
     public FormationData[] formations = new FormationData[(int)Formation.KFormationMax];
+
+    public string[] formationStrings =
+    {
+        "4-4-2",		// kFormation_442
+        "4-2-4",		// kFormation_424
+        "4-3-3",		// kFormation_433
+        "5-3-2",		// kFormation_532
+        "5-1-4",		// kFormation_514
+        "3-5-2",		// kFormation_352
+        "5-4-1",		// kFormation_541
+    };
     public int playersYearsToRetire;
 
     public DynamicManagerData[] dynamicManagersData = new DynamicManagerData[MaxManagers];
@@ -998,7 +1010,7 @@ public class GameManager : MonoBehaviour
                 }
                 break;
            case Enums.Screen.Standings:
-                menuItems[5].SetText(statsPreturn);
+                menuItems[6].SetText(statsPreturn);
                 float yOff = -72f;
                 for (int i = 0; i < numTeamsInScenarioLeague; i++)
                 {
@@ -1008,7 +1020,7 @@ public class GameManager : MonoBehaviour
                     menuItemGenerator.CreateStandings(currentScreenDefinition, new Vector2(0.0f, yOff), teamNo, isSelf, staticTeamsData[teamIndex].teamName, premiumLeagueData[i].matchesPlayed, premiumLeagueData[i].leaguePoints, premiumLeagueData[i].goalDifference);
                     yOff -= 32;
                 }
-                RectTransform items = currentScreenDefinition.MenuItems.transform.GetChild(0).GetComponent<RectTransform>();
+                RectTransform items = currentScreenDefinition.MenuItems.transform.GetComponent<RectTransform>();
                 items.sizeDelta = new Vector2(320f,-yOff+240);
                 break;
            case Enums.Screen.OtherBusiness:
@@ -1181,7 +1193,32 @@ public class GameManager : MonoBehaviour
                         }
                     }
                 }
-               break;
+               break; 
+            case Enums.Screen.OppositionFormation:
+                //Set shaded box text
+                int oppositionTeamIndex = GetTeamDataIndexForTeamID(oppositionTeamId);
+                menuItems[2].SetText(staticTeamsData[oppositionTeamIndex].teamName +"\n" + formationStrings[(int)oppositionTeamFormationType]);
+                int maxOppositionItems = numPlayersInOppositionTeam;
+                if (maxOppositionItems > MaxPlayersInATeam)
+                    maxOppositionItems = MaxPlayersInATeam;
+                float yOffOpposition = 0.0f;
+                for (int i = 0; i < maxOppositionItems; i++)
+                {
+                    
+                }
+                // Change destination for back/next buttons
+                if (matchEngine.state == MatchEngineState.MatchOver)
+                {
+                    menuItems[3].param = (int)Enums.Screen.PreMatchReview;
+                    menuItems[4].param = (int)Enums.Screen.SelectFormation;
+                }
+                else // If we are in a match, go back to the match! 
+                {
+                    menuItems[3].param = (int)Enums.Screen.MatchEngine;
+                    menuItems[4].param = (int)Enums.Screen.MatchEngine;
+                    matchEngine.updateTimer = -1; // force this here to quickly update the display when we return
+                }
+                break;
         }
     }
 
@@ -1360,7 +1397,7 @@ public class GameManager : MonoBehaviour
         }
         return null;
     }
-    int GetTeamCashBalance(int teamId)
+    public int GetTeamCashBalance(int teamId)
     {
         int dataIndex = GetTeamDataIndexForTeamID(teamId);
         if (dataIndex != -1)

@@ -37,8 +37,7 @@ public class MatchEngine : MonoBehaviour
     public int homeStrategyBalance;
     [FormerlySerializedAs("HomeTeam")]
     public int homeTeam;
-    [FormerlySerializedAs("HomeTeamMatchBreakerFlags")]
-    public int homeTeamMatchBreakerFlags;
+    public Enums.MatchBreakerFlags homeTeamMatchBreakerFlags;
     [FormerlySerializedAs("HomeTeamMatchBreakerActivationTurn")]
     public int homeTeamMatchBreakerActivationTurn;
     [FormerlySerializedAs("MaxHomeTeamPlayersOnPitch")]
@@ -54,7 +53,7 @@ public class MatchEngine : MonoBehaviour
     [FormerlySerializedAs("AwayTeam")]
     public int awayTeam;
     [FormerlySerializedAs("AwayTeamMatchBreakerFlags")]
-    public int awayTeamMatchBreakerFlags;
+    public Enums.MatchBreakerFlags awayTeamMatchBreakerFlags;
     [FormerlySerializedAs("AwayTeamMatchBreakerActivationTurn")]
     public int awayTeamMatchBreakerActivationTurn;
     [FormerlySerializedAs("MaxAwayTeamPlayersOnPitch")]
