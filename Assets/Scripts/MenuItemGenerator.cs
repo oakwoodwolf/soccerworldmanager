@@ -21,7 +21,7 @@ public class MenuItemGenerator : MonoBehaviour
     {
         menuBarSpacing = (menuBarSpace + menuBarHeight);
     }
-    public void GenerateMenuItem(ScreenDefinition screen, Enums.MenuElement type, Vector2 pos, int align, uint flag, string text, Enums.MenuAction action, int param, Transform parent = null)
+    public MenuItem GenerateMenuItem(ScreenDefinition screen, Enums.MenuElement type, Vector2 pos, int align, uint flag, string text, Enums.MenuAction action, int param, Transform parent = null,float fontScale=0)
     {
         Transform newParent = screen.MenuItems.transform;
         if (parent != null)
@@ -36,10 +36,15 @@ public class MenuItemGenerator : MonoBehaviour
         menuItem.type = type;
         menuItem.pos = new Vector2(pos.x, -pos.y);
         menuItem.alignment = align;
+        if (fontScale > 0)
+        {
+            menuItem.mText.fontSize = fontScale;
+        }
         menuItem.SetText(text);
         menuItem.AddListener(action, param);
         menuItem.transform.SetSiblingIndex(1);
         Debug.Log("Generated menu item");
+        return menuItem;
     }
     public void CreateStandings(ScreenDefinition screen, Vector2 pos, int teamId, bool isSelf, string nameText, int matchesPlayed, int leaguePoints, int goalDifference)
     {

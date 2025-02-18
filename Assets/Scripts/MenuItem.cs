@@ -14,7 +14,7 @@ public class MenuItem : MonoBehaviour
 
     [FormerlySerializedAs("m_Text")]
     [SerializeField]
-    protected TMP_Text mText;
+    public TMP_Text mText;
     [FormerlySerializedAs("_gameManager")]
     [SerializeField]
     protected GameManager gameManager;
@@ -97,7 +97,16 @@ public class MenuItem : MonoBehaviour
     public virtual void SetText(string newText)
     {
         text = newText;
-        if (mText != null) {mText.text = newText;}
+        if (mText != null)
+        {
+            mText.text = newText;
+            switch (alignment)
+            {
+                case 2:  mText.alignment = TextAlignmentOptions.Top; break;
+                case 1:  mText.alignment = TextAlignmentOptions.TopRight; break;
+            }
+                 
+        }
         
     }
 

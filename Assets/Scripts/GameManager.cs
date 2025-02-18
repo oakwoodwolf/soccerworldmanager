@@ -149,8 +149,21 @@ public class GameManager : MonoBehaviour
     public Enums.Formation oppositionTeamFormationType;
     public int numPlayersInOppositionTeam;
     public int[] oppositionTeamPlayerIds = new int[MaxPlayersInATeam];
-    public Formation[] playersInOppositionFormation = new Formation[MaxPlayersInSquad];
+    public int[] playersInOppositionFormation = new int[MaxPlayersInSquad];
 
+    public Formation[] cpuFormationBalance =
+    {
+        Formation.KFormation541,
+        Formation.KFormation514,
+        Formation.KFormation532,
+        Formation.KFormation442,
+        Formation.KFormation433,
+        Formation.KFormation424,
+        Formation.KFormation352,
+
+
+    };
+    
     [Header("Static Soccer Data")]
     public LeagueInfo[] leagueDetails;
     public int numberOfLeaguesInArrays;
@@ -1193,6 +1206,16 @@ public class GameManager : MonoBehaviour
                         }
                     }
                 }
+                 // fill formation details
+                if (lastOppositionTeamAssignmentId != oppositionTeamId)
+                {
+                    lastOppositionTeamAssignmentId = oppositionTeamId;
+                    int managerIndex = GetIndexToManagerForTeamID(oppositionTeamId);
+                    oppositionTeamFormationType = GetCPUFormationForManagerIndex(managerIndex);
+                    numPlayersInOppositionTeam = FillTeamPlayerArray(oppositionTeamPlayerIds, oppositionTeamId);
+                    // An attempt to have the CPU manager select their team
+                    AutofillFormationFromPlayerIDs(playersInOppositionFormation,oppositionTeamPlayerIds,numPlayersInOppositionTeam,oppositionTeamFormationType,oppositionTeamId);
+                }
                break; 
             case Enums.Screen.OppositionFormation:
                 //Set shaded box text
@@ -1202,10 +1225,23 @@ public class GameManager : MonoBehaviour
                 if (maxOppositionItems > MaxPlayersInATeam)
                     maxOppositionItems = MaxPlayersInATeam;
                 float yOffOpposition = 0.0f;
+                Debug.Log("Max opposition items: "+ maxOppositionItems);
                 for (int i = 0; i < maxOppositionItems; i++)
                 {
-                    
+                    playerNameUVOffsets[i] = yOffOpposition / 1024.0f;
+                    int playerIndex = GetPlayerDataIndexForPlayerID(oppositionTeamPlayerIds[i]);
+                    if (playerIndex != -1)
+                    {
+                        string playerStr = staticPlayersData[playerIndex].playerSurname;
+                        float fontSize = (float)((18 * 1.3) / 2);
+                        MenuItem item =menuItemGenerator.GenerateMenuItem(currentScreenDefinition, MenuElement.StaticText,
+                            new Vector2(0, -yOffOpposition), 2, 0, playerStr, 0, 0, null,
+                            fontSize);
+                        yOffOpposition += fontSize;
+                        item.GetComponent<RectTransform>().sizeDelta = new Vector2(320, 12);
+                    }
                 }
+                Debug.Assert(playerNameUVOffsets[maxOppositionItems] <= yOffOpposition/1024.0f);
                 // Change destination for back/next buttons
                 if (matchEngine.state == MatchEngineState.MatchOver)
                 {
@@ -1220,6 +1256,19 @@ public class GameManager : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    private Formation GetCPUFormationForManagerIndex(int managerIndex)
+    {
+        float TEST_BALANCE_RANGE = 20.0f;
+        float balance = Random.value * TEST_BALANCE_RANGE;
+        balance -= (TEST_BALANCE_RANGE / 2);
+        balance += 50.0f; // centre the balance 0-100% range
+        balance += staticManagersData[managerIndex].styleOffset;
+        balance /= 100.0f;
+        int index = (int)((int)Formation.KFormationMax * balance);
+        Formation result = cpuFormationBalance[index];
+        return result;
     }
 
     private string FillPlayerLikesStringForPlayerIndex(int playerIndex)

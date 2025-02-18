@@ -250,12 +250,16 @@ PrefabInstance:
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 529267945245105470, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
+      propertyPath: text
+      value: Opposition Team
+      objectReference: {fileID: 0}
+    - target: {fileID: 529267945245105470, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: flags
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3357049138219034932, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_text
-      value: Title Selection
+      value: Opposition Team
       objectReference: {fileID: 0}
     - target: {fileID: 6286069871423168839, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_Pivot.x
