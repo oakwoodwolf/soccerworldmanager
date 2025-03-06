@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
     public const int MaxNumOfMatchbreakers = 10;
     public const int MaxPlayers = 3096;
     public const int MaxPlayersInList = 32;
+    public const int MaxPlayersOnScreen = 25;
     public const int MaxPlayersInATeam = 64;
     public const int MaxPlayersInFormation = 11;
     public const int MaxNumberOfSubsOnBench = 3;
@@ -282,6 +283,12 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         HandleMoveTap();
+        RenderScene();
+    }
+
+    private void RenderScene()
+    {
+        
     }
 
     private void HandleMoveTap()
@@ -1253,6 +1260,46 @@ public class GameManager : MonoBehaviour
                     menuItems[3].param = (int)Enums.Screen.MatchEngine;
                     menuItems[4].param = (int)Enums.Screen.MatchEngine;
                     matchEngine.updateTimer = -1; // force this here to quickly update the display when we return
+                }
+                break;
+            case Enums.Screen.AssignPlayers:
+                int showFormation = 0;
+                int selectPlayer = 1;
+
+                if (currentScreenSubState == showFormation)
+                {
+                    // Hide page changer unless we need it
+                    menuItems[6].gameObject.SetActive(false); // Middle button
+                    menuItems[7].gameObject.SetActive(false); // back button
+                    menuItems[8].gameObject.SetActive(false); // next button
+                    int maxItemsAssign = numPlayersInOppositionTeam;
+                    // trying to allow more entries on the list (actually a maximum of 67~68)
+                    if (maxItemsAssign > MaxPlayersInATeam) maxItemsAssign = MaxPlayersOnScreen;
+                    if (maxItemsAssign > 16)
+                    {
+                        menuItems[0].GetComponent<MenuScrollBar>().minMaxRange.y = -1 * (maxItemsAssign);
+                        menuItems[6].gameObject.SetActive(true);
+                        menuItems[7].gameObject.SetActive(true);
+                        menuItems[8].gameObject.SetActive(true);
+                        //update Page ?/? text
+                        menuItems[6].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
+                    }
+                    
+                    float yOffPlayer = 0.0f;
+                    for (int i = 0; i < maxItemsAssign; i++) // player name list
+                    { 
+                        int playerDataIndex = GetPlayerDataIndexForPlayerID(playersTeamPlayerIds[i]);
+                        float fontSize = (float)((18 * 1.3) / 2);
+                        MenuItem currentItem = menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.StaticText, new Vector2(0,-1*(8+yOffPlayer)),1,0,staticPlayersData[playerDataIndex].playerSurname, MenuAction.Null, 0,null, fontSize);
+                        currentItem.GetComponent<RectTransform>().sizeDelta = new Vector2(128, 128);
+                        currentItem.affectedByScroll = true;
+                        yOffPlayer += 22;
+                    }   
+                    playerNameUVOffsets[maxItemsAssign] = yOffPlayer/1024.0f;
+                    for (int j = 0; j < maxItemsAssign; j++)
+                    {
+                        menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.AssignPlayerToFormation, j);
+                    } 
                 }
                 break;
         }
