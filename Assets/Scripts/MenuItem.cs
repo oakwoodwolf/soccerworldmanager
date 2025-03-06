@@ -220,11 +220,21 @@ public class MenuItem : MonoBehaviour
                 // Check if we're assigning players before or during a match
                 if (gameManager.matchEngine.state == Enums.MatchEngineState.MatchOver)
                 {
+                    gameManager.AssignPlayerToFormation(playerFormId, gameManager.formationCycle);
                     gameManager.GoToMenu(Enums.Screen.AssignPlayers);
                 }
-                else
+                else // during match
                 {
-                   
+                   int formIndex = gameManager.IsPlayerIdInFormation(playerFormId);
+                   if (formIndex != -1)
+                   {
+                       int currentPlayerIdAtPosition = gameManager.playersInFormation[gameManager.formationCycle];
+                       //Assign available player
+                       gameManager.AssignPlayerToFormation(playerFormId, gameManager.formationCycle);
+                       // Swap old player
+                       gameManager.AssignPlayerToFormation(currentPlayerIdAtPosition, formIndex);
+                       gameManager.GoToMenu(Enums.Screen.AssignPlayers);
+                   }
                 }
                 break;
             case Enums.MenuAction.CheckTeamBeforeGotoMenu:

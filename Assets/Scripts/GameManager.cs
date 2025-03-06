@@ -6,6 +6,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 using static Enums;
 using Random = UnityEngine.Random;
 
@@ -164,7 +165,19 @@ public class GameManager : MonoBehaviour
 
 
     };
-    
+
+    [Header("Pitch Images")] 
+    // Used instead of manually defining coordinates in renderScene
+    public GameObject spritePrefab;
+    public Sprite texturePitch;
+    public Sprite textureShirtColor1;
+    public Sprite textureShirtColor2;
+    public Sprite textureShirtColorOutline;
+    public Sprite iconSad;
+    public Sprite iconHappy;
+    public Sprite iconPosition;
+    public Sprite iconSelection;
+    public Sprite iconInjury;
     [Header("Static Soccer Data")]
     public LeagueInfo[] leagueDetails;
     public int numberOfLeaguesInArrays;
@@ -283,12 +296,155 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         HandleMoveTap();
-        RenderScene();
+       
     }
 
     private void RenderScene()
     {
-        
+        ClearScene();
+        // Draw specific elements under menuItems
+        if (currentScreen is Enums.Screen.AssignPlayers or Enums.Screen.OppositionFormation)
+        {
+            FormationData formation;
+            switch (currentScreen)
+            {
+                case Enums.Screen.AssignPlayers:
+                    formation = formations[(int)formationType];
+                    break;
+                default:
+                    formation = formations[(int)oppositionTeamFormationType];
+                    break;
+            }
+
+            if (currentScreenSubState == 0)
+            {
+                formationSelectionScrollPos.x -= (formationSelectionScrollPos.x - 160) * 0.1f;
+                formationSelectionScrollPos.y += (formationSelectionScrollPos.x - 340) * 0.1f;
+            }
+            else
+            {
+                float formationScrollTargetX = (320*0.75f) + (-formation.formations[formationCycle].pos.x * 512);
+                float formationScrollTargetY = 240 + (256+(-formation.formations[formationCycle].pos.y * 512));				
+                formationSelectionScrollPos.x -= (formationSelectionScrollPos.x - formationScrollTargetX) * 0.1f;
+                formationSelectionScrollPos.x -= (formationSelectionScrollPos.y - formationScrollTargetY) * -0.1f;
+            }
+            currentScreenDefinition.transform.GetChild(1).position = new Vector3(formationSelectionScrollPos.x, formationSelectionScrollPos.y, 0);
+            currentScreenDefinition.transform.GetChild(1).rotation = new Quaternion(0,0,1,0);
+            var pitch = RectMake(-164f, -256,330, 512,texturePitch);
+            for (int i = 0; i < MaxPlayersInSquad; i++)
+            {
+                int playerId;
+                int nameIndex;
+                int dataIndex = -1;
+
+                if (currentScreen != Enums.Screen.OppositionFormation)
+                {
+                    playerId = playersInFormation[i];
+                    nameIndex = GetIndexIntoPlayersTeamList(playersTeamPlayerIds, numPlayersInPlayersTeam, playerId);
+                }
+                else
+                {
+                    playerId = playersInOppositionFormation[i];
+                    nameIndex = GetIndexIntoPlayersTeamList(oppositionTeamPlayerIds, numPlayersInOppositionTeam, playerId);
+                }
+                
+                if (playerId != -1)
+                {
+                    dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                    Debug.Log("Getting player data for " + staticPlayersData[dataIndex].playerSurname);
+                    if (dynamicPlayersData[dataIndex].weeksBannedOrInjured != 0)
+                    {
+                        playerId = -1;
+                        dataIndex = -1;
+                        nameIndex = -1;
+                    }
+                }
+
+                if (currentScreenSubState == 0) //show formation
+                {
+                    if (playerId != -1)
+                    {
+                        if (dataIndex != -1)
+                        {
+                            bool home = false;
+                            if (currentScreen != Enums.Screen.OppositionFormation)
+                            {
+                                if (playersMatch.homeTeam == playersTeam) home = true;
+                            }
+                            else
+                            {
+                                if (playersMatch.homeTeam != playersTeam) home = true;
+                            }
+
+                            Color primaryColor;
+                            Color secondaryColor;
+                            if (home)
+                            {
+                                primaryColor = playersMatch.homeTeam1StColour;
+                                secondaryColor = playersMatch.homeTeam2NdColour;
+                            }
+                            else
+                            {
+                                primaryColor = playersMatch.awayTeam1StColour;
+                                secondaryColor = playersMatch.awayTeam2NdColour;
+                            }
+
+                            float shirtX = (formation.formations[i].pos.x * 512) - 32;
+                            float shirtY = (formation.formations[i].pos.y * 512)-32;
+                            Image shirt1 = RectMake(shirtX, shirtY,64, 64,textureShirtColor1).GetComponent<Image>();
+                            shirt1.color = primaryColor;
+                            Image shirt2 = RectMake(shirtX, shirtY,64, 64,textureShirtColor2).GetComponent<Image>();
+                            shirt2.color = secondaryColor;
+                            Image shirtOutline = RectMake(shirtX, shirtY,64, 64,textureShirtColorOutline).GetComponent<Image>();
+                        }
+                    }
+                }
+            }
+        }
+    }
+/// <summary>
+/// A function to delete everything in renderScene
+/// </summary>
+    private void ClearScene()
+    {
+        Transform renderTarget = currentScreenDefinition.transform.GetChild(1);
+        for (int c = 0; c < renderTarget.childCount; c++)
+        {
+            Destroy(renderTarget.GetChild(c));
+        }
+    }
+
+    /// <summary>
+    /// Instantiates an Image prefab and assigns it to the current screen.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="sprite"></param>
+    /// <returns></returns>
+    private GameObject RectMake(float x, float y, float width, float height, Sprite sprite)
+    {
+        GameObject newImg = Instantiate(spritePrefab, currentScreenDefinition.transform.GetChild(1));
+        Image img = newImg.GetComponent<Image>();
+        img.sprite = sprite;
+        newImg.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, -y);
+        newImg.GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
+        return newImg;
+    }
+
+    private int GetIndexIntoPlayersTeamList(int[] teamList, int numOnList, int forPlayerId)
+    {
+        int result = -1;
+        for (int i = 0; i < numOnList; i++)
+        {
+            if (teamList[i] == forPlayerId)
+            {
+                result = i;
+                break;
+            }
+        }
+        return result;
     }
 
     private void HandleMoveTap()
@@ -1263,6 +1419,7 @@ public class GameManager : MonoBehaviour
                 }
                 break;
             case Enums.Screen.AssignPlayers:
+                RenderScene();
                 int showFormation = 0;
                 int selectPlayer = 1;
 
@@ -1960,5 +2117,39 @@ public class GameManager : MonoBehaviour
         {
             aSource.PlayOneShot(aClip[(int)sound]);
         }
+    }
+
+    public void AssignPlayerToFormation(int playerId, int index)
+    {
+        // Unset players old formation if in any
+        int oldPos = IsPlayerIdInFormation(playerId, playersInFormation);
+        if (oldPos != -1)
+            playersInFormation[oldPos] = -1;
+        playersInFormation[index] = playerId;
+    }
+
+    public int IsPlayerIdInFormation(int playerFormId)
+    {
+        int result = -1;
+        for (int i = 0; i < MaxPlayersInSquad; i++)
+        {
+            if (playersInFormation[i] == playerFormId)
+            {
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+    public int IsPlayerIdInFormation(int playerFormId, int[] formation)
+    {
+        for (int i = 0; i < MaxPlayersInSquad; i++)
+        {
+            if (formation[i] == playerFormId)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 }
