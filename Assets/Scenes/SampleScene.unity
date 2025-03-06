@@ -832,10 +832,144 @@ MonoBehaviour:
   playersInOppositionFormation: 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   cpuFormationBalance: 06000000040000000300000000000000020000000100000005000000
   spritePrefab: {fileID: 633864595979411815, guid: 229d6f79435dcfc43863e3e1dc6c305f, type: 3}
+  textures:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 21300000, guid: 0f33a5c63fe1ec94598bdd3b39c73178, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 21300000, guid: b69a4014c82b05d4dac06e054cb72ef5, type: 3}
+  - {fileID: 21300000, guid: 2096753c7b8d3494290c61f73783448b, type: 3}
+  - {fileID: 21300000, guid: 814f4d6530d1c7d4581dab908207234a, type: 3}
+  - {fileID: 21300000, guid: f75966d05b50d0947af5dad66c43bc92, type: 3}
+  - {fileID: 21300000, guid: b9b49fecd6dcc97419d395ed1312d42a, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 21300000, guid: 819624a59f713564ca755f0e06a9a471, type: 3}
+  - {fileID: 21300000, guid: c35c7bab18228954289060cbf09a3972, type: 3}
+  - {fileID: 21300000, guid: dde98311bf322624aa4c6a7465e55b86, type: 3}
+  - {fileID: 21300000, guid: 8b7ddb10090fbd24ba53f6e32cd42f63, type: 3}
+  - {fileID: 21300000, guid: 3de60e9f5f3042242aeced069b8a30a2, type: 3}
+  - {fileID: 21300000, guid: 1c57916480468fc4dab6697e686b329d, type: 3}
+  - {fileID: 21300000, guid: eac5e5992f612e6449cba7a035ef6c82, type: 3}
+  - {fileID: 21300000, guid: b23f286a0137e0a41b53edfbe9906228, type: 3}
+  - {fileID: 21300000, guid: f0768b4d8d4545f4e97142d24c260883, type: 3}
+  - {fileID: 21300000, guid: 9b6cd8ace46f1c44abbc8e0351ab849e, type: 3}
+  - {fileID: 21300000, guid: bcc66b47508569b45bca255108fe867c, type: 3}
+  - {fileID: 21300000, guid: d81337af05d0080448ab7f6607502912, type: 3}
+  - {fileID: 21300000, guid: ed5c94fa50d29bf4db35a398e1de82d4, type: 3}
+  - {fileID: 21300000, guid: 5b5d36d52f426fc48945e9b436f385b7, type: 3}
+  - {fileID: 21300000, guid: b1af9edf94de366479acac3a8c58a821, type: 3}
+  - {fileID: 21300000, guid: c28e03f8c19a74f41974b3785cd1d794, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 21300000, guid: 051449a24771b3c40932eac1f0d3634a, type: 3}
+  - {fileID: 21300000, guid: f15a426148701f04699f22f200796110, type: 3}
+  - {fileID: 21300000, guid: 4dab7fa23f321724499ac202ccba30a1, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   texturePitch: {fileID: 1558387878, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
-  textureShirtColor1: {fileID: 21300000, guid: f15a426148701f04699f22f200796110, type: 3}
-  textureShirtColor2: {fileID: 21300000, guid: 4dab7fa23f321724499ac202ccba30a1, type: 3}
-  textureShirtColorOutline: {fileID: 21300000, guid: 051449a24771b3c40932eac1f0d3634a, type: 3}
   iconSad: {fileID: -205679983, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
   iconHappy: {fileID: -857502808, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
   iconPosition: {fileID: -581303122, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
@@ -7771,6 +7905,7 @@ MonoBehaviour:
   - {fileID: 6709948606914668062, guid: 01b139ee92a572e48ae37249ca7eb832, type: 3}
   - {fileID: 6709948606914668062, guid: af489ea58b9a7424fa432ddc5403e360, type: 3}
   - {fileID: 6709948606914668062, guid: ddb45479fa0f817499b707871836b690, type: 3}
+  - {fileID: 633864595979411815, guid: beb982fa76814c242b09595c609e4407, type: 3}
   playerTrainingYOffset: 96
   menuBarHeight: 32
   menuBarSpace: 16

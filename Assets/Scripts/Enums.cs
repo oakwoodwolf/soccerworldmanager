@@ -44,6 +44,183 @@ public class Enums : MonoBehaviour
         LoadGameError,		
         Max
     }
+
+    public enum Texture
+    {
+    Title = 0,
+	Background,
+	Lander,
+	Base,
+	MainThrust,
+	LeftThrust,
+	RightThrust,
+	Explosion,
+	FuelBar,
+	FuelLevel,
+	LightGreen,
+	LightRed,
+	LabelSpeed,
+	LabelAngle,
+	LabelPosition,
+
+	MunchHead1,
+	MunchHead1Closed,
+	MunchHead1Urgh,
+	MunchHead1Munch1,
+	MunchHead1Munch2,
+	ItemCake, 
+	ItemSock, 
+	ItemPizza,
+	ItemDyno,
+	ItemWorm,
+
+	ItemTomato,
+	ItemChilli,
+	ItemBurger,
+
+
+	StageComplete,
+	GameOver,
+	OutOfTime,
+	TouchToContinue,
+
+	PortionIcon,
+	PortionIconFilled,
+
+	MatchBg,
+	Complete,
+	
+	ButtonPlayGame,
+	ButtonPlayMarthathon,
+	ButtonOptions,
+
+	ButtonResumeGame,
+	ButtonQuitGame,
+	
+	ButtonBackToMenu,
+	
+	GamePaused,
+	Options,	
+	
+	ScoreAndLevel,
+	
+	Fade,
+	
+	AccelError,
+	
+	Lite,
+	
+	ColorTones,
+	MotionBlur,
+
+	MenuBar,
+	MenuBarSelection,	
+	MenuBarFade,
+	
+	ScrollBarBack,
+	
+	ButtonNext,
+	Button96X32,
+	
+	Radio96X32,
+	Radio96X32On,
+	
+	LogoIcon,
+	
+	ButtonEpl,
+	ButtonEplMinus15Pnts,
+	ButtonLeagueUsa,
+	
+	Pitch,
+	
+	Formation442,
+	Formation424,
+	Formation433,
+	Formation532,
+	Formation514,
+	Formation352,
+	Formation541,
+	
+	Stars1,
+	Stars2,
+	Stars3,
+	Stars4,
+	Stars5,
+	
+	TrainingResting,
+	TrainingLight,
+	TrainingNormal,
+	TrainingIntensive,
+	
+	Pie10,
+	Pie20,
+	Pie30,
+	Pie40,
+	Pie50,
+	Pie60,
+	Pie70,
+	Pie80,
+	Pie90,
+	Pie100,
+	
+	SellingNotListed,
+	SellingFreeTransfer,
+	SellingOffersAtValue,
+	SellingAnyOffers,
+	
+	ArrowLeft,
+	ArrowRight,
+	
+	ButtonCashBurner,
+	ButtonGarbleAndStammer,
+	ButtonNeveron,
+	ButtonPrintsOfPersia,
+	ButtonBlueSuedeChoux,
+	ButtonGStringParade,
+	ButtonFootLoose,
+	ButtonOiK,
+	ButtonSoaringCoasts,
+	ButtonStressMart,
+	ButtonBernieBerryAndCo,
+	ButtonChroniclesOfNaan,
+	ButtonGbtvRepeats,
+	ButtonNfg,
+	ButtonSiBurns,
+	ButtonTentsAtmosphere,
+	ButtonTheDogsBotox,
+	ButtonThinkingOfEwe,
+	ButtonWtfInsurance,
+	ButtonMrMunchySnacks,
+	ButtonError,
+	
+	ButtonTimewaste,
+	ButtonFrustration,
+	ButtonLocal,
+	ButtonFluke,
+	ButtonHometeam,
+	ButtonSponsor,
+	ButtonStalemate,
+	ButtonGenius,
+	ButtonClean,
+	ButtonNocards,
+	
+	Cards1Yellow,
+	Cards2Yellow,
+	Cards1Red,
+	
+	ShirtTest,
+	ShirtOutline,
+	Shirt1Stcolour,
+	Shirt2Ndcolour,
+	
+	FirstAid,
+	
+	ButtonNoMatchbreaker,
+	
+	SearchAppStore,
+	
+	KNumTextures
+    }
     public enum MenuAction { 
         Null = 0,
         GotoMenu,

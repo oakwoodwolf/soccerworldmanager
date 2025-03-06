@@ -169,10 +169,8 @@ public class GameManager : MonoBehaviour
     [Header("Pitch Images")] 
     // Used instead of manually defining coordinates in renderScene
     public GameObject spritePrefab;
+    public Sprite[] textures;
     public Sprite texturePitch;
-    public Sprite textureShirtColor1;
-    public Sprite textureShirtColor2;
-    public Sprite textureShirtColorOutline;
     public Sprite iconSad;
     public Sprite iconHappy;
     public Sprite iconPosition;
@@ -389,20 +387,64 @@ public class GameManager : MonoBehaviour
                                 secondaryColor = playersMatch.awayTeam2NdColour;
                             }
 
-                            float shirtX = (formation.formations[i].pos.x * 512) - 32;
-                            float shirtY = (formation.formations[i].pos.y * 512)-32;
-                            Image shirt1 = RectMake(shirtX, shirtY,64, 64,textureShirtColor1).GetComponent<Image>();
+                            float shirtX = (formation.formations[i].pos.x * 512);
+                            float shirtY = (formation.formations[i].pos.y * 512);
+                            Image shirt1 = RectMake(shirtX - 32, shirtY-32,64, 64, Enums.Texture.Shirt1Stcolour).GetComponent<Image>();
                             shirt1.color = primaryColor;
-                            Image shirt2 = RectMake(shirtX, shirtY,64, 64,textureShirtColor2).GetComponent<Image>();
+                            Image shirt2 = RectMake(shirtX - 32, shirtY-32,64, 64,Enums.Texture.Shirt2Ndcolour).GetComponent<Image>();
                             shirt2.color = secondaryColor;
-                            Image shirtOutline = RectMake(shirtX, shirtY,64, 64,textureShirtColorOutline).GetComponent<Image>();
+                            Image shirtOutline = RectMake(shirtX - 32, shirtY-32,64, 64,Enums.Texture.ShirtOutline).GetComponent<Image>();
+                            int cardTexture = -1;
+                            int textIndex = (int)(dynamicPlayersData[dataIndex].condition * 10.0f);
+                            if (textIndex < 0) textIndex = 0;
+                            if (textIndex > 9) textIndex = 9;
+                            Image pie = RectMake(shirtX-12, shirtY-12,24, 24,(Enums.Texture)(int)(Enums.Texture.Pie10+textIndex)).GetComponent<Image>();
+                            if (nameIndex != -1)
+                            {
+                                int res = CheckPlayerIdIsHappyInFormation(playerId, formation.formations[i]);
+                                if (res != 0)
+                                {
+                                    RectMake(shirtX - 11, shirtY - 11, 22, 22,iconHappy);
+                                }
+                                else
+                                {
+                                    RectMake(shirtX - 11, shirtY - 11, 22, 22,iconSad);
+
+                                }
+                                int playerIndex = GetPlayerDataIndexForPlayerID(playerId);
+                                if (playerIndex != -1)
+                                {
+                                    int stars = (int)GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerIndex);
+                                    if (stars < 0) stars = 0;
+                                    if (stars > 5) stars = 5;
+                                    if (stars > 0)
+                                        RectMake(shirtX - 23, shirtY-46,52, 26, Enums.Texture.Stars1+(stars-1));
+                                }
+                            }
                         }
                     }
                 }
+
+                if (nameIndex != -1 && currentScreenSubState == 0)
+                {
+                    RectMake((formation.formations[i].pos.x * 512)-32 , -256+(formation.formations[i].pos.y * 512)-29, 64, 20, Enums.Texture.MenuBar);
+                }
+
+                menuItemGenerator.GenerateFormationMarker(currentScreenDefinition,new Vector2((formation.formations[i].pos.x * 512) - 12,
+                    -256 + (formation.formations[i].pos.y * 512) - 12), i);
             }
         }
     }
-/// <summary>
+
+    private int CheckPlayerIdIsHappyInFormation(int playerId, FormationInfo formation)
+    {
+        int playerIndex = GetPlayerDataIndexForPlayerID(playerId);
+        if ((formation.formation & PlayerFormation.Substitute) != (PlayerFormation)0)
+            return (int)PlayerFormation.Substitute;
+        return (int)(staticPlayersData[playerIndex].playerPositionFlags & formation.formation);
+    }
+
+    /// <summary>
 /// A function to delete everything in renderScene
 /// </summary>
     private void ClearScene()
@@ -428,6 +470,16 @@ public class GameManager : MonoBehaviour
         GameObject newImg = Instantiate(spritePrefab, currentScreenDefinition.transform.GetChild(1));
         Image img = newImg.GetComponent<Image>();
         img.sprite = sprite;
+        newImg.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, -y);
+        newImg.GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
+        return newImg;
+    }
+    
+    private GameObject RectMake(float x, float y, float width, float height, Enums.Texture texture)
+    {
+        GameObject newImg = Instantiate(spritePrefab, currentScreenDefinition.transform.GetChild(1));
+        Image img = newImg.GetComponent<Image>();
+        img.sprite = textures[(int)texture];
         newImg.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, -y);
         newImg.GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
         return newImg;
@@ -1381,6 +1433,7 @@ public class GameManager : MonoBehaviour
                 }
                break; 
             case Enums.Screen.OppositionFormation:
+                RenderScene();
                 //Set shaded box text
                 int oppositionTeamIndex = GetTeamDataIndexForTeamID(oppositionTeamId);
                 menuItems[2].SetText(staticTeamsData[oppositionTeamIndex].teamName +"\n" + formationStrings[(int)oppositionTeamFormationType]);
@@ -1455,7 +1508,7 @@ public class GameManager : MonoBehaviour
                     playerNameUVOffsets[maxItemsAssign] = yOffPlayer/1024.0f;
                     for (int j = 0; j < maxItemsAssign; j++)
                     {
-                        menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.AssignPlayerToFormation, j);
+                       // menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.AssignPlayerToFormation, j);
                     } 
                 }
                 break;
@@ -2151,5 +2204,75 @@ public class GameManager : MonoBehaviour
             }
         }
         return -1;
+    }
+
+    public void SwapFormationCycle()
+    {
+        currentNumberOfPage = (numPlayersInPlayersTeam / MaxPlayersInList) + 1;
+        if (currentPage >= currentNumberOfPage)
+            currentPage = currentNumberOfPage -1;
+        int maxItems = numPlayersInPlayersTeam - (currentPage * MaxPlayersInList);
+        if (maxItems > MaxPlayersInList)
+            maxItems = MaxPlayersInList;
+        // for (int i = 0; i < maxItems; i++)
+        // {
+        //     currentMenuItems[9+i].gameObject.SetActive(false);
+        // }
+        //show page view
+        currentMenuItems[6].gameObject.SetActive(true);
+        currentMenuItems[7].gameObject.SetActive(true);
+        currentMenuItems[8].gameObject.SetActive(true);
+        //update Page ?/? text
+        currentMenuItems[6].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
+
+        
+        //Generate List
+               RectTransform itemsForTraining = currentScreenDefinition.transform.GetChild(1).GetComponent<RectTransform>(); 
+               float yOffTrain = 0.0f;
+                //Training screen menu stuff
+                itemsForTraining.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+395+(22*maxItems));
+                for (int j = 0; j < maxItems; j++)
+                {
+                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.AssignPlayerToFormation, j);
+                } 
+                for (int i = 0; i < maxItems; i++)
+                {
+                    int playerId = playersTeamPlayerIds[i + currentPage * MaxPlayersInList];
+                    int playerDataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                       string nameString = String.Empty;
+                       string playerLikesPositionString = String.Empty;
+                       Color color = Color.white;
+                    if (playerDataIndex != -1) // Handle Player name
+                    {
+                        if (matchEngine.state == Enums.MatchEngineState.MatchOver)
+                        {
+                            color = new Color(0.2f, 0.9f, 0.2f);
+                        }
+                        else
+                        {
+                            color = new Color(0.6f, 0.7f, 0.8f);
+                        }
+                        string positionString = "--";
+                       
+                        playerLikesPositionString = FillPlayerLikesStringForPlayerIndex(playerDataIndex);
+                        int formationIndex = FillPositionStringForPlayerIndexs(playerDataIndex, formations[(int)formationType], ref positionString);
+                        if (formationIndex != -1) // Turn yellow
+                        {
+                            color = new Color(1.0f,1.0f,0.8f,1.0f);
+                        }
+
+                        if (dynamicPlayersData[playerDataIndex].weeksBannedOrInjured != 0) // Turn Red
+                        {
+                            color = new Color(1.0f,0.0f,0.0f,1.0f);
+                        }
+                        nameString = "("+positionString+") "+staticPlayersData[playerDataIndex].playerSurname;
+                    }
+
+
+                    int stars = 0;
+                    menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffTrain), stars, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
+                    yOffTrain -= 22f;
+                }
+               
     }
 }

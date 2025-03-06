@@ -76,6 +76,7 @@ public class PlayerTraining : MenuItem
         this.nameStr = nameStr;
         nameColor = color;
         this.teamLikesPositionStr = teamLikesPositionStr;
+       
         UpdateText();
     }
     
@@ -83,11 +84,20 @@ public class PlayerTraining : MenuItem
     {
         
         flagsSprite.sprite = flagsArray[playerFlags];
-        starsSprite.sprite = starsArray[stars];
         piesSprite.sprite = piesArray[textIndex];
-        statusSprite.sprite = statusArray[training];
+        switch (gameManager.currentScreen)
+        {
+            case Enums.Screen.TrainPlayers:
+                starsSprite.sprite = starsArray[stars];
+                statusSprite.sprite = statusArray[training];
+                break;
+            case Enums.Screen.AssignPlayers:
+                menuAction = Enums.MenuAction.AssignPlayerToFormation;
+                break;
+        }
         nameText.text = nameStr;
         nameText.color = nameColor;
         statusText.text = teamLikesPositionStr;
     }
+
 }

@@ -80,4 +80,12 @@ public class MenuItemGenerator : MonoBehaviour
         playerTraining.FillPlayerValues(stars,nameString,color,statusString, playerData);
         playerTraining.transform.SetSiblingIndex(1);
     }
+
+    public void GenerateFormationMarker(ScreenDefinition screen, Vector2 pos, int param)
+    {
+        Transform child = screen.transform.GetChild(1);
+        GameObject newObj = Instantiate(prefabs[15], child, false);
+        RectTransform rectTransform = newObj.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = pos;
+    }
 }
