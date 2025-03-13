@@ -81,11 +81,26 @@ public class MenuItemGenerator : MonoBehaviour
         playerTraining.transform.SetSiblingIndex(1);
     }
 
-    public void GenerateFormationMarker(ScreenDefinition screen, Vector2 pos, int param)
+    public void GenerateFormationMarker(ScreenDefinition screen, Vector2 pos, int param, string name = "marker")
     {
         Transform child = screen.transform.GetChild(1);
         GameObject newObj = Instantiate(prefabs[15], child, false);
+        newObj.name = name;
         RectTransform rectTransform = newObj.GetComponent<RectTransform>();
         rectTransform.anchoredPosition = pos;
+        PitchMarker marker = newObj.GetComponent<PitchMarker>();
+        marker.param = param;
+    }
+    /**
+     * Generates shirts, which depicts players assigned at a formation in AssignPlayers
+     */
+    public void GenerateShirt(ScreenDefinition screen, Vector2 pos, int stars, string nameStr, Color color1, Color color2, int teamLikesPosition, DynamicPlayerData playerData)
+    {
+        Transform child = screen.transform.GetChild(1);
+        GameObject newObj = Instantiate(prefabs[16], child, false);
+        RectTransform rectTransform = newObj.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = pos;
+        Shirt shirt = newObj.GetComponent<Shirt>();
+        shirt.FillPlayerValues(stars, nameStr, color1, color2, teamLikesPosition, playerData);
     }
 }

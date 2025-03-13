@@ -23,6 +23,7 @@ public class StaticLeagueData : ScriptableObject
         this.minStarRating = int.Parse(txtData[6]);
         this.maxStarRating = int.Parse(txtData[7]);
         this.leagueName = txtData[1];
+        this.name = leagueName;
     }
     public override string ToString()
     {

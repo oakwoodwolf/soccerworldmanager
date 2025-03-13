@@ -10,6 +10,7 @@ public class StaticPlayerData : ScriptableObject
     {
         playerId = int.Parse(txtData[0]);
         playerSurname = txtData[2];
+        name = playerSurname;
         switch (txtData[3]) // Handle positions, stored as chars in the file, must be turned into ints!
         {
             case "G":

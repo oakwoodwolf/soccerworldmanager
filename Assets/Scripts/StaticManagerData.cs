@@ -11,5 +11,6 @@ public class StaticManagerData : ScriptableObject
         managerId = int.Parse(txtData[0]);
         managerSurname = txtData[2];
         styleOffset = int.Parse(txtData[3]);
+        name = managerSurname;
     }
 }

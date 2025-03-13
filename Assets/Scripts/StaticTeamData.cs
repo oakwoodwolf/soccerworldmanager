@@ -19,7 +19,7 @@ public class StaticTeamData : ScriptableObject
     public void LoadStaticTeamData(string[] txtData)
     {
         int offset = 0;
-        if (txtData.Length > 9) // some teams have an extra parameter for team name 2.
+        if (txtData.Length > 9) // some teams have an extra parameter for team name 2 in code. i.e. st. morrin
         { 
             teamName2 = FixUpStringName(txtData[2]);
             offset = 1; 
@@ -33,6 +33,7 @@ public class StaticTeamData : ScriptableObject
 
         stadiumSeats = int.Parse(txtData[4+offset]);
         teamName = FixUpStringName(txtData[1]);
+        name = teamName;
     }
     public string FixUpStringName(string name)
     {

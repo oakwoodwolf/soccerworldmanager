@@ -317,18 +317,18 @@ public class GameManager : MonoBehaviour
             if (currentScreenSubState == 0)
             {
                 formationSelectionScrollPos.x -= (formationSelectionScrollPos.x - 160) * 0.1f;
-                formationSelectionScrollPos.y += (formationSelectionScrollPos.x - 340) * 0.1f;
+                formationSelectionScrollPos.y -= (formationSelectionScrollPos.y - 340) * 0.1f;
             }
             else
             {
                 float formationScrollTargetX = (320*0.75f) + (-formation.formations[formationCycle].pos.x * 512);
                 float formationScrollTargetY = 240 + (256+(-formation.formations[formationCycle].pos.y * 512));				
                 formationSelectionScrollPos.x -= (formationSelectionScrollPos.x - formationScrollTargetX) * 0.1f;
-                formationSelectionScrollPos.x -= (formationSelectionScrollPos.y - formationScrollTargetY) * -0.1f;
+                formationSelectionScrollPos.y -= (formationSelectionScrollPos.y - formationScrollTargetY) * 0.1f;
             }
-            currentScreenDefinition.transform.GetChild(1).position = new Vector3(formationSelectionScrollPos.x, formationSelectionScrollPos.y, 0);
-            currentScreenDefinition.transform.GetChild(1).rotation = new Quaternion(0,0,1,0);
-            var pitch = RectMake(-164f, -256,330, 512,texturePitch);
+            currentScreenDefinition.transform.GetChild(1).GetComponent<RectTransform>().anchoredPosition = new Vector2(formationSelectionScrollPos.x, -formationSelectionScrollPos.y);
+            currentScreenDefinition.transform.GetChild(1).Rotate(0f, 0f, 0.0f);
+            var pitch = RectMake(-164f, -256+64,330, 512,texturePitch);
             for (int i = 0; i < MaxPlayersInSquad; i++)
             {
                 int playerId;
@@ -389,38 +389,21 @@ public class GameManager : MonoBehaviour
 
                             float shirtX = (formation.formations[i].pos.x * 512);
                             float shirtY = (formation.formations[i].pos.y * 512);
-                            Image shirt1 = RectMake(shirtX - 32, shirtY-32,64, 64, Enums.Texture.Shirt1Stcolour).GetComponent<Image>();
-                            shirt1.color = primaryColor;
-                            Image shirt2 = RectMake(shirtX - 32, shirtY-32,64, 64,Enums.Texture.Shirt2Ndcolour).GetComponent<Image>();
-                            shirt2.color = secondaryColor;
-                            Image shirtOutline = RectMake(shirtX - 32, shirtY-32,64, 64,Enums.Texture.ShirtOutline).GetComponent<Image>();
-                            int cardTexture = -1;
-                            int textIndex = (int)(dynamicPlayersData[dataIndex].condition * 10.0f);
-                            if (textIndex < 0) textIndex = 0;
-                            if (textIndex > 9) textIndex = 9;
-                            Image pie = RectMake(shirtX-12, shirtY-12,24, 24,(Enums.Texture)(int)(Enums.Texture.Pie10+textIndex)).GetComponent<Image>();
+                            int stars = 1;
                             if (nameIndex != -1)
                             {
-                                int res = CheckPlayerIdIsHappyInFormation(playerId, formation.formations[i]);
-                                if (res != 0)
-                                {
-                                    RectMake(shirtX - 11, shirtY - 11, 22, 22,iconHappy);
-                                }
-                                else
-                                {
-                                    RectMake(shirtX - 11, shirtY - 11, 22, 22,iconSad);
-
-                                }
                                 int playerIndex = GetPlayerDataIndexForPlayerID(playerId);
                                 if (playerIndex != -1)
                                 {
-                                    int stars = (int)GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerIndex);
+                                    stars = (int)GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerIndex);
                                     if (stars < 0) stars = 0;
                                     if (stars > 5) stars = 5;
-                                    if (stars > 0)
-                                        RectMake(shirtX - 23, shirtY-46,52, 26, Enums.Texture.Stars1+(stars-1));
                                 }
                             }
+                            int res = CheckPlayerIdIsHappyInFormation(playerId, formation.formations[i]);
+                            menuItemGenerator.GenerateShirt(currentScreenDefinition, new Vector2(shirtX, shirtY),stars,"",primaryColor,secondaryColor,res,dynamicPlayersData[dataIndex]);
+                         
+                            
                         }
                     }
                 }
@@ -431,7 +414,7 @@ public class GameManager : MonoBehaviour
                 }
 
                 menuItemGenerator.GenerateFormationMarker(currentScreenDefinition,new Vector2((formation.formations[i].pos.x * 512) - 12,
-                    -256 + (formation.formations[i].pos.y * 512) - 12), i);
+                    -256 + (formation.formations[i].pos.y * 512) - 12), i, formation.formations[i].name);
             }
         }
     }
@@ -858,6 +841,7 @@ public class GameManager : MonoBehaviour
                     staticTeamsData[numberOfTeamsInArrays].LoadStaticTeamData(line);
                     dynamicTeamsData[numberOfTeamsInArrays] = ScriptableObject.CreateInstance<DynamicTeamData>();
                     dynamicTeamsData[numberOfTeamsInArrays].LoadDynamicTeamData(line,offset);
+                    dynamicTeamsData[numberOfTeamsInArrays].name = staticTeamsData[numberOfTeamsInArrays].name;
                     numberOfTeamsInArrays++;
                 }
                 else // throw error. Invalid data
@@ -888,6 +872,7 @@ public class GameManager : MonoBehaviour
                     staticManagersData[numberOfManagersInArrays].LoadStaticManagerData(line);
                     dynamicManagersData[numberOfManagersInArrays] = ScriptableObject.CreateInstance<DynamicManagerData>();
                     dynamicManagersData[numberOfManagersInArrays].LoadDynamicManagerData(line);
+                    dynamicManagersData[numberOfManagersInArrays].name = staticManagersData[numberOfManagersInArrays].name;
                     numberOfManagersInArrays++;
                 }
                 else // throw error. Invalid data
@@ -1111,6 +1096,7 @@ public class GameManager : MonoBehaviour
                     staticPlayersData[numberOfPlayersInArrays].LoadStaticPlayerData(line);
                     dynamicPlayersData[numberOfPlayersInArrays] = ScriptableObject.CreateInstance<DynamicPlayerData>();
                     dynamicPlayersData[numberOfPlayersInArrays].LoadDynamicPlayerData(line);
+                    dynamicPlayersData[numberOfPlayersInArrays].name = staticPlayersData[numberOfPlayersInArrays].playerSurname;
                     numberOfPlayersInArrays++;
                 }
                 else // throw error. Invalid data
@@ -1138,19 +1124,15 @@ public class GameManager : MonoBehaviour
     }
     public void GoToMenu(int newScreen=0)
     {
-        currentScreen = (Enums.Screen)newScreen;
-        ScreenDefinition screenToActivate = screens[(int)newScreen];
-        ScreenDefinition screenToDeactivate = currentScreenDefinition;
-        Destroy(screenToDeactivate?.gameObject);
-        currentScreenDefinition = Instantiate(screenToActivate, menuTransform);
-        currentScreenDefinition.gameObject.SetActive(true);
-        currentMenuItems = currentScreenDefinition.MenuItems.GetComponentsInChildren<MenuItem>();
-        HandleCurrentScreen(currentScreen,currentMenuItems);
+        GoToMenu((Enums.Screen)newScreen);
     }
     public void GoToMenu(Enums.Screen newScreen)
     {
-        currentScreen = newScreen;
         menuScrollY = 0;
+        formationCycle = 0;
+        formationSelectionScrollPos = Vector2.zero;
+        
+        currentScreen = newScreen;
         ScreenDefinition screenToActivate = screens[(int)newScreen];
         ScreenDefinition screenToDeactivate = currentScreenDefinition;
         Destroy(screenToDeactivate?.gameObject);
@@ -1488,24 +1470,21 @@ public class GameManager : MonoBehaviour
                     if (maxItemsAssign > 16)
                     {
                         menuItems[0].GetComponent<MenuScrollBar>().minMaxRange.y = -1 * (maxItemsAssign);
-                        menuItems[6].gameObject.SetActive(true);
-                        menuItems[7].gameObject.SetActive(true);
-                        menuItems[8].gameObject.SetActive(true);
                         //update Page ?/? text
                         menuItems[6].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
                     }
                     
                     float yOffPlayer = 0.0f;
-                    for (int i = 0; i < maxItemsAssign; i++) // player name list
-                    { 
-                        int playerDataIndex = GetPlayerDataIndexForPlayerID(playersTeamPlayerIds[i]);
-                        float fontSize = (float)((18 * 1.3) / 2);
-                        MenuItem currentItem = menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.StaticText, new Vector2(0,-1*(8+yOffPlayer)),1,0,staticPlayersData[playerDataIndex].playerSurname, MenuAction.Null, 0,null, fontSize);
-                        currentItem.GetComponent<RectTransform>().sizeDelta = new Vector2(128, 128);
-                        currentItem.affectedByScroll = true;
-                        yOffPlayer += 22;
-                    }   
-                    playerNameUVOffsets[maxItemsAssign] = yOffPlayer/1024.0f;
+                    // for (int i = 0; i < maxItemsAssign; i++) // player name list
+                    // { 
+                    //     int playerDataIndex = GetPlayerDataIndexForPlayerID(playersTeamPlayerIds[i]);
+                    //     float fontSize = (float)((18 * 1.3) / 2);
+                    //     MenuItem currentItem = menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.StaticText, new Vector2(0,-1*(8+yOffPlayer)),1,0,staticPlayersData[playerDataIndex].playerSurname, MenuAction.Null, 0,null, fontSize);
+                    //     currentItem.GetComponent<RectTransform>().sizeDelta = new Vector2(128, 128);
+                    //     currentItem.affectedByScroll = true;
+                    //     yOffPlayer += 22;
+                    // }   
+                    // playerNameUVOffsets[maxItemsAssign] = yOffPlayer/1024.0f;
                     for (int j = 0; j < maxItemsAssign; j++)
                     {
                        // menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.AssignPlayerToFormation, j);
@@ -2214,10 +2193,6 @@ public class GameManager : MonoBehaviour
         int maxItems = numPlayersInPlayersTeam - (currentPage * MaxPlayersInList);
         if (maxItems > MaxPlayersInList)
             maxItems = MaxPlayersInList;
-        // for (int i = 0; i < maxItems; i++)
-        // {
-        //     currentMenuItems[9+i].gameObject.SetActive(false);
-        // }
         //show page view
         currentMenuItems[6].gameObject.SetActive(true);
         currentMenuItems[7].gameObject.SetActive(true);
