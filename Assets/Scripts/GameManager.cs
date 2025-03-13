@@ -308,9 +308,11 @@ public class GameManager : MonoBehaviour
             {
                 case Enums.Screen.AssignPlayers:
                     formation = formations[(int)formationType];
+                    currentScreenDefinition.transform.GetChild(1).name = formationStrings[(int)formationType];
                     break;
                 default:
                     formation = formations[(int)oppositionTeamFormationType];
+                    currentScreenDefinition.transform.GetChild(1).name = formationStrings[(int)oppositionTeamFormationType];
                     break;
             }
 
@@ -386,9 +388,7 @@ public class GameManager : MonoBehaviour
                                 primaryColor = playersMatch.awayTeam1StColour;
                                 secondaryColor = playersMatch.awayTeam2NdColour;
                             }
-
-                            float shirtX = (formation.formations[i].pos.x * 512);
-                            float shirtY = (formation.formations[i].pos.y * 512);
+                            
                             int stars = 1;
                             if (nameIndex != -1)
                             {
@@ -400,17 +400,15 @@ public class GameManager : MonoBehaviour
                                     if (stars > 5) stars = 5;
                                 }
                             }
+
                             int res = CheckPlayerIdIsHappyInFormation(playerId, formation.formations[i]);
-                            menuItemGenerator.GenerateShirt(currentScreenDefinition, new Vector2(shirtX, shirtY),stars,"",primaryColor,secondaryColor,res,dynamicPlayersData[dataIndex]);
-                         
-                            
+                            menuItemGenerator.GenerateShirt(currentScreenDefinition, new Vector2((formation.formations[i].pos.x * 512),
+                                    -256 + (formation.formations[i].pos.y * 512)), stars,
+                                "", primaryColor, secondaryColor, res, dynamicPlayersData[dataIndex]);
+
+
                         }
                     }
-                }
-
-                if (nameIndex != -1 && currentScreenSubState == 0)
-                {
-                    RectMake((formation.formations[i].pos.x * 512)-32 , -256+(formation.formations[i].pos.y * 512)-29, 64, 20, Enums.Texture.MenuBar);
                 }
 
                 menuItemGenerator.GenerateFormationMarker(currentScreenDefinition,new Vector2((formation.formations[i].pos.x * 512) - 12,
@@ -2208,7 +2206,7 @@ public class GameManager : MonoBehaviour
                 itemsForTraining.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+395+(22*maxItems));
                 for (int j = 0; j < maxItems; j++)
                 {
-                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.AssignPlayerToFormation, j);
+                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," ", Enums.MenuAction.AssignPlayerToFormation, j);
                 } 
                 for (int i = 0; i < maxItems; i++)
                 {
@@ -2248,6 +2246,27 @@ public class GameManager : MonoBehaviour
                     menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffTrain), stars, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
                     yOffTrain -= 22f;
                 }
-               
+                
+    }
+
+    public int CountLegalPlayersOnPitchInSquad(int[] squad)
+    {
+        int result = 0;
+        for (int i = 0; i < MaxPlayersInFormation; i++)
+        {
+            if (squad[i] != -1)
+            {
+                int playerId = squad[i];
+                int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                if (dataIndex == -1)
+                    continue;
+                if ((dynamicPlayersData[dataIndex].weeksBannedOrInjured & bannedMask) != 0)
+                    continue;
+                if ((dynamicPlayersData[dataIndex].flags & RedCardMask) != 0)
+                    continue;
+                result++;
+            }
+        }
+        return result;
     }
 }

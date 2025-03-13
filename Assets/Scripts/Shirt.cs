@@ -120,6 +120,7 @@ public class Shirt : MenuItem
         piesSprite.sprite = gameManager.textures[(int)Enums.Texture.Pie10+condition];
         shirt.color = primaryColor;
         shirt2.color = secondaryColor;
+        nameText.text = nameStr;
         happyImage.sprite = isHappyInFormation ? gameManager.iconHappy : gameManager.iconSad;
         if ((int)cardTexture>0) cardImage.sprite = gameManager.textures[(int)cardTexture];
     }

@@ -238,6 +238,30 @@ public class MenuItem : MonoBehaviour
                 }
                 break;
             case Enums.MenuAction.CheckTeamBeforeGotoMenu:
+                bool ok = false;
+                if (gameManager.matchEngine.state == Enums.MatchEngineState.MatchOver)
+                {
+                    ok = true;
+                }
+                else
+                {
+                    if (gameManager.matchEngine.homeTeam == gameManager.playersTeam)
+                    {
+                        if (gameManager.CountLegalPlayersOnPitchInSquad(gameManager.playersMatch.formationHomeTeam) <= gameManager.matchEngine.maxHomeTeamPlayersOnPitch)
+                            ok = true;
+                    }
+                    else
+                    {
+                        if (gameManager.CountLegalPlayersOnPitchInSquad(gameManager.playersMatch.formationAwayTeam) <= gameManager.matchEngine.maxAwayTeamPlayersOnPitch)
+                            ok = true;
+                    }
+                }
+                if (ok)
+                    gameManager.GoToMenu(param);
+                else
+                {
+                    gameManager.SoundEngine_StartEffect(Enums.Sounds.BadInput);
+                }
                 break;
             case Enums.MenuAction.RadioSelectOptions:
                 switch (param)
@@ -266,5 +290,5 @@ public class MenuItem : MonoBehaviour
                 throw new ArgumentOutOfRangeException();
         }
     }
-
+    
 }
