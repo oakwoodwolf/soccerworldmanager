@@ -1162,6 +1162,7 @@ public class GameManager : MonoBehaviour
                 break;
             case Enums.Screen.PreTurn:
                 LeagueInfo info = GetLeagueInfoForId(playersLeague); 
+                menuItems[0].SetText(staticTeamsData[GetArrayIndexForTeam(playersTeam)].teamName);
                 statsPreturn = info.leagueName + "\nWeek " + (week+1) + " of " + ((numTeamsInScenarioLeague-1)*2);
                 menuItems[2].SetText(statsPreturn);
                 string playerCashBalance = "Cash Balance: \n" + GetTeamCashBalance(playersTeam) + "k";

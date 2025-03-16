@@ -254,9 +254,13 @@ PrefabInstance:
       propertyPath: pos.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 529267945245105470, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
+      propertyPath: text
+      value: Scheduled Matches
+      objectReference: {fileID: 0}
     - target: {fileID: 3357049138219034932, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_text
-      value: Title Selection
+      value: Scheduled Matches
       objectReference: {fileID: 0}
     - target: {fileID: 6286069871423168839, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_Pivot.x
@@ -485,6 +489,14 @@ PrefabInstance:
     - target: {fileID: -7982863547531783958, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: pos.y
       value: 210
+      objectReference: {fileID: 0}
+    - target: {fileID: -1964453997957492450, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
+      propertyPath: h
+      value: 256
+      objectReference: {fileID: 0}
+    - target: {fileID: -1964453997957492450, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
+      propertyPath: text
+      value: (256<<16)|256
       objectReference: {fileID: 0}
     - target: {fileID: -1964453997957492450, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: pos.x

@@ -1118,6 +1118,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: TitleBar
       objectReference: {fileID: 0}
+    - target: {fileID: 8370403720131906667, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 8370403720131906667, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 8370403720131906667, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -416
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1178,7 +1190,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3179940055433429547, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 96
+      value: 64
       objectReference: {fileID: 0}
     - target: {fileID: 3179940055433429547, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: m_LocalPosition.x

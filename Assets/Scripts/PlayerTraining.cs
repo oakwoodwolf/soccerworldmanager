@@ -92,6 +92,8 @@ public class PlayerTraining : MenuItem
                 statusSprite.sprite = statusArray[training];
                 break;
             case Enums.Screen.AssignPlayers:
+                statusSprite.gameObject.SetActive(false);
+                starsSprite.gameObject.SetActive(false);
                 menuAction = Enums.MenuAction.AssignPlayerToFormation;
                 break;
         }

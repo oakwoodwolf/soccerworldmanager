@@ -25,12 +25,7 @@ public class TeamStandings : MenuItem
     {
         rectTransform = GetComponent<RectTransform>();
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    
 
     public void FillTeamValues(int teamNumber, string teamName, int matchesPlayed, int goalDifference, int leaguePoints, bool isSelf)
     {
