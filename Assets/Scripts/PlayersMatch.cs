@@ -41,6 +41,7 @@ public class PlayersMatch : MonoBehaviour
     public string scourerName;
     [FormerlySerializedAs("FoulerName")]
     public string foulerName;
+    
 
     // Start is called before the first frame update
     void Start()

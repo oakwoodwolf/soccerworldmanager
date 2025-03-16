@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 
-public class IdToIndex : MonoBehaviour
+public class IdToIndex : ScriptableObject
 {
     public int itemId;
     public int itemIndex;

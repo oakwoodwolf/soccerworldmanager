@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5821021956498834100}
   - component: {fileID: 3981924467825779966}
   - component: {fileID: 4652217680575220883}
-  - component: {fileID: 3895382470222548607}
+  - component: {fileID: 4191741657140213735}
   m_Layer: 5
   m_Name: RadioButton
   m_TagString: Untagged
@@ -68,7 +68,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a3bdce74d640fc840a12867c703d2690, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9433e0bda0fa6054f88369d8dfb7c1ef, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -134,7 +134,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &3895382470222548607
+--- !u!114 &4191741657140213735
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -143,18 +143,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 4312010963022742071}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fdf4805c4cc1724cac548c0cc584157, type: 3}
+  m_Script: {fileID: 11500000, guid: 94d62c3098c1476c9736cd5eb76aea57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   pos: {x: 0, y: 0}
   mText: {fileID: 4456599175365859612}
   gameManager: {fileID: 0}
-  type: 0
+  type: 6
   alignment: 0
   flags: 0
-  text: 
+  text: button
   menuAction: 0
   param: 0
+  affectedByScroll: 0
+  images:
+  - {fileID: 21300000, guid: 9433e0bda0fa6054f88369d8dfb7c1ef, type: 3}
+  image: {fileID: 3981924467825779966}
 --- !u!1 &6774270546026681025
 GameObject:
   m_ObjectHideFlags: 0
@@ -220,7 +224,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: button
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -247,8 +251,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

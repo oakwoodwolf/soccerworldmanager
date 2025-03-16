@@ -89,14 +89,65 @@ public class MatchEngine : MonoBehaviour
     [Tooltip("a shorter list to aid in faster player data index determination")]
     public IdToIndex[] quickPlayerIdToIndexList = new IdToIndex[MaxPlayersInATeam*2];
 
+    [Header("Match Engine Timer")]
+    public float kickOffDelay = 0.0f;
+    public float defaultDelay = 2.0f;
+    public float goalDelay = 4.0f;
+
+    public float skip = 8.0f;
+
+    [Header("Turns")]
+    public int turnsInFirstHalf = 9;
+    public int turnsInSecondHalf = 18;
+
+    public int extraTimeWarningTurn = 17;
+    
+    private GameManager gameManager;
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = GetComponent<GameManager>();
     }
 
     // Update is called once per frame
     void Update()
     {
+
+    }
+
+    public void SetupForMatch(int homeTeamId, int awayTeamId)
+    {
+        state = Enums.MatchEngineState.StartFirstHalf;
+        turn = 0;
+        updateTimer = kickOffDelay;
+        subTurnState = 0;
+        injuryTime = 0.0f;
+        extraTime = -1;
+        homeTeam = homeTeamId;
+        awayTeam = awayTeamId;
+        // normally 11, but could be less if players are sent off. 
+        maxHomeTeamPlayersOnPitch = 11;
+        maxAwayTeamPlayersOnPitch = 11;
+        // set a default balanced strategy for both sides
+        homeStrategyBalance = 0;
+        awayStrategyBalance = 0;
+        //clear matchbreakers
+        homeTeamMatchBreakerFlags = 0;
+        awayTeamMatchBreakerFlags = 0;
+        indexOfFouledPlayer = -1;
+        // TODO - prepare quick access team data array(s)
+        itemsInQuickPlayerList = 0;
+        for (int i = 0; i < gameManager.numberOfPlayersInArrays; i++)
+        {
+            if ((gameManager.dynamicPlayersData[i].teamId == homeTeamId) || (gameManager.dynamicPlayersData[i].teamId == awayTeamId))
+            {
+                Debug.Assert(itemsInQuickPlayerList < (2*GameManager.MaxPlayersInATeam));
+                quickPlayerIdToIndexList[itemsInQuickPlayerList] = ScriptableObject.CreateInstance<IdToIndex>();
+                quickPlayerIdToIndexList[itemsInQuickPlayerList].itemId = gameManager.staticPlayersData[i].playerId;
+                quickPlayerIdToIndexList[itemsInQuickPlayerList].itemIndex = i;
+                itemsInQuickPlayerList++;
+            }
+        }
 
     }
 }

@@ -117,178 +117,205 @@ public class MenuItem : MonoBehaviour
 
     public virtual void HandleClick()
     {
-        Debug.Log($"Button clicked with action: {menuAction}, param: {param}");
-        if (menuAction != Enums.MenuAction.Null) gameManager.SoundEngine_StartEffect(Enums.Sounds.MenuClick);
-        switch (menuAction) 
+        if (flags != Enums.MenuElementFlag.HideItem)
         {
-            case Enums.MenuAction.SelectTeamAndCreateGame:
-                gameManager.CreateGameUsingTeam(param, gameManager.playersScenario);
-                break;
-            case Enums.MenuAction.GotoMenu:
-                gameManager.GoToMenu(param);
-                break;
-            case Enums.MenuAction.PrepareChooseTeam:
-                gameManager.PrepareChooseTeamMenu(param);
-                break;
-            case Enums.MenuAction.LoadAndContinueGame:
-                gameManager.LoadAndPrepareGame();
-                break;
-            case Enums.MenuAction.CallFunction:
-                gameManager.StartGame();
-                break;
-            case Enums.MenuAction.CyclePlayerTraining:
-                int playerIndex = param;
-                playerIndex += gameManager.currentPage * GameManager.MaxPlayersInList;
-                int playerId = gameManager.playersTeamPlayerIds[playerIndex];
-                int dataIndex = gameManager.GetPlayerDataIndexForPlayerID(playerId);
-                int training = gameManager.dynamicPlayersData[dataIndex].trainingTransfer & GameManager.trainingMask;
-                training++;
-                if (training > (int)Enums.Training.Intensive)
-                    training = (int)Enums.Training.None;
-                gameManager.dynamicPlayersData[dataIndex].trainingTransfer &= GameManager.transferMask;
-                gameManager.dynamicPlayersData[dataIndex].trainingTransfer |= training;
-                break;
-            case Enums.MenuAction.CyclePlayerTransferStatus:
-                break;
-            case Enums.MenuAction.BuyPlayerReview:
-                break;
-            case Enums.MenuAction.BuyPlayerUpdateOffer:
-                int decinc = param;
-                int change = 1;
-                if (gameManager.currentBuyPlayerOffer > 9)
-                    change = 5;
-                if (gameManager.currentBuyPlayerOffer > 99)
-                    change = 10;
-                if (gameManager.currentBuyPlayerOffer > 999)
-                    change = 100;
-                if (gameManager.currentBuyPlayerOffer > 9999)
-                    change = 1000;
-                if (gameManager.currentBuyPlayerOffer > 99999)
-                    change = 10000;
-                gameManager.currentBuyPlayerOffer += (decinc * change);
-                
-                int availableCash = gameManager.GetTeamCashBalance(gameManager.playersTeam);
-                if (gameManager.currentBuyPlayerOffer < 0)
-                    gameManager.currentBuyPlayerOffer = 0;
-                if (gameManager.currentBuyPlayerOffer > availableCash)
-                    gameManager.currentBuyPlayerOffer = availableCash;
-                gameManager.GoToMenu(Enums.Screen.BuyPlayerOffer);
-                break;
-            case Enums.MenuAction.UpdateCurrentPage:
-                gameManager.currentPage += param;
-                if (gameManager.currentPage < 0)
-                    gameManager.currentPage = gameManager.currentNumberOfPage - 1;
-                if (gameManager.currentPage > gameManager.currentNumberOfPage - 1)
-                    gameManager.currentPage = 0;
-                gameManager.GoToMenu(gameManager.currentScreen);
-                break;
-            case Enums.MenuAction.SetCurrentPage:
-                gameManager.currentPage = param;
-                gameManager.GoToMenu(gameManager.currentScreen);
-                break;
-            case Enums.MenuAction.AssignSponsor:
-                gameManager.BuySponsor(param);
-                break;
-            case Enums.MenuAction.BuyMatchbreaker:
-                gameManager.BuyMatchbreaker(param);
-                break;
-            case Enums.MenuAction.UseMatchBreaker:
-                if (gameManager.playersMatchBreaker != -1)
-                {
-                    if (gameManager.matchEngine.homeTeam == gameManager.playersTeam)
+             Debug.Log($"Button clicked with action: {menuAction}, param: {param}");
+            if (menuAction != Enums.MenuAction.Null) gameManager.SoundEngine_StartEffect(Enums.Sounds.MenuClick);
+            switch (menuAction) 
+            {
+                case Enums.MenuAction.SelectTeamAndCreateGame:
+                    gameManager.CreateGameUsingTeam(param, gameManager.playersScenario);
+                    break;
+                case Enums.MenuAction.GotoMenu:
+                    gameManager.GoToMenu(param);
+                    break;
+                case Enums.MenuAction.PrepareChooseTeam:
+                    gameManager.PrepareChooseTeamMenu(param);
+                    break;
+                case Enums.MenuAction.LoadAndContinueGame:
+                    gameManager.LoadAndPrepareGame();
+                    break;
+                case Enums.MenuAction.CallFunction:
+                    gameManager.StartGame();
+                    break;
+                case Enums.MenuAction.CyclePlayerTraining:
+                    int playerIndex = param;
+                    playerIndex += gameManager.currentPage * GameManager.MaxPlayersInList;
+                    int playerId = gameManager.playersTeamPlayerIds[playerIndex];
+                    int dataIndex = gameManager.GetPlayerDataIndexForPlayerID(playerId);
+                    int training = gameManager.dynamicPlayersData[dataIndex].trainingTransfer & GameManager.trainingMask;
+                    training++;
+                    if (training > (int)Enums.Training.Intensive)
+                        training = (int)Enums.Training.None;
+                    gameManager.dynamicPlayersData[dataIndex].trainingTransfer &= GameManager.transferMask;
+                    gameManager.dynamicPlayersData[dataIndex].trainingTransfer |= training;
+                    break;
+                case Enums.MenuAction.CyclePlayerTransferStatus:
+                    break;
+                case Enums.MenuAction.BuyPlayerReview:
+                    break;
+                case Enums.MenuAction.BuyPlayerUpdateOffer:
+                    int decinc = param;
+                    int change = 1;
+                    if (gameManager.currentBuyPlayerOffer > 9)
+                        change = 5;
+                    if (gameManager.currentBuyPlayerOffer > 99)
+                        change = 10;
+                    if (gameManager.currentBuyPlayerOffer > 999)
+                        change = 100;
+                    if (gameManager.currentBuyPlayerOffer > 9999)
+                        change = 1000;
+                    if (gameManager.currentBuyPlayerOffer > 99999)
+                        change = 10000;
+                    gameManager.currentBuyPlayerOffer += (decinc * change);
+                    
+                    int availableCash = gameManager.GetTeamCashBalance(gameManager.playersTeam);
+                    if (gameManager.currentBuyPlayerOffer < 0)
+                        gameManager.currentBuyPlayerOffer = 0;
+                    if (gameManager.currentBuyPlayerOffer > availableCash)
+                        gameManager.currentBuyPlayerOffer = availableCash;
+                    gameManager.GoToMenu(Enums.Screen.BuyPlayerOffer);
+                    break;
+                case Enums.MenuAction.UpdateCurrentPage:
+                    gameManager.currentPage += param;
+                    if (gameManager.currentPage < 0)
+                        gameManager.currentPage = gameManager.currentNumberOfPage - 1;
+                    if (gameManager.currentPage > gameManager.currentNumberOfPage - 1)
+                        gameManager.currentPage = 0;
+                    gameManager.GoToMenu(gameManager.currentScreen);
+                    break;
+                case Enums.MenuAction.SetCurrentPage:
+                    gameManager.currentPage = param;
+                    gameManager.GoToMenu(gameManager.currentScreen);
+                    break;
+                case Enums.MenuAction.AssignSponsor:
+                    gameManager.BuySponsor(param);
+                    break;
+                case Enums.MenuAction.BuyMatchbreaker:
+                    gameManager.BuyMatchbreaker(param);
+                    break;
+                case Enums.MenuAction.UseMatchBreaker:
+                    if (gameManager.playersMatchBreaker != -1)
                     {
-                        gameManager.matchEngine.homeTeamMatchBreakerFlags = gameManager.matchbreakerInfo[gameManager.playersMatchBreaker].flags;
-                        gameManager.matchEngine.homeTeamMatchBreakerActivationTurn = gameManager.matchEngine.turn;
+                        if (gameManager.matchEngine.homeTeam == gameManager.playersTeam)
+                        {
+                            gameManager.matchEngine.homeTeamMatchBreakerFlags = gameManager.matchbreakerInfo[gameManager.playersMatchBreaker].flags;
+                            gameManager.matchEngine.homeTeamMatchBreakerActivationTurn = gameManager.matchEngine.turn;
+                        }
+                        else if (gameManager.matchEngine.awayTeam == gameManager.playersTeam)
+                        {
+                            gameManager.matchEngine.awayTeamMatchBreakerFlags = gameManager.matchbreakerInfo[gameManager.playersMatchBreaker].flags;
+                            gameManager.matchEngine.awayTeamMatchBreakerActivationTurn = gameManager.matchEngine.turn;
+                        }
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.UseMatchBreaker);
                     }
-                    else if (gameManager.matchEngine.awayTeam == gameManager.playersTeam)
-                    {
-                        gameManager.matchEngine.awayTeamMatchBreakerFlags = gameManager.matchbreakerInfo[gameManager.playersMatchBreaker].flags;
-                        gameManager.matchEngine.awayTeamMatchBreakerActivationTurn = gameManager.matchEngine.turn;
-                    }
-                    gameManager.SoundEngine_StartEffect(Enums.Sounds.UseMatchBreaker);
-                }
-                break;
-            case Enums.MenuAction.PrepareFormation:
-                gameManager.formationType = (Enums.Formation)param;
-                gameManager.GoToMenu(Enums.Screen.AssignPlayers);
-                break;
-            case Enums.MenuAction.AssignPlayerToFormation:
-                int playerFormIndex = param;
-                int playerFormId = gameManager.playersTeamPlayerIds[playerFormIndex];
-                // As we're clicking to assign a player to the formation, set the substate back to showing a formation
-                gameManager.currentScreenSubState = 0; //kAssignPlayersSubState_ShowFormation
-                // Check if we're assigning players before or during a match
-                if (gameManager.matchEngine.state == Enums.MatchEngineState.MatchOver)
-                {
-                    gameManager.AssignPlayerToFormation(playerFormId, gameManager.formationCycle);
+                    break;
+                case Enums.MenuAction.PrepareFormation:
+                    gameManager.formationType = (Enums.Formation)param;
                     gameManager.GoToMenu(Enums.Screen.AssignPlayers);
-                }
-                else // during match
-                {
-                   int formIndex = gameManager.IsPlayerIdInFormation(playerFormId);
-                   if (formIndex != -1)
-                   {
-                       int currentPlayerIdAtPosition = gameManager.playersInFormation[gameManager.formationCycle];
-                       //Assign available player
-                       gameManager.AssignPlayerToFormation(playerFormId, gameManager.formationCycle);
-                       // Swap old player
-                       gameManager.AssignPlayerToFormation(currentPlayerIdAtPosition, formIndex);
-                       gameManager.GoToMenu(Enums.Screen.AssignPlayers);
-                   }
-                }
-                break;
-            case Enums.MenuAction.CheckTeamBeforeGotoMenu:
-                bool ok = false;
-                if (gameManager.matchEngine.state == Enums.MatchEngineState.MatchOver)
-                {
-                    ok = true;
-                }
-                else
-                {
-                    if (gameManager.matchEngine.homeTeam == gameManager.playersTeam)
+                    break;
+                case Enums.MenuAction.AssignPlayerToFormation:
+                    int playerFormIndex = param;
+                    int playerFormId = gameManager.playersTeamPlayerIds[playerFormIndex];
+                    // As we're clicking to assign a player to the formation, set the substate back to showing a formation
+                    gameManager.currentScreenSubState = 0; //kAssignPlayersSubState_ShowFormation
+                    // Check if we're assigning players before or during a match
+                    if (gameManager.matchEngine.state == Enums.MatchEngineState.MatchOver)
                     {
-                        if (gameManager.CountLegalPlayersOnPitchInSquad(gameManager.playersMatch.formationHomeTeam) <= gameManager.matchEngine.maxHomeTeamPlayersOnPitch)
-                            ok = true;
+                        gameManager.AssignPlayerToFormation(playerFormId, gameManager.formationCycle);
+                        gameManager.GoToMenu(Enums.Screen.AssignPlayers);
+                    }
+                    else // during match
+                    {
+                       int formIndex = gameManager.IsPlayerIdInFormation(playerFormId);
+                       if (formIndex != -1)
+                       {
+                           int currentPlayerIdAtPosition = gameManager.playersInFormation[gameManager.formationCycle];
+                           //Assign available player
+                           gameManager.AssignPlayerToFormation(playerFormId, gameManager.formationCycle);
+                           // Swap old player
+                           gameManager.AssignPlayerToFormation(currentPlayerIdAtPosition, formIndex);
+                           gameManager.GoToMenu(Enums.Screen.AssignPlayers);
+                       }
+                    }
+                    break;
+                case Enums.MenuAction.CheckTeamBeforeGotoMenu:
+                    bool ok = false;
+                    if (gameManager.matchEngine.state == Enums.MatchEngineState.MatchOver)
+                    {
+                        ok = true;
                     }
                     else
                     {
-                        if (gameManager.CountLegalPlayersOnPitchInSquad(gameManager.playersMatch.formationAwayTeam) <= gameManager.matchEngine.maxAwayTeamPlayersOnPitch)
-                            ok = true;
+                        if (gameManager.matchEngine.homeTeam == gameManager.playersTeam)
+                        {
+                            if (gameManager.CountLegalPlayersOnPitchInSquad(gameManager.playersMatch.formationHomeTeam) <= gameManager.matchEngine.maxHomeTeamPlayersOnPitch)
+                                ok = true;
+                        }
+                        else
+                        {
+                            if (gameManager.CountLegalPlayersOnPitchInSquad(gameManager.playersMatch.formationAwayTeam) <= gameManager.matchEngine.maxAwayTeamPlayersOnPitch)
+                                ok = true;
+                        }
                     }
-                }
-                if (ok)
-                    gameManager.GoToMenu(param);
-                else
-                {
-                    gameManager.SoundEngine_StartEffect(Enums.Sounds.BadInput);
-                }
-                break;
-            case Enums.MenuAction.RadioSelectOptions:
-                switch (param)
-                {
-                    case 0: gameManager.SFXEnabled = false; break;
-                    case 1:
-                        gameManager.SFXEnabled = true;
-                        gameManager.SoundEngine_StartEffect(Enums.Sounds.Splat);
-                        break;
-                    case 2: gameManager.VibrationEnabled = false; break;
-                    case 3: gameManager.VibrationEnabled = true; break;
-                }
-                this.flags = Enums.MenuElementFlag.HideItem;
-                break;
-            case Enums.MenuAction.RadioSelectMatchBalance:
-                break;
-            case Enums.MenuAction.ProcessSkipMatch:
-                break;
-            case Enums.MenuAction.ProcessResetLeagueForNextYear:
-                break;
-            case Enums.MenuAction.OpenSafari:
-                break;
-            case Enums.MenuAction.Max:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+                    if (ok)
+                        gameManager.GoToMenu(param);
+                    else
+                    {
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.BadInput);
+                    }
+                    break;
+                case Enums.MenuAction.RadioSelectOptions:
+                    switch (param)
+                    {
+                        case 0: gameManager.SFXEnabled = false; break;
+                        case 1:
+                            gameManager.SFXEnabled = true;
+                            gameManager.SoundEngine_StartEffect(Enums.Sounds.Splat);
+                            break;
+                        case 2: gameManager.VibrationEnabled = false; break;
+                        case 3: gameManager.VibrationEnabled = true; break;
+                    }
+                    this.flags = Enums.MenuElementFlag.HideItem;
+                    break;
+                case Enums.MenuAction.RadioSelectMatchBalance:
+                    break;
+                case Enums.MenuAction.ProcessSkipMatch:
+                    break;
+                case Enums.MenuAction.ProcessResetLeagueForNextYear:
+                    break;
+                case Enums.MenuAction.OpenSafari:
+                    break;
+                case Enums.MenuAction.Max:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+       
+    }
+
+    public virtual void HideItem(bool hide)
+    {
+        if (hide)
+        {
+            flags |= Enums.MenuElementFlag.HideItem;
+            Image[] list = GetComponentsInChildren<Image>();
+            for (int i = 0; i < list.Length; i++)
+            {
+                list[i].enabled = false;
+            }
+            mText?.gameObject.SetActive(false);
+        }
+        else
+        {
+            flags &= ~Enums.MenuElementFlag.HideItem;
+            Image[] list = GetComponentsInChildren<Image>();
+            for (int i = 0; i < list.Length; i++)
+            {
+                list[i].enabled = true;
+            }
+            mText?.gameObject.SetActive(true);
         }
     }
-    
 }

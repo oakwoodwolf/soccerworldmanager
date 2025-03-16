@@ -24,6 +24,10 @@ public class TitleBar : MenuItem
             logo.rectTransform.anchoredPosition = new Vector2(0, (480 - width)*-1);
             logo.rectTransform.sizeDelta = new Vector2(width, width);
         }
+        else
+        {
+            logo.gameObject.SetActive(false);
+        }
     }
     public override void Update()
     {
@@ -37,6 +41,9 @@ public class TitleBar : MenuItem
             }
             logo.rectTransform.anchoredPosition = new Vector2(0, (480 - width)*-1);
             logo.rectTransform.sizeDelta = new Vector2(width, width);
+        } else
+        {
+            logo.gameObject.SetActive(false);
         }
     }
 }

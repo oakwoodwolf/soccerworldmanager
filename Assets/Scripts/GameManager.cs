@@ -201,6 +201,7 @@ public class GameManager : MonoBehaviour
 
     public int[] playersBalance = new int[MaxWeeks];
     public int week;
+    public MenuIconBar[] formationMenuIconBars;
     public Formation formationType;
     public FormationData[] formations = new FormationData[(int)Formation.KFormationMax];
 
@@ -1490,6 +1491,96 @@ public class GameManager : MonoBehaviour
                     } 
                 }
                 break;
+            case Enums.Screen.MatchEngine:
+                ResetMenuRadioButtons(menuItems);
+                SetMenuRadioButtonsAtOccurance(menuItems,(int)playersMatchStrategy);
+                //  only setup a match if there isn't one already in progress (allows display of other screens - including formation changing)
+                if (matchEngine.state == MatchEngineState.MatchOver)
+                    matchEngine.SetupForMatch(playersMatch.homeTeam, playersMatch.awayTeam);
+                for (int i = 0; i < MaxPlayersInFormation; i++)
+                {
+                    if (playersMatch.homeTeam == playersTeam)
+                    {
+                        playersMatch.formationTypeHomeTeam = formationType;
+                        playersMatch.formationTypeAwayTeam = oppositionTeamFormationType;
+                        playersMatch.formationHomeTeam[i] = playersInFormation[i];
+                        playersMatch.formationAwayTeam[i] = playersInOppositionFormation[i];
+                        
+                        menuItems[9].param = (int)Enums.Screen.SelectFormation;
+                        menuItems[10].param = (int)Enums.Screen.OppositionFormation;
+                    }
+                    else if (playersMatch.awayTeam == playersTeam)
+                    {
+                        playersMatch.formationTypeAwayTeam = formationType;
+                        playersMatch.formationTypeHomeTeam = oppositionTeamFormationType;
+                        playersMatch.formationAwayTeam[i] = playersInFormation[i];
+                        playersMatch.formationHomeTeam[i] = playersInOppositionFormation[i];
+                        
+                        menuItems[9].param = (int)Enums.Screen.OppositionFormation;
+                        menuItems[10].param = (int)Enums.Screen.SelectFormation;
+                    }
+                }
+                ButtonItem matchbreakerButton = menuItems[8].GetComponent<ButtonItem>();
+                matchbreakerButton.flags &= ~MenuElementFlag.HideItem;
+                if (playersMatchBreaker != -1)
+                {
+                    matchbreakerButton.button.texture = matchbreakerInfo[playersMatchBreaker].texture;
+                }
+                else
+                {
+                    matchbreakerButton.button.texture = textures[(int)Enums.Texture.ButtonNoMatchbreaker];
+                }
+                
+                ButtonItem homeButton = menuItems[9].GetComponent<ButtonItem>();
+                ButtonItem awayButton = menuItems[10].GetComponent<ButtonItem>();
+
+                homeButton.HideItem(false);
+                awayButton.HideItem(false);
+                homeButton.button.texture = formationMenuIconBars[(int)playersMatch.formationTypeHomeTeam].texture;
+                awayButton.button.texture = formationMenuIconBars[(int)playersMatch.formationTypeAwayTeam].texture;
+                
+                menuItems[1].HideItem(false);// show skip
+                menuItems[2].HideItem(true); // hide next
+                break;
+        }
+    }
+    /// <summary>
+    /// scan a menu looking for radio buttons and reset all of them?
+    /// </summary>
+    /// <param name="menuItems">the list of menu items for the screen.</param>
+    /// <param name="occ">the nth occurance</param>
+    private void SetMenuRadioButtonsAtOccurance(MenuItem[] menuItems, int occ)
+    {
+        for (int i = 0; i < menuItems.Length; i++)
+        {
+            if (menuItems[i].flags != Enums.MenuElementFlag.HideItem)
+            {
+                if (menuItems[i].type == MenuElement.RadioButton)
+                {
+                    if (i == occ)
+                    {
+                        ButtonItem button = menuItems[i].gameObject.GetComponent<ButtonItem>();
+                        button.button.flags |= 1;
+                    }
+                    
+                }
+            }
+            
+        }
+    }
+
+    private void ResetMenuRadioButtons(MenuItem[] menuItems)
+    {
+        for (int i = 0; i < menuItems.Length; i++)
+        {
+            if (menuItems[i].flags != Enums.MenuElementFlag.HideItem)
+            {
+                if (menuItems[i].type == MenuElement.RadioButton)
+                {
+                    ButtonItem button = menuItems[i].gameObject.GetComponent<ButtonItem>();
+                    button.button.flags &= ~1;
+                }
+            }
         }
     }
 
