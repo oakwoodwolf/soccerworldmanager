@@ -295,7 +295,10 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         HandleMoveTap();
-       
+        if (currentScreen == Enums.Screen.MatchEngine)
+        {
+            matchEngine.Render(Time.deltaTime, false);
+        }
     }
 
     private void RenderScene()
@@ -421,6 +424,13 @@ public class GameManager : MonoBehaviour
     private int CheckPlayerIdIsHappyInFormation(int playerId, FormationInfo formation)
     {
         int playerIndex = GetPlayerDataIndexForPlayerID(playerId);
+        if ((formation.formation & PlayerFormation.Substitute) != (PlayerFormation)0)
+            return (int)PlayerFormation.Substitute;
+        return (int)(staticPlayersData[playerIndex].playerPositionFlags & formation.formation);
+    }
+    
+    public int CheckPlayerIndexIsHappyInFormation(int playerIndex, FormationInfo formation)
+    {
         if ((formation.formation & PlayerFormation.Substitute) != (PlayerFormation)0)
             return (int)PlayerFormation.Substitute;
         return (int)(staticPlayersData[playerIndex].playerPositionFlags & formation.formation);
@@ -1137,6 +1147,7 @@ public class GameManager : MonoBehaviour
         Destroy(screenToDeactivate?.gameObject);
         currentScreenDefinition = Instantiate(screenToActivate, menuTransform);
         currentScreenDefinition.gameObject.SetActive(true);
+        currentScreenDefinition.transform.SetSiblingIndex(0);
         currentMenuItems = currentScreenDefinition.MenuItems.GetComponentsInChildren<MenuItem>();
         HandleCurrentScreen(currentScreen,currentMenuItems);
     }
@@ -1493,6 +1504,7 @@ public class GameManager : MonoBehaviour
                 break;
             case Enums.Screen.MatchEngine:
                 ResetMenuRadioButtons(menuItems);
+                
                 SetMenuRadioButtonsAtOccurance(menuItems,(int)playersMatchStrategy);
                 //  only setup a match if there isn't one already in progress (allows display of other screens - including formation changing)
                 if (matchEngine.state == MatchEngineState.MatchOver)
@@ -1549,36 +1561,43 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="menuItems">the list of menu items for the screen.</param>
     /// <param name="occ">the nth occurance</param>
-    private void SetMenuRadioButtonsAtOccurance(MenuItem[] menuItems, int occ)
+    public void SetMenuRadioButtonsAtOccurance(MenuItem[] menuItems, int occ)
     {
+        int j = 0;
+        
         for (int i = 0; i < menuItems.Length; i++)
         {
-            if (menuItems[i].flags != Enums.MenuElementFlag.HideItem)
+            if (menuItems[i].type == MenuElement.RadioButton)
             {
-                if (menuItems[i].type == MenuElement.RadioButton)
+                if (menuItems[i].flags != MenuElementFlag.HideItem)
                 {
-                    if (i == occ)
+                    if (j == occ)
                     {
-                        ButtonItem button = menuItems[i].gameObject.GetComponent<ButtonItem>();
-                        button.button.flags |= 1;
+                        bool hasButton = menuItems[i].gameObject.TryGetComponent(out ButtonItem button);
+                        Debug.Log(button.button);
+                        button.button.flags = 1;
+                        button.SetText("");
+                        Debug.Log("Updated "+menuItems[i]+" with tag " + j);
+                        
                     }
-                    
+                    j++;
                 }
             }
-            
         }
     }
 
-    private void ResetMenuRadioButtons(MenuItem[] menuItems)
+    public void ResetMenuRadioButtons(MenuItem[] menuItems)
     {
         for (int i = 0; i < menuItems.Length; i++)
         {
-            if (menuItems[i].flags != Enums.MenuElementFlag.HideItem)
+            if (menuItems[i].type == MenuElement.RadioButton)
             {
-                if (menuItems[i].type == MenuElement.RadioButton)
+                if (menuItems[i].flags != MenuElementFlag.HideItem)
                 {
+                
                     ButtonItem button = menuItems[i].gameObject.GetComponent<ButtonItem>();
-                    button.button.flags &= ~1;
+                    button.button.flags = 0;
+                    button.SetText("");
                 }
             }
         }
@@ -2092,7 +2111,7 @@ public class GameManager : MonoBehaviour
 /// </summary>
 /// <param name="dataIndex">the playerdata's index</param>
 /// <returns>A player's star rating</returns>
-    private float GetTeamLeagueAdjustedStarsRatingForPlayerIndex(int dataIndex)
+    public float GetTeamLeagueAdjustedStarsRatingForPlayerIndex(int dataIndex)
     {
         float stars = dynamicPlayersData[dataIndex].starsRating;
         int leagueIndex = GetIndexToLeagueData((int)playersLeague);
@@ -2143,7 +2162,7 @@ public class GameManager : MonoBehaviour
         
     }
 
-    private int GetTeamDataIndexForTeamID(int teamId)
+    public int GetTeamDataIndexForTeamID(int teamId)
     {
         int teamIndex = -1;
         for (int i = 0; i < numberOfTeamsInArrays; i++)

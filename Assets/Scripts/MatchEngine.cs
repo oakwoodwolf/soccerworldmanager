@@ -1,8 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Build.Player;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class MatchEngine : MonoBehaviour
 {
@@ -95,18 +98,58 @@ public class MatchEngine : MonoBehaviour
     public float goalDelay = 4.0f;
 
     public float skip = 8.0f;
+    public float crowdMurMurTimer;
 
     [Header("Turns")]
     public int turnsInFirstHalf = 9;
     public int turnsInSecondHalf = 18;
-
+    public const int MaxMatchStrings = 16;
+    public const int MatchStringsMask = 15;
+        
+    public string[] matchStrings = new string[MaxMatchStrings];
+    public int matchStringIndex = 0;
+    
     public int extraTimeWarningTurn = 17;
     
     private GameManager gameManager;
+    private PlayersMatch playersMatch;
+    public GameObject overlay;
+
+    [Header("UI")]
+    [SerializeField]
+    private TMP_Text[] matchTexts;
+    [SerializeField]
+    [TextArea]
+    private string[] matchStringsLosingPossession =
+    {
+        "Dispossessed!",
+        "The ball goes loose...",
+        "He's tackled.",
+        "Great tackle from the %s midfielder!",
+        "Excellent tackle from %s.",
+        "Tackled."
+    };
+    [SerializeField]
+    [TextArea]
+    private string[] matchStringsKeepPossession =
+    {
+        "%s make a run...",
+        "%s keep possession...",
+        "Superb control from %s...",
+        "The incoming tackles are avoided...",
+        "They've still got the ball!",
+        "%s have still got possession.",
+        "%s retain the ball.",
+        "The %s players are passing well...",
+        "%s keep the quality passes coming...",
+        "%s string together a series of short passes.",
+    };
     // Start is called before the first frame update
     void Start()
     {
         gameManager = GetComponent<GameManager>();
+        playersMatch = gameManager.playersMatch;
+        overlay.SetActive(false);
     }
 
     // Update is called once per frame
@@ -117,6 +160,7 @@ public class MatchEngine : MonoBehaviour
 
     public void SetupForMatch(int homeTeamId, int awayTeamId)
     {
+        overlay.SetActive(false);
         state = Enums.MatchEngineState.StartFirstHalf;
         turn = 0;
         updateTimer = kickOffDelay;
@@ -149,5 +193,332 @@ public class MatchEngine : MonoBehaviour
             }
         }
 
+    }
+
+    public void Render(float dTime, bool skipping = false)
+    {
+        if (!skipping) // Crowd noises
+        {
+            crowdMurMurTimer -= dTime;
+            if (crowdMurMurTimer < 0)
+            {
+                crowdMurMurTimer += 4.8f;
+                int index = Random.Range(0, 2);
+                gameManager.SoundEngine_StartEffect(Enums.Sounds.Crowd1+index);
+            }
+        }
+
+        {
+            updateTimer -= dTime;
+            if (skipping)
+                updateTimer = -1;
+            if (updateTimer <= 0.0f || skipping) // simulate 'occasional' update of content
+            {
+                updateTimer = defaultDelay;
+                if (homeTeam == gameManager.playersTeam)
+                    homeStrategyBalance = gameManager.playersMatchStrategy - (Enums.MatchStrategy)1;
+                else
+                    UpdateCPUTeamAI(homeTeam);
+                if (awayTeam == gameManager.playersTeam)
+                    awayStrategyBalance = gameManager.playersMatchStrategy - (Enums.MatchStrategy)1;
+                else
+                    UpdateCPUTeamAI(awayTeam);
+
+                switch (state)
+                {
+                    case Enums.MatchEngineState.StartFirstHalf:
+                        turnTimeMultiplier = 5;
+                        turnTimeOffset = 0;
+                        teamInPossession = 0; // 0 is home, 1 is away
+                        turnsInPossession = 0;
+                        if (!skipping)
+                        {
+                            gameManager.SoundEngine_StartEffect(Enums.Sounds.Whistle);
+                            string matchString = "";
+                            if (teamInPossession == 0)
+                                 matchString = playersMatch.homeTeamName + " Kicks off";
+                            else
+                                 matchString = playersMatch.awayTeamName + " Kicks off";
+                            PushMatchString(matchString);
+                        }
+                        state = Enums.MatchEngineState.InFirstHalf;
+                        homeTeamScore = 0;
+                        awayTeamScore = 0;
+                        break;
+                    case Enums.MatchEngineState.InFirstHalf:
+                        if (turn >= turnsInFirstHalf)
+                        {
+                            turn = turnsInFirstHalf;
+                            state = Enums.MatchEngineState.EndFirstHalf;
+                            if (!skipping)
+                            {
+                                gameManager.SoundEngine_StartEffect(Enums.Sounds.Whistle_EndHalf);
+                                string refString = "Ref blows his whistle!\n- That's the end of the first half.\n";
+                                PushMatchString(refString);
+                                matchStringIndex++;
+                                matchStringIndex &= MatchStringsMask;
+                                matchStrings[matchStringIndex] = "The score at halftime is ["+homeTeamScore+":"+awayTeamScore+"]\n";
+                            }
+                        }
+                        else
+                        {
+                            UpdateMatchTurn(skipping);
+                        }
+                        break;
+                    case Enums.MatchEngineState.EndFirstHalf:
+                        break;
+                    case Enums.MatchEngineState.StartSecondHalf:
+                        break;
+                    case Enums.MatchEngineState.InSecondHalf:
+                        break;
+                    case Enums.MatchEngineState.ExtraTime:
+                        break;
+                    case Enums.MatchEngineState.MatchOver:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                if (!skipping)
+                {
+                    overlay.SetActive(true);
+                    for (int i = 0; i < 6; i++)
+                    {
+                        matchTexts[i].text = matchStrings[(matchStringIndex-(5-i))&MatchStringsMask];
+                    }
+                    int homeTeamIndex = gameManager.GetTeamDataIndexForTeamID(homeTeam);
+                    int awayTeamIndex = gameManager.GetTeamDataIndexForTeamID(awayTeam);
+                    string menuBarText = gameManager.staticTeamsData[homeTeamIndex].teamName + " " + homeTeamScore + " - " + awayTeamScore + " " + gameManager.staticTeamsData[awayTeamIndex].teamName; 
+                    gameManager.currentScreenDefinition.MenuItems.transform.GetChild(0).GetComponent<TitleBar>().text = menuBarText;
+                }
+            }
+        }
+    }
+
+    private void PushMatchString(string matchString)
+    {
+        matchStringIndex++;
+        matchStringIndex &= MatchStringsMask;
+        matchStrings[matchStringIndex] = "(" + GetTime() + " mins) " + matchString + "\n";
+    }
+
+    private void UpdateMatchTurn(bool skipping)
+    {
+        switch (subTurnState)
+        {
+            case Enums.MatchEngineSubState.DeterminePossession:
+                int prevTeamInPossession = teamInPossession;
+                teamInPossession = DeterminePossession();
+                // !!!Match Breaker Effect!!! - Keep possession for 20 mins
+                if ((prevTeamInPossession == 0) &&
+                    (homeTeamMatchBreakerFlags & Enums.MatchBreakerFlags.GuaranteedPossession20Mins) != 0)
+                {
+                    if (turn < (homeTeamMatchBreakerActivationTurn + 4))
+                    {
+                        teamInPossession = 0;
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+                    }
+                }
+                if ((prevTeamInPossession == 1) &&
+                    (awayTeamMatchBreakerFlags & Enums.MatchBreakerFlags.GuaranteedPossession20Mins) != 0)
+                {
+                    if (turn < (awayTeamMatchBreakerActivationTurn + 4))
+                    {
+                        teamInPossession = 1;
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+                    }
+                }
+
+                if (prevTeamInPossession != -1)
+                {
+                    if (prevTeamInPossession != teamInPossession)
+                    {
+                        turnsInPossession = 0;
+                        if (!skipping)
+                        {
+                            
+                            int index = Random.Range(0, matchStringsLosingPossession.Length);
+                            if (teamInPossession == 0)
+                            {
+                                string losePossession = matchStringsLosingPossession[index].Replace("%s", playersMatch.homeTeamName) + " " + playersMatch.awayTeamName + " have lost the ball.";
+                                PushMatchString(losePossession);
+                            }
+                            else
+                            {
+                                string losePossession = matchStringsLosingPossession[index].Replace("%s", playersMatch.awayTeamName) + " " + playersMatch.homeTeamName + " have lost the ball.";
+                                PushMatchString(losePossession);
+                            }
+                        } 
+                    }
+                    else
+                    {
+                        turnsInPossession++;
+                        if (!skipping)
+                        {
+                            string keepPossession = "";
+                            int index = Random.Range(0, matchStringsKeepPossession.Length);
+                            if (teamInPossession == 0)
+                            {
+                               keepPossession = matchStringsKeepPossession[index].Replace("%s", playersMatch.homeTeamName);
+                            }
+                            else
+                            { 
+                                keepPossession = matchStringsKeepPossession[index].Replace("%s", playersMatch.awayTeamName);
+                            }
+                            PushMatchString(keepPossession);
+                        }
+                    }
+                    subTurnState = Enums.MatchEngineSubState.FoulCheck;
+                }
+                    
+                break;
+            case Enums.MatchEngineSubState.FoulCheck:
+                break;
+            case Enums.MatchEngineSubState.ProcessFoul:
+                break;
+            case Enums.MatchEngineSubState.PromptFormationFix:
+                break;
+            case Enums.MatchEngineSubState.RefIssueCard:
+                break;
+            case Enums.MatchEngineSubState.TakingPenalty:
+                break;
+            case Enums.MatchEngineSubState.DetermineGoalFromPenalty:
+                break;
+            case Enums.MatchEngineSubState.DetermineShooting:
+                break;
+            case Enums.MatchEngineSubState.DetermineGoal:
+                break;
+            case Enums.MatchEngineSubState.RestartPlayAfterGoal:
+                break;
+            case Enums.MatchEngineSubState.TakeFreeKick:
+                break;
+            case Enums.MatchEngineSubState.AdvanceTurn:
+                break;
+            case Enums.MatchEngineSubState.Max:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private int DeterminePossession()
+    {
+        int result;
+        int teamHTotalSkill = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam,playersMatch.formationTypeHomeTeam);
+        int teamATotalSkill = GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam,playersMatch.formationTypeAwayTeam);
+        teamHTotalSkill += (teamHTotalSkill/10);
+        
+        int teamSkillTotal = teamHTotalSkill + teamATotalSkill;
+        
+        int possession = (int)(Random.value * teamATotalSkill);
+
+        if (possession <= teamHTotalSkill)
+            result = 0;
+        else
+            result = 1;
+        return result;
+    }
+
+    private int GetSkillPointsForPlayersOnPitch(int[] players, Enums.Formation formationType, int posMask=0)
+    {
+        float totalSkillPoints = 0;
+        FormationData formationInfo = gameManager.formations[(int)formationType];
+        for (int i = 0; i < GameManager.MaxPlayersInFormation; i++)
+        {
+            if ((formationInfo.formations[i].formation & (Enums.PlayerFormation)posMask) != (Enums.PlayerFormation)0)
+            {
+                int playerId = players[i];
+                if (playerId != -1)
+                {
+                    int dataIndex = GetPlayerDataIndexForPlayerId(playerId);
+                    float outOfPositionScale = 1.0f;
+                    if (gameManager.CheckPlayerIndexIsHappyInFormation(dataIndex, formationInfo.formations[i]) == 0)
+                        outOfPositionScale = 0.5f;
+                    float starsRating = gameManager.GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
+                    if (gameManager.dynamicPlayersData[dataIndex].weeksBannedOrInjured != 0)
+                        starsRating = 0.0f;
+                    totalSkillPoints += (starsRating * gameManager.dynamicPlayersData[dataIndex].condition)*outOfPositionScale;
+                }
+            }
+        }
+        return (int)totalSkillPoints;
+    }
+
+    private int GetPlayerDataIndexForPlayerId(int playerId)
+    {
+        int playerIndex = -1;
+        for (int i = 0; i < itemsInQuickPlayerList; i++)
+        {
+            if (quickPlayerIdToIndexList[i].itemId == playerId)
+            {
+                playerIndex = quickPlayerIdToIndexList[i].itemIndex;
+                break;
+            }
+        }
+        return playerIndex;
+    }
+
+    private int GetTime()
+    {
+        return turnTimeOffset + (turn * turnTimeMultiplier);
+    }
+
+    /// <summary>
+    /// Updates the AI team's strategy depending on the goal difference.
+    /// </summary>
+    /// <param name="cpuTeam"></param>
+    private void UpdateCPUTeamAI(int cpuTeam)
+    {
+        int stratBalance = 0;
+        if (homeTeam == cpuTeam)
+        {
+            int goalDiff = homeTeamScore - awayTeamScore;
+            if (goalDiff < 0) // are we behind
+            {
+                if (Math.Abs(goalDiff) < 2)
+                {
+                    if (turn >= turnsInSecondHalf - 3)
+                        stratBalance += 1;
+                    
+                }
+                else
+                {
+                    if (awayStrategyBalance <=0) //non-attacking opponent
+                        stratBalance += 1; // go attacking
+                    else
+                        stratBalance -= 1;
+                }
+            }
+            homeStrategyBalance = 0;
+            if (stratBalance > 0)
+                homeStrategyBalance = 1;
+            if (stratBalance < 0)
+                homeStrategyBalance = -1;
+        }
+        if (awayTeam == cpuTeam)
+        {
+            int goalDiff = awayTeamScore - homeTeamScore;
+            if (goalDiff < 0) // are we behind
+            {
+                if (Math.Abs(goalDiff) < 2)
+                {
+                    if (turn >= turnsInSecondHalf - 3)
+                        stratBalance += 1;
+                    
+                }
+                else
+                {
+                    if (homeStrategyBalance <=0) //non-attacking opponent
+                        stratBalance += 1; // go attacking
+                    else
+                        stratBalance -= 1;
+                }
+            }
+            awayStrategyBalance = 0;
+            if (stratBalance > 0)
+                awayStrategyBalance = 1;
+            if (stratBalance < 0)
+                awayStrategyBalance = -1;
+        }
     }
 }

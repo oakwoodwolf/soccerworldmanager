@@ -279,6 +279,11 @@ public class MenuItem : MonoBehaviour
                     this.flags = Enums.MenuElementFlag.HideItem;
                     break;
                 case Enums.MenuAction.RadioSelectMatchBalance:
+                    MenuItem[] items = gameManager.currentScreenDefinition.MenuItems.GetComponentsInChildren<MenuItem>();
+                    gameManager.ResetMenuRadioButtons(items);
+                    gameManager.SetMenuRadioButtonsAtOccurance(items,param);
+                    gameManager.playersMatchStrategy = (Enums.MatchStrategy)param;
+                    
                     break;
                 case Enums.MenuAction.ProcessSkipMatch:
                     break;
@@ -317,5 +322,10 @@ public class MenuItem : MonoBehaviour
             }
             mText?.gameObject.SetActive(true);
         }
+    }
+
+    public override string ToString()
+    {
+        return type.ToString() + " " +text;
     }
 }
