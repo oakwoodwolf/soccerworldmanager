@@ -10,6 +10,9 @@ using Random = UnityEngine.Random;
 public class MatchEngine : MonoBehaviour
 {
     public const int MaxPlayersInATeam = 64;
+    public const int TeamHome = 0;
+    public const int TeamAway = 1;
+        
     [FormerlySerializedAs("State")]
     [Header("Match Engine Data")]
     public Enums.MatchEngineState state;
@@ -143,6 +146,19 @@ public class MatchEngine : MonoBehaviour
         "The %s players are passing well...",
         "%s keep the quality passes coming...",
         "%s string together a series of short passes.",
+    };
+    
+    [SerializeField]
+    [TextArea]
+    private string[] matchStringsTeamFouled =
+    {
+        "The %s player is brought down. Free kick given.",
+        "%s midfielder is hacked by an opposition player. Free kick to %s.",
+        "A horrible foul on the %s player! The crowd are appauled!",
+        "The %s player is fouled. Free kick awarded.",
+        // Penalty!!!
+        "The %s striker has been fouled in the area! Penalty to %s!",
+        "The opposition defender handled the ball in the area! Penalty to %s!",
     };
     // Start is called before the first frame update
     void Start()
@@ -315,16 +331,16 @@ public class MatchEngine : MonoBehaviour
                 {
                     if (turn < (homeTeamMatchBreakerActivationTurn + 4))
                     {
-                        teamInPossession = 0;
+                        teamInPossession = TeamHome;
                         gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
                     }
                 }
-                if ((prevTeamInPossession == 1) &&
+                if ((prevTeamInPossession == TeamAway) &&
                     (awayTeamMatchBreakerFlags & Enums.MatchBreakerFlags.GuaranteedPossession20Mins) != 0)
                 {
                     if (turn < (awayTeamMatchBreakerActivationTurn + 4))
                     {
-                        teamInPossession = 1;
+                        teamInPossession = TeamAway;
                         gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
                     }
                 }
@@ -338,7 +354,7 @@ public class MatchEngine : MonoBehaviour
                         {
                             
                             int index = Random.Range(0, matchStringsLosingPossession.Length);
-                            if (teamInPossession == 0)
+                            if (teamInPossession == TeamHome)
                             {
                                 string losePossession = matchStringsLosingPossession[index].Replace("%s", playersMatch.homeTeamName) + " " + playersMatch.awayTeamName + " have lost the ball.";
                                 PushMatchString(losePossession);
@@ -357,7 +373,7 @@ public class MatchEngine : MonoBehaviour
                         {
                             string keepPossession = "";
                             int index = Random.Range(0, matchStringsKeepPossession.Length);
-                            if (teamInPossession == 0)
+                            if (teamInPossession == TeamHome)
                             {
                                keepPossession = matchStringsKeepPossession[index].Replace("%s", playersMatch.homeTeamName);
                             }
@@ -373,6 +389,48 @@ public class MatchEngine : MonoBehaviour
                     
                 break;
             case Enums.MatchEngineSubState.FoulCheck:
+                if (DetermineFouls())
+                {
+                    int index = Random.Range(0, 4);
+                    bool penalty = false;
+                    if ((turnsInPossession & 3) == 3)
+                    {
+                        index &= 1;
+                        index += 4;
+                        penalty = true;
+                    }
+
+                    if (!skipping)
+                    {
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.Whistle_Foul);
+                        string fouledString = "";
+                        if (teamInPossession == TeamHome)
+                            fouledString = matchStringsTeamFouled[index].Replace("%s", playersMatch.homeTeamName);
+                        else
+                            fouledString = matchStringsTeamFouled[index].Replace("%s", playersMatch.awayTeamName);
+                        if (penalty)
+                            fouledString = "PENALTY: " + fouledString;
+                        else
+                            fouledString = "FOUL: " + fouledString;
+                        PushMatchString(fouledString);
+                    }
+
+                    indexOfFouledPlayer = DeterminePlayerWithTheBall();
+                    DeterminePlayerIndexWhoCausedFoul();
+                    if (penalty)
+                    {
+                        updateTimer /= 2.0f;
+                        subTurnState = Enums.MatchEngineSubState.TakingPenalty;
+                    }
+                    else
+                    {
+                        subTurnState = Enums.MatchEngineSubState.ProcessFoul;
+                    }
+                }
+                else
+                {
+                    subTurnState = Enums.MatchEngineSubState.DetermineShooting;
+                }
                 break;
             case Enums.MatchEngineSubState.ProcessFoul:
                 break;
@@ -401,6 +459,210 @@ public class MatchEngine : MonoBehaviour
         }
     }
 
+    private int DeterminePlayerIndexWhoCausedFoul()
+    {
+        int foulerIndex = -1;
+        int withBallId = gameManager.staticPlayersData[playerWithBallIndex].playerId;
+        Enums.Formation formType;
+        int[] squad;
+        if (teamInPossession == TeamHome)
+        {
+            squad = playersMatch.formationHomeTeam;
+            formType = playersMatch.formationTypeHomeTeam;
+        }
+        else
+        {
+            squad = playersMatch.formationAwayTeam;
+            formType = playersMatch.formationTypeAwayTeam;
+        }
+
+        int withFormIndex;
+        for (withFormIndex = 0; withFormIndex < GameManager.MaxPlayersInSquad; withFormIndex++)
+        {
+            // squad array holds ids
+            if (squad[withFormIndex] == withBallId)
+                break; 		// out of loop
+        }
+
+        FormationData formationInfo = gameManager.formations[(int)formType];
+        Enums.PlayerFormation positionOfPlayerWithBall = formationInfo.formations[withFormIndex].formation;
+        Enums.PlayerFormation positionOfFoulingPlayer = Enums.PlayerFormation.Defender;
+
+        if ((positionOfPlayerWithBall & Enums.PlayerFormation.Attacker) != (Enums.PlayerFormation)0)
+        {
+            int chance = Random.Range(0, 11); //6/11=defender, 3/11=midfield, 1/11=goalkeeper
+            
+            if (chance < 6)
+                positionOfFoulingPlayer = Enums.PlayerFormation.Defender;
+            else if (chance < 9)
+                positionOfFoulingPlayer = Enums.PlayerFormation.MidFielder;
+            else
+                positionOfFoulingPlayer = Enums.PlayerFormation.Goalkeeper;
+        }
+        else if ((positionOfPlayerWithBall & Enums.PlayerFormation.MidFielder) != (Enums.PlayerFormation)0)
+        {
+            int chance = Random.Range(0, 11); //6/11=defender, 3/11=midfield, 1/11=goalkeeper
+            
+            if (chance < 6)
+                positionOfFoulingPlayer = Enums.PlayerFormation.MidFielder;
+            else if (chance < 9)
+                positionOfFoulingPlayer = Enums.PlayerFormation.Defender;
+            else
+                positionOfFoulingPlayer = Enums.PlayerFormation.Attacker;
+        }
+        else if ((positionOfPlayerWithBall & Enums.PlayerFormation.Defender) != (Enums.PlayerFormation)0)
+        {
+            int chance = Random.Range(0, 11); //6/11=defender, 3/11=midfield, 1/11=goalkeeper
+            
+            if (chance < 6)
+                positionOfFoulingPlayer = Enums.PlayerFormation.Attacker;
+            else if (chance < 9)
+                positionOfFoulingPlayer = Enums.PlayerFormation.MidFielder;
+            else
+                positionOfFoulingPlayer = Enums.PlayerFormation.Defender;
+        }
+        Debug.Log(positionOfFoulingPlayer.ToString());
+        
+        // Scan list for players in needed position
+        int skill;
+        if (teamInPossession == TeamHome)
+            skill = GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam,positionOfFoulingPlayer,playersMatch.formationTypeAwayTeam);
+        else
+            skill = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam,positionOfFoulingPlayer,playersMatch.formationTypeHomeTeam);
+
+        if (skill > 0)
+        {
+            if (teamInPossession == TeamHome)
+                foulerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationAwayTeam, skill,
+                    positionOfFoulingPlayer, playersMatch.formationTypeAwayTeam, awayTeam);
+            else
+                foulerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationHomeTeam, skill,
+                    positionOfFoulingPlayer, playersMatch.formationTypeHomeTeam, homeTeam);
+
+        }
+        
+        
+        if (foulerIndex == -1)
+            playersMatch.foulerName = "[Err Det Foul Plyr]";
+        else
+            playersMatch.foulerName = gameManager.staticPlayersData[foulerIndex].playerSurname;
+        indexOfPlayerCommitingFoul = foulerIndex;
+        return foulerIndex;
+    }
+
+    private int DeterminePlayerWithTheBall()
+    {
+        int possessionAttack = 0;
+        int possessionMid = 0;
+        int possessionDefence = 0;
+
+        if (teamInPossession == 0)
+        {
+            possessionAttack = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam, Enums.PlayerFormation.Attacker, playersMatch.formationTypeHomeTeam);
+            possessionMid = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam, Enums.PlayerFormation.MidFielder, playersMatch.formationTypeHomeTeam);
+            possessionDefence = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam, Enums.PlayerFormation.Defender, playersMatch.formationTypeHomeTeam);
+        }
+        else
+        {
+            possessionAttack = GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam, Enums.PlayerFormation.Attacker, playersMatch.formationTypeAwayTeam);
+            possessionMid = GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam, Enums.PlayerFormation.MidFielder, playersMatch.formationTypeAwayTeam);
+            possessionDefence = GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam, Enums.PlayerFormation.Defender, playersMatch.formationTypeAwayTeam);
+        }
+            
+        // bias against defence
+        possessionDefence = (int)(possessionDefence * 0.5f); // half the defence contribution
+        possessionAttack = (int)(possessionAttack * 0.5f); // increase contribution of strikers
+
+        int scorerIndex = -1;
+        int whorange = possessionAttack + possessionMid + possessionDefence;
+        float chance = Random.Range(0f, whorange);
+        if (chance <= possessionAttack)
+        { // score by forward
+            float whoskill = Random.Range(0f, possessionAttack/2f);
+            if (teamInPossession == TeamHome)
+                scorerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationHomeTeam, whoskill, Enums.PlayerFormation.Attacker, playersMatch.formationTypeHomeTeam, homeTeam);
+            else
+                scorerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationAwayTeam, whoskill, Enums.PlayerFormation.Attacker, playersMatch.formationTypeAwayTeam, awayTeam);
+        }
+        else if (chance <= (possessionAttack + possessionMid))
+        { // score by mid
+            float whoskill = Random.Range(0f, possessionMid);
+            if (teamInPossession == TeamHome)
+                scorerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationHomeTeam, whoskill, Enums.PlayerFormation.MidFielder, playersMatch.formationTypeHomeTeam, homeTeam);
+            else
+                scorerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationAwayTeam, whoskill, Enums.PlayerFormation.MidFielder, playersMatch.formationTypeAwayTeam, awayTeam);
+        }
+        else 
+        { // score by defender
+            float whoskill = Random.Range(0f, possessionDefence*2f);
+            if (teamInPossession == TeamHome)
+                scorerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationHomeTeam, whoskill, Enums.PlayerFormation.Defender, playersMatch.formationTypeHomeTeam, homeTeam);
+            else
+                scorerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationAwayTeam, whoskill, Enums.PlayerFormation.Defender, playersMatch.formationTypeAwayTeam, awayTeam);
+        }
+
+        if (scorerIndex == -1)
+            playersMatch.scourerName = "Err Det Plyr";
+        else
+            playersMatch.scourerName = gameManager.staticPlayersData[scorerIndex].playerSurname;
+        
+        playerWithBallIndex = scorerIndex;
+        return playerWithBallIndex;
+    }
+
+    private int GetPlayerIndexInFormationAtSkillOffset(int[] players, float targetSkill, Enums.PlayerFormation posMask, Enums.Formation formationType, int teamId)
+    {
+        int resultIndex = -1;
+        float totalSkillPoints = 0;
+        FormationData formationInfo = gameManager.formations[(int)formationType];
+        for (int i = 0; i < GameManager.MaxPlayersInFormation; i++)
+        {
+            if ((formationInfo.formations[i].formation & posMask) != (Enums.PlayerFormation)0)
+            {
+                int playerId = players[i];
+                if (playerId != -1)
+                {
+                    int dataIndex = GetPlayerDataIndexForPlayerId(playerId);
+                    float outOfPositionScale = 1.0f;
+                    if (gameManager.CheckPlayerIndexIsHappyInFormation(dataIndex, formationInfo.formations[i]) == 0)
+                        outOfPositionScale = 0.5f;
+                    float starsRating = gameManager.GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
+                    if (gameManager.dynamicPlayersData[dataIndex].weeksBannedOrInjured != 0)
+                        starsRating = 0.0f;
+                    
+                    float prevSkillPoints = totalSkillPoints;
+                    totalSkillPoints += (starsRating * gameManager.dynamicPlayersData[dataIndex].condition)*outOfPositionScale;
+                    // Does this skill range span the target amount?
+                    if ((prevSkillPoints <= targetSkill) && (totalSkillPoints >= targetSkill))
+                    {
+                        resultIndex = dataIndex;
+                        Debug.Assert(gameManager.dynamicPlayersData[resultIndex].teamId == teamId);
+                        break;
+                    }
+                }
+            }
+        }
+        return resultIndex;
+    }
+
+
+    private bool DetermineFouls()
+    {
+       bool result = false;
+       // Neil suggested alternate checks, but lets try a 50/50 check
+       if (Random.value <= 0.5f)
+       {
+           int aggressionRatio = 5;
+           int chance = Random.Range(0, 11); // 11 = number of players in team
+           if (chance <= aggressionRatio)
+           {
+               result = true;
+               injuryTime += 0.5f;
+           }
+       }
+       return result;
+    }
+
     private int DeterminePossession()
     {
         int result;
@@ -418,8 +680,7 @@ public class MatchEngine : MonoBehaviour
             result = 1;
         return result;
     }
-
-    private int GetSkillPointsForPlayersOnPitch(int[] players, Enums.Formation formationType, int posMask=0)
+    private int GetSkillPointsForPlayersOnPitch(int[] players,  Enums.PlayerFormation posMask, Enums.Formation formationType)
     {
         float totalSkillPoints = 0;
         FormationData formationInfo = gameManager.formations[(int)formationType];
@@ -439,6 +700,27 @@ public class MatchEngine : MonoBehaviour
                         starsRating = 0.0f;
                     totalSkillPoints += (starsRating * gameManager.dynamicPlayersData[dataIndex].condition)*outOfPositionScale;
                 }
+            }
+        }
+        return (int)totalSkillPoints;
+    }
+    private int GetSkillPointsForPlayersOnPitch(int[] players, Enums.Formation formationType)
+    {
+        float totalSkillPoints = 0;
+        FormationData formationInfo = gameManager.formations[(int)formationType];
+        for (int i = 0; i < GameManager.MaxPlayersInFormation; i++)
+        {
+            int playerId = players[i];
+            if (playerId != -1)
+            {
+                int dataIndex = GetPlayerDataIndexForPlayerId(playerId);
+                float outOfPositionScale = 1.0f;
+                if (gameManager.CheckPlayerIndexIsHappyInFormation(dataIndex, formationInfo.formations[i]) == 0)
+                    outOfPositionScale = 0.5f;
+                float starsRating = gameManager.GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
+                if (gameManager.dynamicPlayersData[dataIndex].weeksBannedOrInjured != 0)
+                    starsRating = 0.0f;
+                totalSkillPoints += (starsRating * gameManager.dynamicPlayersData[dataIndex].condition)*outOfPositionScale;
             }
         }
         return (int)totalSkillPoints;
