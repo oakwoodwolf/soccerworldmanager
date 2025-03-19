@@ -12,6 +12,7 @@ public class MatchEngine : MonoBehaviour
     public const int MaxPlayersInATeam = 64;
     public const int TeamHome = 0;
     public const int TeamAway = 1;
+    public const float ConditionAdjustPerTurn = -0.016f;
         
     [FormerlySerializedAs("State")]
     [Header("Match Engine Data")]
@@ -147,10 +148,8 @@ public class MatchEngine : MonoBehaviour
         "%s keep the quality passes coming...",
         "%s string together a series of short passes.",
     };
-    
-    [SerializeField]
-    [TextArea]
-    private string[] matchStringsTeamFouled =
+
+    [SerializeField] [TextArea] private string[] matchStringsTeamFouled =
     {
         "The %s player is brought down. Free kick given.",
         "%s midfielder is hacked by an opposition player. Free kick to %s.",
@@ -159,6 +158,52 @@ public class MatchEngine : MonoBehaviour
         // Penalty!!!
         "The %s striker has been fouled in the area! Penalty to %s!",
         "The opposition defender handled the ball in the area! Penalty to %s!",
+    };
+    [SerializeField]
+    [TextArea]
+    private string[] matchStringsChanceCreated =
+    {
+        "%s lines up a shot...",
+        "%s from outside the penalty area...",
+        "Inside the 6-yard box, surely a goal for %s...",
+        "The cross is received by %s from the left...",
+        "It's crossed in towards %s",
+        "%s's got space! The shot is taken...",
+        "From miles away... It's %s",
+        "Surely %s can't miss from here...",
+        "%s's through on goal..."
+    };
+    [SerializeField]
+    [TextArea]
+    private string[] matchStringsGoalScored =
+    {
+        "Goal scored!",
+        "Straight in the back of the net!",
+        "It's blocked, but he taps it in!",
+        "What a goal!",
+        "Goal for %s!",
+        "It goes in off the post! What a lucky goal!",
+        "Goal!",
+        "Incredible goal!",
+        "Goooooaaaaaaaaaallllllllllll!",
+        "Superb finish!",
+        "And it's in!",
+        "Cracking goal!",
+        "Great left-footed finish!",
+        "It's tucked away stylishly!"
+    };
+    [SerializeField]
+    [TextArea]
+    private string[] matchStringsGoalMissed =
+    {
+        "The ball has gone wide!",
+        "The shot goes over the bar!",
+        "It hits the woodwork!",
+        "It misses by miles!",
+        "It misses the target.",
+        "The shot has no power.",
+        "The ball is sliced wide.",
+        "Too high!",
     };
     // Start is called before the first frame update
     void Start()
@@ -441,16 +486,85 @@ public class MatchEngine : MonoBehaviour
             case Enums.MatchEngineSubState.TakingPenalty:
                 break;
             case Enums.MatchEngineSubState.DetermineGoalFromPenalty:
+                Debug.Assert(false);
                 break;
             case Enums.MatchEngineSubState.DetermineShooting:
+                if (DetermineIfShotTaken())
+                {
+                    
+                    if (!skipping)
+                    {
+                        DeterminePlayerWithTheBall();
+                        int index = Random.Range(0, matchStringsChanceCreated.Length);
+                        string chanceString = matchStringsChanceCreated[index].Replace("%s", playersMatch.scourerName);
+                        string prefix = "";
+                        if (teamInPossession == TeamHome)
+                            prefix = playersMatch.homeTeamName;
+                        else
+                            prefix = playersMatch.awayTeamName;
+                        PushMatchString(prefix + " have a chance... " + chanceString);
+                        
+                    }
+                    updateTimer /= 2.0f;
+                    subTurnState = Enums.MatchEngineSubState.DetermineGoal;
+                }
+                else
+                {
+                    subTurnState = Enums.MatchEngineSubState.AdvanceTurn;
+                }
                 break;
             case Enums.MatchEngineSubState.DetermineGoal:
+                if (DetermineIfGoalScored())
+                {
+                    
+                    string goalString = "";
+                    int index = Random.Range(0, matchStringsGoalScored.Length);
+                    if (teamInPossession == TeamHome)
+                    {
+                        homeTeamScore++;
+                        goalString = matchStringsGoalScored[index].Replace("%s", playersMatch.homeTeamName);
+                        teamInPossession = TeamAway;
+                    }
+                    else
+                    {
+                        awayTeamScore++;
+                        goalString = matchStringsGoalScored[index].Replace("%s", playersMatch.awayTeamName);
+                        teamInPossession = TeamHome;
+                    }
+                    if (!skipping)
+                    {
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.Crowd_Goal);
+                        matchStringIndex++;
+                        matchStringIndex &= MatchStringsMask;
+                        matchStrings[matchStringIndex] = "- GOAL! ["+homeTeamScore+":"+awayTeamScore+"] " + goalString + "\n";
+                    }
+                    updateTimer = goalDelay;
+                    turn++;
+                    subTurnState = Enums.MatchEngineSubState.RestartPlayAfterGoal;
+                }
+                else
+                {
+                    if (!skipping)
+                    {
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.Crowd_MissedGoal);
+                        int index = Random.Range(0, matchStringsGoalMissed.Length);
+                        matchStringIndex++;
+                        matchStringIndex &= MatchStringsMask;
+                        matchStrings[matchStringIndex] = "- " + matchStringsGoalMissed[index] + "\n";
+                    }
+                    subTurnState = Enums.MatchEngineSubState.AdvanceTurn;
+                }
                 break;
             case Enums.MatchEngineSubState.RestartPlayAfterGoal:
                 break;
             case Enums.MatchEngineSubState.TakeFreeKick:
                 break;
             case Enums.MatchEngineSubState.AdvanceTurn:
+                UpdateTeamConditionOfPlayers(homeTeam,playersMatch.formationHomeTeam,GameManager.MaxPlayersInFormation,ConditionAdjustPerTurn);
+                UpdateTeamConditionOfPlayers(awayTeam,playersMatch.formationAwayTeam,GameManager.MaxPlayersInFormation,ConditionAdjustPerTurn);
+
+                subTurnState = Enums.MatchEngineSubState.DeterminePossession;
+                turn++;
                 break;
             case Enums.MatchEngineSubState.Max:
                 break;
@@ -459,6 +573,154 @@ public class MatchEngine : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Update 'condition' of players in a formation
+    /// </summary>
+    /// <param name="teamId"></param>
+    /// <param name="formation"></param>
+    /// <param name="positions"></param>
+    /// <param name="conditionAdjustment"></param>
+    private void UpdateTeamConditionOfPlayers(int teamId, int[] formation, int positions, float conditionAdjustment)
+    {
+        Debug.Assert(positions <= GameManager.MaxPlayersInFormation);
+        for (int i = 0; i < positions; i++)
+        {
+            int playerId = formation[i];
+            if (playerId != -1)
+            {
+                int dataIndex = GetPlayerDataIndexForPlayerId(playerId);
+                if (dataIndex != -1)
+                {
+                    bool injured = gameManager.UpdateConditionOfPlayers(dataIndex,conditionAdjustment);
+                    if (injured)
+                    {
+                        if (teamId == gameManager.playersTeam)
+                        {
+                            
+                        }
+                        else
+                        {
+                            
+                        }
+                    }
+                    else
+                    {
+                        gameManager.UpdatePlayerIndexMoraleByAmount(dataIndex,1);
+                    }
+                }
+            }
+        }
+    }
+
+    private bool DetermineIfShotTaken()
+    {
+        bool result = false;
+        int teamMidfieldSkill;
+        if (teamInPossession == TeamHome)
+            teamMidfieldSkill = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam,Enums.PlayerFormation.MidFielder,playersMatch.formationTypeHomeTeam);
+        else
+            teamMidfieldSkill = GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam,Enums.PlayerFormation.MidFielder,playersMatch.formationTypeAwayTeam);
+        int maxMidfieldSkill = 30;
+        int chance = (int)(Random.value * maxMidfieldSkill);
+        
+        //Home Team support matchbreaker!
+        if ((teamInPossession == TeamHome) && ((homeTeamMatchBreakerFlags & Enums.MatchBreakerFlags.HomeTeamSupport) != 0))
+        {
+            // half whatever we currently have to increase odds
+            if (chance > 0)
+                chance /= 2;
+            gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+        }
+        chance += (1 * (-homeStrategyBalance));
+        chance += (1 * (-awayStrategyBalance));
+        if (chance <= teamMidfieldSkill)
+            result = true;
+        return result;
+    }
+
+    
+    private bool DetermineIfGoalScored()
+    {
+        bool result = false;
+        int attackingSkill;
+        if (teamInPossession == TeamHome)
+            attackingSkill = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam, Enums.PlayerFormation.Attacker,playersMatch.formationTypeHomeTeam);
+        else
+            attackingSkill = GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam, Enums.PlayerFormation.Attacker,playersMatch.formationTypeAwayTeam);
+        // Evaluate the defences
+        int defenceSkill;
+        float goalieScale = 1.0f;
+        
+        if (teamInPossession == TeamHome)
+        {
+            defenceSkill = GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam, Enums.PlayerFormation.Defender,playersMatch.formationTypeAwayTeam);
+            goalieScale += 0.1f * GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam, Enums.PlayerFormation.Goalkeeper,playersMatch.formationTypeAwayTeam);
+        }
+        else
+        {
+            defenceSkill = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam, Enums.PlayerFormation.Defender,playersMatch.formationTypeHomeTeam);
+            goalieScale += 0.1f * GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam, Enums.PlayerFormation.Goalkeeper,playersMatch.formationTypeHomeTeam);
+        }
+        defenceSkill = (int)((float)defenceSkill * goalieScale); // apply goalie influence
+        
+        int skillrange = attackingSkill + defenceSkill;
+        int chance = (int)(Random.value * skillrange);
+        
+        //FlukeORama
+        if ((teamInPossession == TeamHome) && ((homeTeamMatchBreakerFlags & Enums.MatchBreakerFlags.FlukeORama) != 0))
+        {
+            if (turn < (homeTeamMatchBreakerActivationTurn + 6))
+            {
+                // half whatever we currently have to increase odds
+                if (chance > 0)
+                    chance /= 2;
+                gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+            }
+            else
+                homeTeamMatchBreakerFlags &= ~Enums.MatchBreakerFlags.FlukeORama;
+        }
+        if ((teamInPossession == TeamAway) && ((awayTeamMatchBreakerFlags & Enums.MatchBreakerFlags.FlukeORama) != 0))
+        {
+            if (turn < (awayTeamMatchBreakerActivationTurn + 6))
+            {
+                // half whatever we currently have to increase odds
+                if (chance > 0)
+                    chance /= 2;
+                gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+            }
+            else
+                awayTeamMatchBreakerFlags &= ~Enums.MatchBreakerFlags.FlukeORama;
+        }
+        
+        chance += (1 * (-homeStrategyBalance));
+        chance += (1 * (-awayStrategyBalance));
+        if (chance <= attackingSkill)
+            result = true;
+        
+        
+        //Stalemate
+        if ((homeTeamMatchBreakerFlags & Enums.MatchBreakerFlags.Stalemate) != 0)
+        {
+            if (turn < (homeTeamMatchBreakerActivationTurn + 6))
+            {
+                result = false;
+                gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+            }
+            else
+                homeTeamMatchBreakerFlags &= ~Enums.MatchBreakerFlags.Stalemate;
+        }
+        if ((awayTeamMatchBreakerFlags & Enums.MatchBreakerFlags.Stalemate) != 0)
+        {
+            if (turn < (awayTeamMatchBreakerActivationTurn + 6))
+            {
+                result = false;
+                gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+            }
+            else
+                awayTeamMatchBreakerFlags &= ~Enums.MatchBreakerFlags.Stalemate;
+        }
+        return result;
+    }
     private int DeterminePlayerIndexWhoCausedFoul()
     {
         int foulerIndex = -1;
@@ -538,7 +800,6 @@ public class MatchEngine : MonoBehaviour
             else
                 foulerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationHomeTeam, skill,
                     positionOfFoulingPlayer, playersMatch.formationTypeHomeTeam, homeTeam);
-
         }
         
         

@@ -343,7 +343,7 @@ public class Enums : MonoBehaviour
         ImmunityToCards = 256,
         ImmunityToInjury = 512,
         SponsorBonus = 1024,
-        Stalemate = 4096,
+        Stalemate = 4096, /// no goals scored for 30 mins (either team)
     }
 
     public enum Training

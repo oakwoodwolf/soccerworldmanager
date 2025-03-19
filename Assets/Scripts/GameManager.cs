@@ -1906,7 +1906,7 @@ public class GameManager : MonoBehaviour
         }
         var formationData = formations[(int)formationType];
         for (int i = 0; i < MaxPlayersInSquad; i++)
-        {
+        { 
             int playerId = -1;
            int formPosType = (int)formationData.formations[i].formation;
            if ((formPosType & (int)PlayerFormation.Substitute) !=0)
@@ -1923,30 +1923,45 @@ public class GameManager : MonoBehaviour
            }
            if ((formPosType & (int)PlayerFormation.Goalkeeper) !=0)
            {
-               playerId = AssignSquad(formation, playerIds, numPlayers, formPosType);
+               playerId = ChooseGoalKeeperForFormation(formation, playerIds, numPlayers);
            }
+           if ((formPosType & (int)PlayerFormation.Attacker) !=0)
+           {
+               playerId = ChooseForwardForFormation(formation, playerIds, numPlayers);
+           }
+           if ((formPosType & (int)PlayerFormation.MidFielder) !=0)
+           {
+               playerId = ChooseMidfieldForFormation(formation, playerIds, numPlayers);
+           }
+           if ((formPosType & (int)PlayerFormation.Defender) !=0)
+           {
+               playerId = ChooseDefenderForFormation(formation, playerIds, numPlayers);
+           }
+
+           if (playerId == -1)
+           {
+               for (int k = 0; k < numPlayers; k++)
+               {
+                   int checkId = playerIds[k];
+                   if (IsPlayerIdInFormation(checkId,formation) == -1)
+                   {
+                       playerId = checkId;
+                       break;
+                   }
+               }
+           }
+           formation[i] = playerId;
         }
     }
 
-    private int AssignSquad(int[] formation, int[] playerIds, int numPlayers, int formPosType)
-    {
-        switch ((PlayerFormation)formPosType)
-        {
-            case PlayerFormation.Goalkeeper:
-                return ChooseGoalKeeperForFormation(formation, playerIds, numPlayers);
-                break;
-        }
-
-        return -1;
-    }
 /// <summary>
 /// Determine the goalkeeper candidate for the formation
 /// </summary>
-/// <param name="formation"></param>
+/// <param name="squad"></param>
 /// <param name="playerIds"></param>
 /// <param name="numPlayers"></param>
 /// <returns>the index for the player to assign goalkeeper.</returns>
-    private int ChooseGoalKeeperForFormation(int[] formation, int[] playerIds, int numPlayers)
+    private int ChooseGoalKeeperForFormation(int[] squad, int[] playerIds, int numPlayers)
     {
         int resultIndex = -1;
         float resultRating = 0.0f;
@@ -1955,9 +1970,7 @@ public class GameManager : MonoBehaviour
         {
             int playerId = playerIds[i];
             for (int j = 0; j < MaxPlayersInSquad; j++)
-            {
-                if (formation[j] == playerId) playerId = -1; // player was already in the squad.
-            }
+                if (squad[j] == playerId) playerId = -1; // player was already in the squad.
             
             //Check if player is already assigned
             if (playerId != -1)
@@ -1968,31 +1981,19 @@ public class GameManager : MonoBehaviour
                 float positionScale = 1.0f;
                 float outOfPositionScale = 1.0f;
                 if ((int)CheckPlayerIndexIsHappyInPosition(playerId, PlayerFormation.Goalkeeper) < 1)
-                {
                     outOfPositionScale = 0.5f;
-                }
                 
                 if (dynamicPlayersData[dataIndex].weeksBannedOrInjured > 0)
-                {
                     starsRating = 0.0f;
-                }
 
                 if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Goalkeeper) > 0)
-                {
                     positionScale = 2.0f;
-                }
                 if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Defender) > 0)
-                {
                     positionScale = 1.5f;
-                }
                 if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.MidFielder) > 0)
-                {
                     positionScale = 0.75f;
-                }
                 if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Attacker) > 0)
-                {
                     positionScale = 0.5f;
-                }
                 starsRating += starsRating * dynamicPlayersData[dataIndex].condition*outOfPositionScale*positionScale;
                 if (starsRating > resultRating)
                 {
@@ -2004,6 +2005,165 @@ public class GameManager : MonoBehaviour
         return resultIndex;
     }
 
+/// <summary>
+/// Determine the forward candidate for the formation
+/// </summary>
+/// <param name="squad"></param>
+/// <param name="playerIds"></param>
+/// <param name="numPlayers"></param>
+/// <returns>the index for the player to assign goalkeeper.</returns>
+    private int ChooseForwardForFormation(int[] squad, int[] playerIds, int numPlayers)
+    {
+        int resultIndex = -1;
+        float resultRating = 0.0f;
+
+        for (int i = 0; i < numPlayers; i++)
+        {
+            int playerId = playerIds[i];
+            for (int j = 0; j < MaxPlayersInSquad; j++)
+                if (squad[j] == playerId) playerId = -1; // player was already in the squad.
+            
+            //Check if player is already assigned
+            if (playerId != -1)
+            {
+                int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                float starsRating = GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
+                
+                float positionScale = 1.0f;
+                float outOfPositionScale = 1.0f;
+                if ((int)CheckPlayerIndexIsHappyInPosition(playerId, PlayerFormation.Attacker) == 0)
+                    outOfPositionScale = 0.5f;
+                
+                if (dynamicPlayersData[dataIndex].weeksBannedOrInjured > 0)
+                    starsRating = 0.0f;
+
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Attacker) > 0)
+                    positionScale = 2.0f;
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.MidFielder) > 0)
+                    positionScale = 1.5f;
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.MidFielder) > 0)
+                    positionScale = 0.75f;
+                if ((dynamicPlayersData[dataIndex].flags & YellowCardMask) !=0) 
+                    positionScale *= 0.95f; // take the shine off this player a little
+                starsRating += starsRating * dynamicPlayersData[dataIndex].condition*outOfPositionScale*positionScale;
+                if (starsRating > resultRating)
+                {
+                    resultRating = starsRating;
+                    resultIndex = dataIndex;
+                }
+            }
+        }
+        return resultIndex;
+    }
+/// <summary>
+/// Determine the forward candidate for the formation
+/// </summary>
+/// <param name="squad"></param>
+/// <param name="playerIds"></param>
+/// <param name="numPlayers"></param>
+/// <returns>the index for the player to assign goalkeeper.</returns>
+    private int ChooseDefenderForFormation(int[] squad, int[] playerIds, int numPlayers)
+    {
+        int resultIndex = -1;
+        float resultRating = 0.0f;
+
+        for (int i = 0; i < numPlayers; i++)
+        {
+            int playerId = playerIds[i];
+            for (int j = 0; j < MaxPlayersInSquad; j++)
+                if (squad[j] == playerId) playerId = -1; // player was already in the squad.
+            
+            //Check if player is already assigned
+            if (playerId != -1)
+            {
+                int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                float starsRating = GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
+                
+                float positionScale = 1.0f;
+                float outOfPositionScale = 1.0f;
+                if ((int)CheckPlayerIndexIsHappyInPosition(playerId, PlayerFormation.Defender) == 0)
+                    outOfPositionScale = 0.5f;
+                
+                if (dynamicPlayersData[dataIndex].weeksBannedOrInjured > 0)
+                    starsRating = 0.0f;
+
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Defender) > 0)
+                    positionScale = 2.25f;
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.MidFielder) > 0)
+                    positionScale = 0.9f;
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Goalkeeper) > 0)
+                    positionScale = 0.8f;
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Attacker) > 0)
+                    positionScale = 0.7f;
+                
+                if ((dynamicPlayersData[dataIndex].flags & YellowCardMask) !=0) 
+                    positionScale *= 0.95f; // take the shine off this player a little
+                starsRating += starsRating * dynamicPlayersData[dataIndex].condition*outOfPositionScale*positionScale;
+                if (starsRating > resultRating)
+                {
+                    resultRating = starsRating;
+                    resultIndex = dataIndex;
+                }
+            }
+        }
+        return resultIndex;
+    }
+
+/// <summary>
+/// Determine the forward candidate for the formation
+/// </summary>
+/// <param name="squad"></param>
+/// <param name="playerIds"></param>
+/// <param name="numPlayers"></param>
+/// <returns>the index for the player to assign goalkeeper.</returns>
+    private int ChooseMidfieldForFormation(int[] squad, int[] playerIds, int numPlayers)
+    {
+        int resultIndex = -1;
+        float resultRating = 0.0f;
+
+        for (int i = 0; i < numPlayers; i++)
+        {
+            int playerId = playerIds[i];
+            for (int j = 0; j < MaxPlayersInSquad; j++)
+                if (squad[j] == playerId) playerId = -1; // player was already in the squad.
+            
+            //Check if player is already assigned
+            if (playerId != -1)
+            {
+                int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                float starsRating = GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
+                
+                float positionScale = 1.0f;
+                float outOfPositionScale = 1.0f;
+                if ((int)CheckPlayerIndexIsHappyInPosition(playerId, PlayerFormation.MidFielder) == 0)
+                    outOfPositionScale = 0.5f;
+                
+                if (dynamicPlayersData[dataIndex].weeksBannedOrInjured > 0)
+                    starsRating = 0.0f;
+
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.MidFielder) > 0)
+                    positionScale = 2.0f;
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Attacker) > 0)
+                    positionScale = 1.5f;
+                if ((staticPlayersData[dataIndex].playerPositionFlags & PlayerFormation.Defender) > 0)
+                    positionScale = 1.25f;
+                starsRating += starsRating * dynamicPlayersData[dataIndex].condition*outOfPositionScale*positionScale;
+                if (starsRating > resultRating)
+                {
+                    resultRating = starsRating;
+                    resultIndex = dataIndex;
+                }
+            }
+        }
+        return resultIndex;
+    }
+
+/// <summary>
+/// This is used to check if a player is happy in an assigned formation, by checking the player's position flags.
+/// </summary>
+/// <param name="playerId">the player</param>
+/// <param name="position">The PlayerFormation</param>
+/// <returns>0 if unhappy, 1 if happy</returns>
     private PlayerFormation CheckPlayerIndexIsHappyInPosition(int playerId, PlayerFormation position)
     {
         int playerIndex = GetPlayerDataIndexForPlayerID(playerId);
@@ -2379,5 +2539,36 @@ public class GameManager : MonoBehaviour
             }
         }
         return result;
+    }
+
+    public void UpdatePlayerIndexMoraleByAmount(int playerIndex, int amount)
+    {
+        dynamicPlayersData[playerIndex].morale += (short)amount;
+        
+        if (dynamicPlayersData[playerIndex].morale < -256)
+            dynamicPlayersData[playerIndex].morale = -256;
+        if (dynamicPlayersData[playerIndex].morale > 256)
+            dynamicPlayersData[playerIndex].morale = 256;
+    }
+
+    public bool UpdateConditionOfPlayers(int dataIndex, float conditionAdjustment)
+    {
+        bool injured = false;
+        float oldCondition = dynamicPlayersData[dataIndex].condition;
+        dynamicPlayersData[dataIndex].condition += conditionAdjustment;
+        //check for new injury
+        if (dynamicPlayersData[dataIndex].condition < ShowInjuredRatio)
+            if (oldCondition >= ShowInjuredRatio)
+            {
+                injured = true;
+                UpdatePlayerIndexMoraleByAmount(dataIndex,-8);
+            }
+
+        if (dynamicPlayersData[dataIndex].condition < 0.0f)
+            dynamicPlayersData[dataIndex].condition = 0.0f;
+        if (dynamicPlayersData[dataIndex].condition > MaxPlayerCondition)
+            dynamicPlayersData[dataIndex].condition = MaxPlayerCondition;
+
+        return injured;
     }
 }
