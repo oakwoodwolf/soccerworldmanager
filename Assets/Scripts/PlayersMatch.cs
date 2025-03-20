@@ -37,8 +37,8 @@ public class PlayersMatch : MonoBehaviour
     [FormerlySerializedAs("FormationAwayTeam")]
     public int[] formationAwayTeam = new int[14];
 
-    [FormerlySerializedAs("ScourerName")]
-    public string scourerName;
+    [FormerlySerializedAs("scourerName")] [FormerlySerializedAs("ScourerName")]
+    public string scorerName;
     [FormerlySerializedAs("FoulerName")]
     public string foulerName;
     

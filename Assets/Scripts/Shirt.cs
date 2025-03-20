@@ -117,7 +117,7 @@ public class Shirt : MenuItem
     public void UpdateText()
     {
         starsSprite.sprite = gameManager.textures[(int)Enums.Texture.Stars1+(stars-1)];
-        piesSprite.sprite = gameManager.textures[(int)Enums.Texture.Pie10+condition];
+        piesSprite.sprite = gameManager.textures[(int)Enums.Texture.Pie10+ (condition-1)];
         shirt.color = primaryColor;
         shirt2.color = secondaryColor;
         nameText.text = nameStr;

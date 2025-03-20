@@ -77,13 +77,14 @@ public class MatchEngine : MonoBehaviour
     public int turnsInPossession;
     [FormerlySerializedAs("IndexOfFouledPlayer")]
     [Tooltip("Index of a fouled player (else -1)")]
-    public float indexOfFouledPlayer;
+    public int indexOfFouledPlayer;
     [FormerlySerializedAs("FoulDamageDone")]
     [Tooltip("Strength of damage done")]
     public float foulDamageDone;
     [FormerlySerializedAs("IndexOfPlayerCommitingFoul")]
     [Tooltip("Who did the naughty!?")]
     public int indexOfPlayerCommitingFoul;
+    public DynamicPlayerData playerCommitingFoul;
     [FormerlySerializedAs("PlayerWithBallIndex")]
     [Tooltip("index into player arrays for the player with the ball - used for penalty taking")]
     public int playerWithBallIndex;
@@ -204,6 +205,37 @@ public class MatchEngine : MonoBehaviour
         "The shot has no power.",
         "The ball is sliced wide.",
         "Too high!",
+    };
+    [SerializeField]
+    [TextArea]
+    private string[] matchStringsTakeFreeKick =
+    {
+        "Free kick given to %s within shooting distance.",
+        "%s are awarded a free kick within range of the goal.",
+        "%s take a free kick.",
+        "%s take the free kick.",
+        "A free kick for %s.",
+    };
+    [SerializeField]
+    [TextArea]
+    private string[] matchStringsRestartPlayAfterGoal =
+    {
+        "get the action underway.",
+        "take the centre kick.",
+        "take centre.",
+        "commence the action.",
+        "start with possession.",
+        "begin play.",
+    };
+    [SerializeField]
+    [TextArea]
+    private string[] matchStringsPlayerInjured =
+    {
+        "%s needs to be stretchered off.",
+        "%s's going to need stretchering off.",
+        "%s won't be finishing the match.",
+        "%s is stretchered off.",
+        "The injury is too serious for %s to carry on."
     };
     // Start is called before the first frame update
     void Start()
@@ -356,6 +388,10 @@ public class MatchEngine : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Wraps the boilerplate for the match string to be drawn, adding the time as a prefix.
+    /// </summary>
+    /// <param name="matchString"></param>
     private void PushMatchString(string matchString)
     {
         matchStringIndex++;
@@ -478,12 +514,185 @@ public class MatchEngine : MonoBehaviour
                 }
                 break;
             case Enums.MatchEngineSubState.ProcessFoul:
+                foulDamageDone = Random.value * 0.25f;
+                bool injured = false;
+                if (((homeTeamMatchBreakerFlags & Enums.MatchBreakerFlags.ImmunityToInjury) !=
+                     (Enums.MatchBreakerFlags)0) ||
+                    ((awayTeamMatchBreakerFlags & Enums.MatchBreakerFlags.ImmunityToInjury) !=
+                     (Enums.MatchBreakerFlags)0))
+                {
+                    injured = false;
+                    gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+                }
+                else
+                    injured = gameManager.UpdateConditionOfPlayer(indexOfFouledPlayer, -foulDamageDone);
+
+                if (injured)
+                {
+                    if (!skipping)
+                    {
+                        int index = Random.Range(0, matchStringsPlayerInjured.Length);
+                        string injuredString = matchStringsPlayerInjured[index].Replace("%s", gameManager.staticPlayersData[indexOfFouledPlayer].playerSurname);
+                        PushMatchString(injuredString);
+                    }
+                    gameManager.dynamicPlayersData[indexOfFouledPlayer].weeksBannedOrInjured = (short)((gameManager.dynamicPlayersData[indexOfFouledPlayer].weeksBannedOrInjured & GameManager.bannedMask) | (1+1));
+                }
+                subTurnState = Enums.MatchEngineSubState.RefIssueCard;
                 break;
             case Enums.MatchEngineSubState.PromptFormationFix:
+                if (!skipping)
+                {
+                    string fixString = "";
+                    if (playersMatch.homeTeam == gameManager.playersTeam)
+                        fixString = playersMatch.homeTeamName;
+                    else
+                        fixString = playersMatch.awayTeamName;
+                    PushMatchString(fixString + " make a change");
+                }
+                turn++;
+                subTurnState = Enums.MatchEngineSubState.TakeFreeKick;
                 break;
             case Enums.MatchEngineSubState.RefIssueCard:
+                float refReaction = foulDamageDone;
+                
+                //Matchbreaker influence
+                if (teamInPossession == TeamHome)
+                {
+                    if ((homeTeamMatchBreakerFlags & Enums.MatchBreakerFlags.Frustration) != (Enums.MatchBreakerFlags)0)
+                    {
+                        refReaction *= 1.5f;
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+                    }
+                    if ((awayTeamMatchBreakerFlags & Enums.MatchBreakerFlags.ImmunityToCards) != (Enums.MatchBreakerFlags)0)
+                    {
+                        refReaction = 0.05f;
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+                    }
+                }
+                else
+                {
+                    if ((awayTeamMatchBreakerFlags & Enums.MatchBreakerFlags.Frustration) != (Enums.MatchBreakerFlags)0)
+                    {
+                        refReaction *= 1.5f;
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+                    }
+                    if ((homeTeamMatchBreakerFlags & Enums.MatchBreakerFlags.ImmunityToCards) != (Enums.MatchBreakerFlags)0)
+                    {
+                        refReaction = 0.05f;
+                        gameManager.SoundEngine_StartEffect(Enums.Sounds.MatchBreakerEffect);
+                    }
+                }
+
+                if (refReaction < 0.1f) // no reaction
+                {
+                    
+                }
+                else if (refReaction < 1.2f) // yellow card
+                {
+                    if ((gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].flags & GameManager.WarningMask) !=
+                        0)
+                    {
+                        int numCards = gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].flags & GameManager.YellowCardMask;
+                        if (numCards < 1)
+                        {
+                            gameManager.GivePlayerIndexAYellowCard(indexOfPlayerCommitingFoul);
+                            if (!skipping)
+                            {
+                                string yellowCardString = "The ref wants to speak to %s. He reaches for a card... it's Yellow!".Replace("%s",playersMatch.foulerName);
+                                PushMatchString(yellowCardString);
+                            }
+                        }
+                        else
+                        {
+                            gameManager.GivePlayerIndexAYellowCard(indexOfPlayerCommitingFoul);
+                            gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].flags |= GameManager.RedCardMask;
+                            if (teamInPossession == TeamHome)
+                                maxAwayTeamPlayersOnPitch--;
+                            else
+                                maxHomeTeamPlayersOnPitch--;
+                            gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].weeksBannedOrInjured = (short)((gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].weeksBannedOrInjured & GameManager.injuryMask) | ((1+1)<<GameManager.bannedBitShift));
+                            
+                            if (!skipping)
+                            {
+                                string yellowCardString = "The ref reaches for a card... it's Yellow for %s,\nQuickly followed by a Red!\n".Replace("%s",playersMatch.foulerName);
+                                PushMatchString(yellowCardString);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].flags |= GameManager.WarningMask;
+                        if (!skipping)
+                        {
+                            string warningString =
+                                playersMatch.foulerName + " gets away with a warning from the ref!\n";
+                            PushMatchString(warningString);
+                        }
+                    }
+                }
+                else if (refReaction >= 0.24f) // red card
+                {
+                    gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].flags |= GameManager.RedCardMask;
+                    
+                    if (teamInPossession == TeamHome)
+                        maxAwayTeamPlayersOnPitch--;
+                    else
+                        maxHomeTeamPlayersOnPitch--;
+
+                    int weeksBan = (int)((foulDamageDone - 0.24f) * 299.0f);
+                    weeksBan++;
+                    gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].weeksBannedOrInjured = (short)((gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].weeksBannedOrInjured & GameManager.injuryMask) | ((weeksBan+1)<<GameManager.bannedBitShift));
+                    
+                    if (!skipping)
+                    {
+                        string warningString =
+                            "That's a Red Card for " + playersMatch.foulerName;
+                        PushMatchString(warningString);
+                    }
+                }
+                
+                //player is injured
+                if (gameManager.dynamicPlayersData[indexOfFouledPlayer].condition < GameManager.ShowInjuredRatio)
+                {
+                    int fouledTeamId = gameManager.dynamicPlayersData[indexOfFouledPlayer].teamId;
+                    if (fouledTeamId == gameManager.playersTeam)
+                        subTurnState = Enums.MatchEngineSubState.PromptFormationFix;
+                    else
+                    {
+                        turn++;
+                        subTurnState = Enums.MatchEngineSubState.TakeFreeKick;
+                    }
+                }
+                else
+                {
+                    if ((gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].flags & GameManager.RedCardMask) != 0)
+                    {  
+                        int offendingTeamId = gameManager.dynamicPlayersData[indexOfPlayerCommitingFoul].teamId;
+                        if (offendingTeamId == gameManager.playersTeam)
+                            subTurnState = Enums.MatchEngineSubState.PromptFormationFix;
+                        else
+                        {
+                            turn++;
+                            subTurnState = Enums.MatchEngineSubState.TakeFreeKick;
+                        }
+                    }
+                    else
+                    {
+                        turn++;
+                        subTurnState = Enums.MatchEngineSubState.TakeFreeKick;
+                    }
+                }
+                
                 break;
             case Enums.MatchEngineSubState.TakingPenalty:
+                if (!skipping)
+                {
+                    matchStringIndex++;
+                    matchStringIndex &= MatchStringsMask;
+                    matchStrings[matchStringIndex] = "- " + playersMatch.scorerName + " steps up to take it\n";
+                }
+                updateTimer /= 2.0f;
+                subTurnState = Enums.MatchEngineSubState.DetermineGoal;
                 break;
             case Enums.MatchEngineSubState.DetermineGoalFromPenalty:
                 Debug.Assert(false);
@@ -496,7 +705,7 @@ public class MatchEngine : MonoBehaviour
                     {
                         DeterminePlayerWithTheBall();
                         int index = Random.Range(0, matchStringsChanceCreated.Length);
-                        string chanceString = matchStringsChanceCreated[index].Replace("%s", playersMatch.scourerName);
+                        string chanceString = matchStringsChanceCreated[index].Replace("%s", playersMatch.scorerName);
                         string prefix = "";
                         if (teamInPossession == TeamHome)
                             prefix = playersMatch.homeTeamName;
@@ -556,8 +765,23 @@ public class MatchEngine : MonoBehaviour
                 }
                 break;
             case Enums.MatchEngineSubState.RestartPlayAfterGoal:
+                if (!skipping)
+                {
+                    gameManager.SoundEngine_StartEffect(Enums.Sounds.Whistle);
+                    int index = Random.Range(0, matchStringsRestartPlayAfterGoal.Length);
+                    string playString =  (teamInPossession == TeamHome ? playersMatch.homeTeamName : playersMatch.awayTeamName) + " " + matchStringsRestartPlayAfterGoal[index];
+                    PushMatchString(playString);
+                }
+                subTurnState = Enums.MatchEngineSubState.DeterminePossession;
                 break;
             case Enums.MatchEngineSubState.TakeFreeKick:
+                if (!skipping)
+                {
+                    int index = Random.Range(1,matchStringsTakeFreeKick.Length);
+                    string takeKickString = matchStringsTakeFreeKick[index].Replace("%s", teamInPossession == TeamHome ? playersMatch.homeTeamName : playersMatch.awayTeamName);
+                    PushMatchString(takeKickString);
+                }
+                subTurnState = Enums.MatchEngineSubState.DeterminePossession;
                 break;
             case Enums.MatchEngineSubState.AdvanceTurn:
                 UpdateTeamConditionOfPlayers(homeTeam,playersMatch.formationHomeTeam,GameManager.MaxPlayersInFormation,ConditionAdjustPerTurn);
@@ -565,8 +789,6 @@ public class MatchEngine : MonoBehaviour
 
                 subTurnState = Enums.MatchEngineSubState.DeterminePossession;
                 turn++;
-                break;
-            case Enums.MatchEngineSubState.Max:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -591,9 +813,10 @@ public class MatchEngine : MonoBehaviour
                 int dataIndex = GetPlayerDataIndexForPlayerId(playerId);
                 if (dataIndex != -1)
                 {
-                    bool injured = gameManager.UpdateConditionOfPlayers(dataIndex,conditionAdjustment);
+                    bool injured = gameManager.UpdateConditionOfPlayer(dataIndex,conditionAdjustment);
                     if (injured)
                     {
+                        //These are unimplemented in the original source too/
                         if (teamId == gameManager.playersTeam)
                         {
                             
@@ -791,7 +1014,7 @@ public class MatchEngine : MonoBehaviour
             skill = GetSkillPointsForPlayersOnPitch(playersMatch.formationAwayTeam,positionOfFoulingPlayer,playersMatch.formationTypeAwayTeam);
         else
             skill = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam,positionOfFoulingPlayer,playersMatch.formationTypeHomeTeam);
-
+        
         if (skill > 0)
         {
             if (teamInPossession == TeamHome)
@@ -801,13 +1024,18 @@ public class MatchEngine : MonoBehaviour
                 foulerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationHomeTeam, skill,
                     positionOfFoulingPlayer, playersMatch.formationTypeHomeTeam, homeTeam);
         }
-        
-        
+        Debug.Log("skill " + skill + "\t fouling player index:" + foulerIndex);
+        Debug.Assert(foulerIndex != -1);
         if (foulerIndex == -1)
             playersMatch.foulerName = "[Err Det Foul Plyr]";
         else
+        {
             playersMatch.foulerName = gameManager.staticPlayersData[foulerIndex].playerSurname;
+            playerCommitingFoul = gameManager.dynamicPlayersData[foulerIndex];
+        }
+            
         indexOfPlayerCommitingFoul = foulerIndex;
+        
         return foulerIndex;
     }
 
@@ -863,9 +1091,9 @@ public class MatchEngine : MonoBehaviour
         }
 
         if (scorerIndex == -1)
-            playersMatch.scourerName = "Err Det Plyr";
+            playersMatch.scorerName = "Err Det Plyr";
         else
-            playersMatch.scourerName = gameManager.staticPlayersData[scorerIndex].playerSurname;
+            playersMatch.scorerName = gameManager.staticPlayersData[scorerIndex].playerSurname;
         
         playerWithBallIndex = scorerIndex;
         return playerWithBallIndex;
@@ -947,19 +1175,21 @@ public class MatchEngine : MonoBehaviour
         FormationData formationInfo = gameManager.formations[(int)formationType];
         for (int i = 0; i < GameManager.MaxPlayersInFormation; i++)
         {
-            if ((formationInfo.formations[i].formation & (Enums.PlayerFormation)posMask) != (Enums.PlayerFormation)0)
+            if ((formationInfo.formations[i].formation & posMask) != 0)
             {
                 int playerId = players[i];
                 if (playerId != -1)
                 {
                     int dataIndex = GetPlayerDataIndexForPlayerId(playerId);
+                    
                     float outOfPositionScale = 1.0f;
                     if (gameManager.CheckPlayerIndexIsHappyInFormation(dataIndex, formationInfo.formations[i]) == 0)
                         outOfPositionScale = 0.5f;
                     float starsRating = gameManager.GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
                     if (gameManager.dynamicPlayersData[dataIndex].weeksBannedOrInjured != 0)
                         starsRating = 0.0f;
-                    totalSkillPoints += (starsRating * gameManager.dynamicPlayersData[dataIndex].condition)*outOfPositionScale;
+                    Debug.Log("Getting skill points for " + gameManager.dynamicPlayersData[dataIndex].name + gameManager.dynamicPlayersData[dataIndex].condition);
+                    totalSkillPoints += (starsRating * gameManager.dynamicPlayersData[dataIndex].condition) * outOfPositionScale;
                 }
             }
         }

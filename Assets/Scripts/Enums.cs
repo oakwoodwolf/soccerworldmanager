@@ -296,6 +296,14 @@ public class Enums : MonoBehaviour
         DisplayingGameOver,
         DisplayingOutOfTime
     }
+    public enum TransferStatus
+    {
+	    NotListed = 0,	
+	    FreeTransfer,	
+	    OffersAtValue,	
+	    AnyOffers,		
+	    Max			
+    }
     public enum MatchEngineState
     {
         StartFirstHalf,

@@ -2551,7 +2551,7 @@ public class GameManager : MonoBehaviour
             dynamicPlayersData[playerIndex].morale = 256;
     }
 
-    public bool UpdateConditionOfPlayers(int dataIndex, float conditionAdjustment)
+    public bool UpdateConditionOfPlayer(int dataIndex, float conditionAdjustment)
     {
         bool injured = false;
         float oldCondition = dynamicPlayersData[dataIndex].condition;
@@ -2570,5 +2570,27 @@ public class GameManager : MonoBehaviour
             dynamicPlayersData[dataIndex].condition = MaxPlayerCondition;
 
         return injured;
+    }
+
+    public void GivePlayerIndexAYellowCard(int playerIndex)
+    {
+        int numCards = dynamicPlayersData[playerIndex].flags & YellowCardMask;
+        numCards++;
+        dynamicPlayersData[playerIndex].flags |= (ushort)(numCards&YellowCardMask);
+        if ((premiumLeagueYellowCards[playerIndex] & YellowCardsUntilBanMask) > 0)
+        {
+            int cardsTillBan = premiumLeagueYellowCards[playerIndex] * YellowCardsUntilBanMask;
+            cardsTillBan--;
+            premiumLeagueYellowCards[playerIndex] = (ushort)((premiumLeagueYellowCards[playerIndex] & YellowCardsUntilBanMask) |
+                                                     (cardsTillBan & YellowCardsUntilBanMask));
+        }
+        //increase tournament counter too
+        int yellowsInTournament = (premiumLeagueYellowCards[playerIndex] & YellowCardsInTournamentMask) >> YellowCardsInTournamentBitShift;
+        yellowsInTournament++;
+        premiumLeagueYellowCards[playerIndex] = (ushort)((premiumLeagueYellowCards[playerIndex] &
+                                                          YellowCardsUntilBanMask) |
+                                                         ((yellowsInTournament << YellowCardsInTournamentBitShift) &
+                                                          YellowCardsInTournamentMask));
+
     }
 }
