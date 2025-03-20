@@ -993,7 +993,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 32, y: -80}
+  m_AnchoredPosition: {x: 32, y: -120}
   m_SizeDelta: {x: 320, y: 480}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1216335563
@@ -1177,7 +1177,7 @@ MonoBehaviour:
   awayTeamName: 
   formationTypeAwayTeam: 0
   formationAwayTeam: 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-  scourerName: 
+  scorerName: 
   foulerName: 
 --- !u!114 &1268724601
 MonoBehaviour:
@@ -1216,6 +1216,7 @@ MonoBehaviour:
   indexOfFouledPlayer: 0
   foulDamageDone: 0
   indexOfPlayerCommitingFoul: 0
+  playerCommitingFoul: {fileID: 0}
   playerWithBallIndex: 0
   matchStatusYOffset: 0
   itemsInQuickPlayerList: 0
@@ -1382,6 +1383,86 @@ MonoBehaviour:
   - {fileID: 2959566}
   - {fileID: 528030615}
   - {fileID: 1216335565}
+  matchStringsLosingPossession:
+  - Dispossessed!
+  - The ball goes loose...
+  - He's tackled.
+  - Great tackle from the %s midfielder!
+  - Excellent tackle from %s.
+  - Tackled.
+  matchStringsKeepPossession:
+  - '%s make a run...'
+  - '%s keep possession...'
+  - Superb control from %s...
+  - The incoming tackles are avoided...
+  - They've still got the ball!
+  - '%s have still got possession.'
+  - '%s retain the ball.'
+  - The %s players are passing well...
+  - '%s keep the quality passes coming...'
+  - '%s string together a series of short passes.'
+  matchStringsTeamFouled:
+  - The %s player is brought down. Free kick given.
+  - '%s midfielder is hacked by an opposition player. Free kick to %s.'
+  - A horrible foul on the %s player! The crowd are appauled!
+  - The %s player is fouled. Free kick awarded.
+  - The %s striker has been fouled in the area! Penalty to %s!
+  - The opposition defender handled the ball in the area! Penalty to %s!
+  matchStringsChanceCreated:
+  - '%s lines up a shot...'
+  - '%s from outside the penalty area...'
+  - Inside the 6-yard box, surely a goal for %s...
+  - The cross is received by %s from the left...
+  - It's crossed in towards %s
+  - '%s''s got space! The shot is taken...'
+  - From miles away... It's %s
+  - Surely %s can't miss from here...
+  - '%s''s through on goal...'
+  matchStringsGoalScored:
+  - Goal scored!
+  - Straight in the back of the net!
+  - It's blocked, but he taps it in!
+  - What a goal!
+  - Goal for %s!
+  - It goes in off the post! What a lucky goal!
+  - Goal!
+  - Incredible goal!
+  - Goooooaaaaaaaaaallllllllllll!
+  - Superb finish!
+  - And it's in!
+  - Cracking goal!
+  - Great left-footed finish!
+  - It's tucked away stylishly!
+  matchStringsGoalMissed:
+  - The ball has gone wide!
+  - The shot goes over the bar!
+  - It hits the woodwork!
+  - It misses by miles!
+  - It misses the target.
+  - The shot has no power.
+  - The ball is sliced wide.
+  - Too high!
+  matchStringsTakeFreeKick:
+  - The ball has gone wide!
+  - The shot goes over the bar!
+  - It hits the woodwork!
+  - It misses by miles!
+  - It misses the target.
+  - The shot has no power.
+  - The ball is sliced wide.
+  - Too high!
+  matchStringsRestartPlayAfterGoal:
+  - Free kick given to %s within shooting distance.
+  - '%s are awarded a free kick within range of the goal.'
+  - '%s take a free kick.'
+  - '%s take the free kick.'
+  - A free kick for %s.
+  matchStringsPlayerInjured:
+  - '%s needs to be stretchered off.'
+  - '%s''s going to need stretchering off.'
+  - '%s won''t be finishing the match.'
+  - '%s is stretchered off.'
+  - The injury is too serious for %s to carry on.
 --- !u!114 &1268724602
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1429,8 +1510,8 @@ MonoBehaviour:
   - {fileID: 6836921926627544821, guid: c8e79b60f363ca1428b1bbff1c7cb068, type: 3}
   - {fileID: 2032476931760494891, guid: 96f1742e43cf1b1409e68c915826c86b, type: 3}
   - {fileID: 2032476931760494891, guid: e264c9dfa83befb4389c57585b121dc6, type: 3}
-  - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
-  - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
+  - {fileID: 2032476931760494891, guid: 54d63fdfcb1ba6b47b59fd72a8517805, type: 3}
+  - {fileID: 4401275763683909722, guid: 46cf0d54d2ce66142a0e6d89993b4b71, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}

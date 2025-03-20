@@ -286,8 +286,13 @@ public class MenuItem : MonoBehaviour
                     
                     break;
                 case Enums.MenuAction.ProcessSkipMatch:
+                    while (gameManager.matchEngine.state != Enums.MatchEngineState.MatchOver)
+                        gameManager.matchEngine.Render(8.0f,true);
+                    gameManager.GoToMenu(Enums.Screen.ProcessMatchData);
                     break;
                 case Enums.MenuAction.ProcessResetLeagueForNextYear:
+                    if (gameManager.playersYearsToRetire > 0)
+                        gameManager.playersYearsToRetire--;
                     break;
                 case Enums.MenuAction.OpenSafari:
                     break;

@@ -97,7 +97,7 @@ public class GameManager : MonoBehaviour
 
     [Header("League End")]
     [Tooltip("Keep track of the league the user is in.")]
-    public int leagueEndSaveUsersLeague;
+    public Enums.LeagueID leagueEndSaveUsersLeague;
     [Tooltip("Number of entries for League End Users Final Standings.")]
     public int leagueEndNumTeamsInFinalStandings;
     [Tooltip("Entries for League End Users Final Standings.")]
@@ -1554,8 +1554,195 @@ public class GameManager : MonoBehaviour
                 menuItems[1].HideItem(false);// show skip
                 menuItems[2].HideItem(true); // hide next
                 break;
+            case Enums.Screen.ProcessMatchData:
+                GoToMenu(Enums.Screen.PostMatchReview);
+                break;
+            case Enums.Screen.PostMatchReview:
+                int savePlayersMatchHomeTeamScore = matchEngine.homeTeamScore;
+                int savePlayersMatchAwayTeamScore = matchEngine.awayTeamScore;
+                
+                int leagueIndexH = GetLeagueDataIndexForTeam(playersMatch.homeTeam);
+                int leagueIndexA = GetLeagueDataIndexForTeam(playersMatch.awayTeam);
+                if (matchEngine.homeTeamScore == matchEngine.awayTeamScore)
+                {// a draw
+                    premiumLeagueData[leagueIndexH].leaguePoints += 1;
+                    premiumLeagueData[leagueIndexA].leaguePoints += 1;
+                    playerRating++;
+                    if (playerRating > 255)
+                        playerRating = 255;
+                }
+                else if (matchEngine.homeTeamScore > matchEngine.awayTeamScore)
+                { //home win
+                    premiumLeagueData[leagueIndexH].leaguePoints += 3;
+                    premiumLeagueData[leagueIndexH].goalDifference += (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+                    premiumLeagueData[leagueIndexA].goalDifference -= (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+
+                    if (playersMatch.homeTeam == playersTeam)
+                    {
+                        playerRating += (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+                        if (playerRating > 255)
+                            playerRating = 255;
+                    }
+                    else
+                    {
+                        playerRating -= (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+                        if (playerRating < 0)
+                            playerRating = 0;
+                    }
+                }
+                else
+                {//away win 
+                    premiumLeagueData[leagueIndexA].leaguePoints += 3;
+                    premiumLeagueData[leagueIndexA].goalDifference += (matchEngine.awayTeamScore - matchEngine.homeTeamScore);
+                    premiumLeagueData[leagueIndexH].goalDifference -= (matchEngine.awayTeamScore - matchEngine.homeTeamScore);
+
+                    if (playersMatch.awayTeam == playersTeam)
+                    {
+                        playerRating -= (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+                        if (playerRating > 255)
+                            playerRating = 255;
+                    }
+                    else
+                    {
+                        playerRating += (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+                        if (playerRating < 0)
+                            playerRating = 0;
+                    }
+                }
+                
+                premiumLeagueData[leagueIndexH].goalsFor += matchEngine.homeTeamScore;
+                premiumLeagueData[leagueIndexH].goalsAgainst += matchEngine.awayTeamScore;
+                premiumLeagueData[leagueIndexH].matchesPlayed++;
+                
+                premiumLeagueData[leagueIndexA].goalsFor += matchEngine.awayTeamScore;
+                premiumLeagueData[leagueIndexA].goalsAgainst += matchEngine.homeTeamScore;
+                premiumLeagueData[leagueIndexA].matchesPlayed++;
+
+                SortLeagueTable();
+                week++;
+                SaveGameData();
+                transferOfferOffersMadeThisTurn = 0;
+                break;
+
+            case Enums.Screen.ProcessLeagueFinish:
+                if ((week & 1) != 0)
+                    GoToMenu(Enums.Screen.ProcessLeagueFinish);
+                ProcessLeagueEndData();
+                break;
         }
     }
+
+    private void SortLeagueTable()
+    {
+        for (int i = 0; i < numTeamsInScenarioLeague; i++)
+        {
+            for (int team = 0; team < numTeamsInScenarioLeague - 1; team++)
+            {
+                if (premiumLeagueData[team].leaguePoints < premiumLeagueData[team+1].leaguePoints)
+                    SwapLeagueTableEntry(team,team+1);
+                else if (premiumLeagueData[team].leaguePoints == premiumLeagueData[team + 1].leaguePoints)
+                {
+                    if (premiumLeagueData[team].goalDifference < premiumLeagueData[team + 1].goalDifference)
+                        SwapLeagueTableEntry(team, team + 1);
+                }
+            }
+        }
+    }
+
+    private int GetLeagueDataIndexForTeam(int teamId)
+    {
+        int leagueIndex = -1;
+        for (int i = 0; i < numTeamsInScenarioLeague; i++)
+        {
+            if (premiumLeagueData[i].teamId == teamId)
+            {
+                leagueIndex = i;
+                break;
+            }
+        }
+        return leagueIndex;
+    }
+
+    private void ProcessLeagueEndData()
+    {
+        if ((week != -1) && week < ((numTeamsInScenarioLeague-1)*2))
+        {
+            SortLeagueTable();
+            week++;
+        }
+        else // done running cpu matches
+        {
+            if (week != -1) // not processing a league
+            {
+                int[] otherLeagueFinalStandings = new int[MaxTeamsInLeague];
+                for (int i = 0; i < numTeamsInScenarioLeague; i++)
+                    otherLeagueFinalStandings[i] = premiumLeagueData[i].teamId;
+                //promotions
+                switch (leagueEndSaveUsersLeague)
+                {
+                    case LeagueID.Premium:
+                        //relegation
+                        int rel1 = leagueEndUsersFinalStandings[17];
+                        int rel2 = leagueEndUsersFinalStandings[18];
+                        int rel3 = leagueEndUsersFinalStandings[19];
+
+                        int tmIndex = GetTeamDataIndexForTeamID(rel1);
+                        dynamicTeamsData[tmIndex].leagueID = LeagueID.Chumpionship;
+                        tmIndex = GetTeamDataIndexForTeamID(rel2);
+                        dynamicTeamsData[tmIndex].leagueID = LeagueID.Chumpionship;
+                        tmIndex = GetTeamDataIndexForTeamID(rel3);
+                        dynamicTeamsData[tmIndex].leagueID = LeagueID.Chumpionship;
+                        //promotion
+                        int promo1 = otherLeagueFinalStandings[0];
+                        int promo2 = otherLeagueFinalStandings[1];
+                        int promo3 = otherLeagueFinalStandings[2];
+                        
+                        tmIndex = GetTeamDataIndexForTeamID(promo1);
+                        dynamicTeamsData[tmIndex].leagueID = LeagueID.Premium;
+                        tmIndex = GetTeamDataIndexForTeamID(promo2);
+                        dynamicTeamsData[tmIndex].leagueID = LeagueID.Premium;
+                        tmIndex = GetTeamDataIndexForTeamID(promo3);
+                        dynamicTeamsData[tmIndex].leagueID = LeagueID.Premium;
+                        break;
+                    case LeagueID.Chumpionship:
+                        //relegation
+                        int relg1 = otherLeagueFinalStandings[17];
+                        int relg2 = otherLeagueFinalStandings[18];
+                        int relg3 = otherLeagueFinalStandings[19];
+
+                        
+                        int chumpTmIndex = GetTeamDataIndexForTeamID(relg1);
+                        dynamicTeamsData[chumpTmIndex].leagueID = LeagueID.Chumpionship;
+                        chumpTmIndex = GetTeamDataIndexForTeamID(relg2);
+                        dynamicTeamsData[chumpTmIndex].leagueID = LeagueID.Chumpionship;
+                        chumpTmIndex = GetTeamDataIndexForTeamID(relg3);
+                        dynamicTeamsData[chumpTmIndex].leagueID = LeagueID.Chumpionship;
+                        //promotion
+                        int chumpPromo1 = leagueEndUsersFinalStandings[0];
+                        int chumpPromo2 = leagueEndUsersFinalStandings[1];
+                        int chumpPromo3 = leagueEndUsersFinalStandings[2];
+                        
+                        chumpTmIndex = GetTeamDataIndexForTeamID(chumpPromo1);
+                        dynamicTeamsData[chumpTmIndex].leagueID = LeagueID.Premium;
+                        chumpTmIndex = GetTeamDataIndexForTeamID(chumpPromo2);
+                        dynamicTeamsData[chumpTmIndex].leagueID = LeagueID.Premium;
+                        chumpTmIndex = GetTeamDataIndexForTeamID(chumpPromo3);
+                        dynamicTeamsData[chumpTmIndex].leagueID = LeagueID.Premium;
+                        break;
+                }
+            }
+
+            int teamIndex = GetTeamDataIndexForTeamID(playersTeam);
+            playersLeague = dynamicTeamsData[teamIndex].leagueID;
+            numTeamsInScenarioLeague = CountTeamsInLeague(playersLeague);
+            FillTeamsInLeagueArray(teamIndexsForScenarioLeague,playersLeague);
+            week = 0;
+            ResetLeaguePoints();
+            SaveGameData();
+            LoadAndPrepareGame();
+        }
+    }
+
     /// <summary>
     /// scan a menu looking for radio buttons and reset all of them?
     /// </summary>
@@ -2592,5 +2779,19 @@ public class GameManager : MonoBehaviour
                                                          ((yellowsInTournament << YellowCardsInTournamentBitShift) &
                                                           YellowCardsInTournamentMask));
 
+    }
+
+    public void SetEndOfMatchButtonStates()
+    {
+        MenuItem[] menuItems = currentScreenDefinition.MenuItems.GetComponentsInChildren<MenuItem>();
+        
+        menuItems[1].HideItem(true);
+        menuItems[2].HideItem(false);
+        
+        menuItems[8].HideItem(true);
+        menuItems[9].HideItem(true);
+        menuItems[10].HideItem(true);
+        menuItems[11].HideItem(true);
+        menuItems[12].HideItem(true);
     }
 }

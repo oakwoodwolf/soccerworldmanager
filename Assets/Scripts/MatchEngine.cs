@@ -242,13 +242,13 @@ public class MatchEngine : MonoBehaviour
     {
         gameManager = GetComponent<GameManager>();
         playersMatch = gameManager.playersMatch;
-        overlay.SetActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        if (gameManager.currentScreen!=Enums.Screen.MatchEngine)
+            overlay.SetActive(false);
     }
 
     public void SetupForMatch(int homeTeamId, int awayTeamId)
@@ -322,13 +322,13 @@ public class MatchEngine : MonoBehaviour
                     case Enums.MatchEngineState.StartFirstHalf:
                         turnTimeMultiplier = 5;
                         turnTimeOffset = 0;
-                        teamInPossession = 0; // 0 is home, 1 is away
+                        teamInPossession = TeamHome; // 0 is home, 1 is away
                         turnsInPossession = 0;
                         if (!skipping)
                         {
                             gameManager.SoundEngine_StartEffect(Enums.Sounds.Whistle);
                             string matchString = "";
-                            if (teamInPossession == 0)
+                            if (teamInPossession == TeamHome)
                                  matchString = playersMatch.homeTeamName + " Kicks off";
                             else
                                  matchString = playersMatch.awayTeamName + " Kicks off";
@@ -359,14 +359,96 @@ public class MatchEngine : MonoBehaviour
                         }
                         break;
                     case Enums.MatchEngineState.EndFirstHalf:
+                        state = Enums.MatchEngineState.StartSecondHalf;
+                        
                         break;
                     case Enums.MatchEngineState.StartSecondHalf:
+                        if (!skipping)
+                        {
+                            gameManager.SoundEngine_StartEffect(Enums.Sounds.Whistle);
+                            teamInPossession = TeamAway;
+                            turnsInPossession = 0;
+                            string matchString = "";
+                            if (teamInPossession == 0)
+                                matchString = playersMatch.homeTeamName + " get us going for the second half.";
+                            else
+                                matchString = playersMatch.awayTeamName + " get us going for the second half.";
+                            PushMatchString(matchString);
+                        }
+                        state = Enums.MatchEngineState.InSecondHalf;
                         break;
                     case Enums.MatchEngineState.InSecondHalf:
+                        if (turn == extraTimeWarningTurn &&
+                            subTurnState == Enums.MatchEngineSubState.DeterminePossession && extraTime == -1)
+                        {
+                            extraTime = (int)injuryTime;
+                            if (((homeTeamMatchBreakerFlags & Enums.MatchBreakerFlags.ExtraExtraTime) !=
+                                 (Enums.MatchBreakerFlags)0) ||
+                                ((awayTeamMatchBreakerFlags & Enums.MatchBreakerFlags.ExtraExtraTime) != 0))
+                                extraTime += 5;
+                            
+                            if (extraTime > 0)
+                                PushMatchString("The 4th official indicates there will be "+extraTime+" min(s) of extra time.");
+                            else
+                                PushMatchString("The 4th official indicates there will be no extra time played.");
+
+                        }
+                        if (turn >= turnsInSecondHalf)
+                        {
+                            turn = turnsInSecondHalf;
+                            if (extraTime > 0)
+                            {
+                                state = Enums.MatchEngineState.ExtraTime;
+                                turn = 0;
+                                turnTimeMultiplier = 1;
+                                turnTimeOffset = 90;
+                            }
+                            else
+                            {
+                                state = Enums.MatchEngineState.MatchOver;
+                                if (!skipping)
+                                {
+                                    gameManager.SoundEngine_StartEffect(Enums.Sounds.Whistle_EndGame);
+                                    string refString = "The Ref blows his whistle!\n- That's the end of the Match!\n";
+                                    PushMatchString(refString);
+                                    matchStringIndex++;
+                                    matchStringIndex &= MatchStringsMask;
+                                    matchStrings[matchStringIndex] = "The final score is ["+homeTeamScore+":"+awayTeamScore+"]\n";
+                                    gameManager.SetEndOfMatchButtonStates();
+                                }
+                            }
+                            
+                        }
+                        else
+                        {
+                            UpdateMatchTurn(skipping);
+                        }
                         break;
                     case Enums.MatchEngineState.ExtraTime:
+                        if (turn >= extraTime)
+                        {
+
+                            state = Enums.MatchEngineState.MatchOver;
+                            if (!skipping)
+                            {
+                                gameManager.SoundEngine_StartEffect(Enums.Sounds.Whistle_EndGame);
+                                string refString = "The Ref blows his whistle!\n- That's the end of the Match!\n";
+                                PushMatchString(refString);
+                                matchStringIndex++;
+                                matchStringIndex &= MatchStringsMask;
+                                matchStrings[matchStringIndex] = "The final score is ["+homeTeamScore+":"+awayTeamScore+"]\n";
+                                gameManager.SetEndOfMatchButtonStates();
+                            }
+                            
+                            
+                        }
+                        else
+                        {
+                            UpdateMatchTurn(skipping);
+                        }
                         break;
                     case Enums.MatchEngineState.MatchOver:
+                        gameManager.SetEndOfMatchButtonStates();
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -375,9 +457,14 @@ public class MatchEngine : MonoBehaviour
                 if (!skipping)
                 {
                     overlay.SetActive(true);
+                    float off = 0f;
                     for (int i = 0; i < 6; i++)
                     {
                         matchTexts[i].text = matchStrings[(matchStringIndex-(5-i))&MatchStringsMask];
+                        matchTexts[i].rectTransform.anchoredPosition = new Vector2(0,-off);
+                        matchTexts[i].ForceMeshUpdate();
+                        off += (17 * (matchTexts[i].textInfo.lineCount));
+                        Debug.Log(matchTexts[i].textInfo.lineCount + " " + matchTexts[i].text);
                     }
                     int homeTeamIndex = gameManager.GetTeamDataIndexForTeamID(homeTeam);
                     int awayTeamIndex = gameManager.GetTeamDataIndexForTeamID(awayTeam);
