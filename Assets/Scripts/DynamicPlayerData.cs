@@ -10,7 +10,7 @@ public class DynamicPlayerData : ScriptableObject
     public short weeklySalary;
     public short morale;
     public short weeksBannedOrInjured;
-    public ushort flags;
+    public short flags;
 
     public void LoadDynamicPlayerData(string[] txtData)
     {

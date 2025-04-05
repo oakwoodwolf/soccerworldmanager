@@ -46,6 +46,9 @@ public class GameManager : MonoBehaviour
     public const int WarningMask= 1 << 3;
     public const int BeenOnPitchMask = 1 << 4;
 
+    public const int DefaultGoalScoreBonus = 10;
+    public const int DefaultIncomeFromSponsors = 200;
+    public const float IncomePerTicket = 0.05f;
 
 
     
@@ -533,7 +536,7 @@ public class GameManager : MonoBehaviour
         }
         else 
         {
-            Debug.Log("No scores found in saved data.");
+            Debug.Log("No scores found in saved data. " + jsonforData);
             return false;
         }
     }
@@ -651,7 +654,7 @@ public class GameManager : MonoBehaviour
                     dynamicPlayersData[dataIndex].weeklySalary = (short)dictionary["weeklySalary"];
                     dynamicPlayersData[dataIndex].morale = (short)dictionary["morale"];
                     dynamicPlayersData[dataIndex].weeksBannedOrInjured = (short)dictionary["weeksBannedOrInjured"];
-                    dynamicPlayersData[dataIndex].flags = (ushort)dictionary["flags"];
+                    dynamicPlayersData[dataIndex].flags = (short)dictionary["flags"];
                 }
             }
             //Load Dynamic Manager Data
@@ -1617,7 +1620,7 @@ public class GameManager : MonoBehaviour
                 premiumLeagueData[leagueIndexA].goalsFor += matchEngine.awayTeamScore;
                 premiumLeagueData[leagueIndexA].goalsAgainst += matchEngine.homeTeamScore;
                 premiumLeagueData[leagueIndexA].matchesPlayed++;
-
+                ProcessCPUMatchesForWeek(savePlayersMatchHomeTeamScore,savePlayersMatchAwayTeamScore);
                 SortLeagueTable();
                 week++;
                 SaveGameData();
@@ -1631,6 +1634,171 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
+
+    private void ProcessCPUMatchesForWeek(int savePlayersMatchHomeTeamScore, int savePlayersMatchAwayTeamScore)
+    {
+        float yOff = 72.0f;
+        for (int home = 0; home < numTeamsInScenarioLeague; home++)
+        {
+            for (int away = 0; away < numTeamsInScenarioLeague; away++)
+            {
+                int homeScore = 0;
+                int homeTeamId = staticTeamsData[teamIndexsForScenarioLeague[home]].teamId;
+                int leagueIndexH = GetLeagueDataIndexForTeam(homeTeamId);
+                
+                int awayScore = 0;
+                int awayTeamId = staticTeamsData[teamIndexsForScenarioLeague[away]].teamId;
+                int leagueIndexA = GetLeagueDataIndexForTeam(awayTeamId);
+
+                if ((playersMatch.homeTeam == homeTeamId) && (playersMatch.awayTeam == awayTeamId))
+                {
+                    homeScore = savePlayersMatchHomeTeamScore;
+                    awayScore = savePlayersMatchAwayTeamScore;
+                }
+                else // simulated match for cpu v cpu
+                {
+                    matchEngine.SetupForMatch(homeTeamId, awayTeamId);
+                    int[] teamPlayerIds = new int[MaxPlayersInATeam];
+                    
+                    int managerHomeIndex = GetIndexToManagerForTeamID(homeTeamId);
+                    Debug.Assert(managerHomeIndex != -1); // ensure its not unemployed
+                    playersMatch.formationTypeHomeTeam = GetCPUFormationForManagerIndex(managerHomeIndex);
+                    int numPlayersInTeam = FillTeamPlayerArray(teamPlayerIds, homeTeamId);
+                    
+                    int managerAwayIndex = GetIndexToManagerForTeamID(homeTeamId);
+                    Debug.Assert(managerAwayIndex != -1); // ensure its not unemployed
+                    playersMatch.formationTypeAwayTeam = GetCPUFormationForManagerIndex(managerAwayIndex);
+                    numPlayersInTeam = FillTeamPlayerArray(teamPlayerIds, awayTeamId);
+                    AutofillFormationFromPlayerIDs(playersMatch.formationAwayTeam, teamPlayerIds,numPlayersInTeam,playersMatch.formationTypeAwayTeam,awayTeamId);
+
+                    while (matchEngine.state != MatchEngineState.MatchOver)
+                    {
+                        matchEngine.Render(matchEngine.skip,true);
+                    }
+
+                    if (matchEngine.homeTeamScore == matchEngine.awayTeamScore)
+                    {
+                        premiumLeagueData[leagueIndexH].leaguePoints += 1;
+                        premiumLeagueData[leagueIndexA].leaguePoints += 1;
+                    }
+                    else if (matchEngine.homeTeamScore > matchEngine.awayTeamScore)
+                    {
+                        premiumLeagueData[leagueIndexH].leaguePoints += 3;
+                        premiumLeagueData[leagueIndexH].goalDifference += (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+                        premiumLeagueData[leagueIndexA].goalDifference -= (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+                    }
+                    else
+                    {//away win 
+                        premiumLeagueData[leagueIndexA].leaguePoints += 3;
+                        premiumLeagueData[leagueIndexA].goalDifference += (matchEngine.awayTeamScore - matchEngine.homeTeamScore);
+                        premiumLeagueData[leagueIndexH].goalDifference -= (matchEngine.awayTeamScore - matchEngine.homeTeamScore);
+                    }
+                    premiumLeagueData[leagueIndexH].goalsFor += matchEngine.homeTeamScore;
+                    premiumLeagueData[leagueIndexH].goalsAgainst += matchEngine.awayTeamScore;
+                
+                    premiumLeagueData[leagueIndexA].goalsFor += matchEngine.awayTeamScore;
+                    premiumLeagueData[leagueIndexA].goalsAgainst += matchEngine.homeTeamScore;
+                    if (leagueIndexH != -1)
+                        premiumLeagueData[leagueIndexH].matchesPlayed++;
+                    if (leagueIndexA != -1)
+                        premiumLeagueData[leagueIndexA].matchesPlayed++;
+                    homeScore = matchEngine.homeTeamScore;
+                    awayScore = matchEngine.awayTeamScore;
+                }
+
+                UpdateConditionOfPlayersInTeam(homeTeamId, ConditionAdjustRecoverOverWeek);
+                UpdateBansInjuryAndFlagsOfPlayersInTeam(homeTeamId);
+                UpdateConditionOfPlayersInTeam(awayTeamId, ConditionAdjustRecoverOverWeek);
+                UpdateBansInjuryAndFlagsOfPlayersInTeam(awayTeamId);
+                int homeTeamIndex = GetTeamDataIndexForTeamID(homeTeamId);
+                int awayTeamIndex = GetTeamDataIndexForTeamID(awayTeamId);
+                
+                
+                // Render todo
+                MenuItem item = menuItemGenerator.GenerateMenuItem(currentScreenDefinition, MenuElement.StaticText,
+                    new Vector2(32, -yOff),0,0,staticTeamsData[homeTeamIndex].teamName + " " + homeScore + " " + staticTeamsData[awayTeamIndex].teamName + " " + awayScore,MenuAction.Null,0,null,18*menuItemGenerator.standingsTextFontScale);
+                yOff += 16;
+                item.transform.SetSiblingIndex(3); // ensure it overlays the box
+                // Pay out goal score bonuses
+                int perGoalBonusCost = DefaultGoalScoreBonus;
+                AddTeamCashBalance(homeTeamId, (perGoalBonusCost*homeScore));
+                AddTeamCashBalance(awayTeamId, (perGoalBonusCost*awayScore));
+                if (homeTeamId == playersTeam)
+                    statsTurnExpendSalary += (perGoalBonusCost * homeScore);
+                if (awayTeamId == playersTeam)
+                    statsTurnExpendSalary += (perGoalBonusCost * awayScore);
+                
+                int leagueDataIndex = GetIndexToLeagueData((int)dynamicTeamsData[homeTeamIndex].leagueID);
+                int maxAttendance = staticTeamsData[homeTeamIndex].stadiumSeats;
+                float homeFanMorale = dynamicTeamsData[homeTeamIndex].fanMorale;
+                float awayFanMorale = dynamicTeamsData[awayTeamIndex].fanMorale;
+                float homeAttend = (8.0f + (homeFanMorale * 2.0f)) / 10.0f; // using a 10 range here so attenance should be between 60-100 per side
+                float awayAttend = (8.0f + (awayFanMorale * 2.0f)) / 10.0f; // using a 10 range here so attenance should be between 60-100 per side
+                int actualAttendance = (int)((maxAttendance) * ((homeAttend + awayAttend) / 2.0f));
+
+                if (((matchEngine.homeTeamMatchBreakerFlags & MatchBreakerFlags.MaximumAttendence) !=
+                     (MatchBreakerFlags)0) ||
+                    ((matchEngine.awayTeamMatchBreakerFlags & MatchBreakerFlags.MaximumAttendence) !=
+                     (MatchBreakerFlags)0))
+                    actualAttendance = maxAttendance;
+
+                int incomeFromMatch = (int)(actualAttendance * staticLeaguesData[leagueDataIndex].ticketValue);
+                AddTeamCashBalance(homeTeamId, (int)(incomeFromMatch * 0.6f));
+                AddTeamCashBalance(awayTeamId, (int)(incomeFromMatch * 0.4f));
+
+                if (homeTeamId == playersTeam)
+                {
+                    statsTurnIncomeTicketSales += (int)(incomeFromMatch * 0.6f);
+                    statsAttendance = actualAttendance;
+                    statsStadiumSeats = maxAttendance;
+                }
+                if (awayTeamId == playersTeam)
+                {
+                    statsTurnIncomeTicketSales += (int)(incomeFromMatch * 0.4f);
+                    statsAttendance = actualAttendance;
+                    statsStadiumSeats = maxAttendance;
+                }
+
+                int homeTeamTvSponsorIncome = staticLeaguesData[leagueDataIndex].tvIncomePerTurn;
+                int awayTeamTvSponsorIncome = staticLeaguesData[leagueDataIndex].tvIncomePerTurn;
+
+                homeTeamTvSponsorIncome += (staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn - staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn/2)+staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn;
+                awayTeamTvSponsorIncome += (staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn - staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn/2)+staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn;
+                
+                if ((matchEngine.homeTeamMatchBreakerFlags & MatchBreakerFlags.SponsorBonus) !=
+                     (MatchBreakerFlags)0)
+                    homeTeamTvSponsorIncome *= 3;
+                if ((matchEngine.awayTeamMatchBreakerFlags & MatchBreakerFlags.SponsorBonus) !=
+                     (MatchBreakerFlags)0)
+                    awayTeamTvSponsorIncome *= 3;
+                
+                AddTeamCashBalance(homeTeamId, homeTeamTvSponsorIncome);
+                AddTeamCashBalance(awayTeamId, awayTeamTvSponsorIncome);
+
+                if (homeTeamId == playersTeam)
+                    statsTurnIncomeSponsorsTV += homeTeamTvSponsorIncome;
+                if (awayTeamId == playersTeam)
+                    statsTurnIncomeSponsorsTV += awayTeamTvSponsorIncome;
+
+                UpdateTeamIndexFanMorale(homeTeamIndex,(homeScore*0.05f)- (awayScore*0.05f));
+                UpdateTeamIndexFanMorale(awayTeamIndex,(awayScore*0.05f)- (homeScore*0.05f));
+            }
+        }
+    }
+
+    private float UpdateTeamIndexFanMorale(int teamIndex, float morale)
+    {
+        float result = dynamicTeamsData[teamIndex].fanMorale;
+        result += morale;
+        if (result > 1.0f)
+            result = 1.0f;
+        if (result < -1.0f)
+            result = -1.0f;
+        
+        dynamicTeamsData[teamIndex].fanMorale = result;
+        return result;
+    }
+
 
     private void SortLeagueTable()
     {
@@ -2758,12 +2926,80 @@ public class GameManager : MonoBehaviour
 
         return injured;
     }
+    public void UpdateConditionOfPlayersInTeam(int teamId, float conditionAdjustment)
+    {
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            if (dynamicPlayersData[i].teamId == teamId)
+            {
+                UpdateConditionOfPlayer(i, conditionAdjustment);
+                UpdatePlayerIndexMoraleByAmount(i,-1);
+            }
+        }
+    }
+    public void UpdateBansInjuryAndFlagsOfPlayersInTeam(int teamId)
+    {
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            if (dynamicPlayersData[i].teamId == teamId)
+            {
+                int dataIndex = i;
+                dynamicPlayersData[dataIndex].flags &= ~(WarningMask | BeenOnPitchMask);
+                dynamicPlayersData[dataIndex].flags &= ~(YellowCardMask | RedCardMask);
+                // is player banned
+                if ((dynamicPlayersData[dataIndex].flags & bannedMask) != 0)
+                {
+                    int weeks = (dynamicPlayersData[dataIndex].weeksBannedOrInjured & bannedMask) >> bannedBitShift;
+                    weeks--;
+                    UpdatePlayerIndexMoraleByAmount(dataIndex,-2);
+                    if (weeks <= 0)
+                    {
+                        weeks = 0;
+                    }
 
+                    dynamicPlayersData[dataIndex].weeksBannedOrInjured =
+                        (short)((dynamicPlayersData[dataIndex].weeksBannedOrInjured & injuryMask) | (weeks<<bannedBitShift));
+                }
+                if ((dynamicPlayersData[dataIndex].flags & injuryMask) != 0)
+                {
+                    int weeks = (dynamicPlayersData[dataIndex].weeksBannedOrInjured & injuryMask);
+                    weeks--;
+                    UpdatePlayerIndexMoraleByAmount(dataIndex,-4);
+                    if (weeks <= 0)
+                    {
+                        weeks = 0;
+                        dynamicPlayersData[dataIndex].condition += ShowInjuredRatio;
+                        if (dynamicPlayersData[dataIndex].condition > MaxPlayerCondition)
+                            dynamicPlayersData[dataIndex].condition = MaxPlayerCondition;
+                    }
+
+                    dynamicPlayersData[dataIndex].weeksBannedOrInjured =
+                        (short)((dynamicPlayersData[dataIndex].weeksBannedOrInjured & bannedMask) | (weeks));
+                }
+                // should a player be banned from yellow cards
+                if ((dynamicPlayersData[dataIndex].flags & YellowCardsUntilBanMask) == 0)
+                {
+                    premiumLeagueYellowCards[dataIndex] |= 5;
+                    UpdatePlayerIndexMoraleByAmount(dataIndex,-4);
+                    int weeks = (dynamicPlayersData[dataIndex].weeksBannedOrInjured & bannedMask) >> bannedBitShift;
+                    weeks--;
+                    UpdatePlayerIndexMoraleByAmount(dataIndex,-2);
+                    if (weeks <= 0)
+                    {
+                        weeks = 0;
+                    }
+
+                    dynamicPlayersData[dataIndex].weeksBannedOrInjured =
+                        (short)((dynamicPlayersData[dataIndex].weeksBannedOrInjured & injuryMask) | (weeks<<bannedBitShift));
+                }
+            }
+        }
+    }
     public void GivePlayerIndexAYellowCard(int playerIndex)
     {
         int numCards = dynamicPlayersData[playerIndex].flags & YellowCardMask;
         numCards++;
-        dynamicPlayersData[playerIndex].flags |= (ushort)(numCards&YellowCardMask);
+        dynamicPlayersData[playerIndex].flags |= (short)(numCards&YellowCardMask);
         if ((premiumLeagueYellowCards[playerIndex] & YellowCardsUntilBanMask) > 0)
         {
             int cardsTillBan = premiumLeagueYellowCards[playerIndex] * YellowCardsUntilBanMask;

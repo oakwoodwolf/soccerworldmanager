@@ -11,6 +11,8 @@ public class MenuItemGenerator : MonoBehaviour
     [SerializeField]
     public int menuBarHeight = 32;
     [SerializeField]
+    public float standingsTextFontScale = 0.85f;
+    [SerializeField]
     public int menuBarSpace = 16;
     [SerializeField]
     public int menuBarSpacing = 48;
