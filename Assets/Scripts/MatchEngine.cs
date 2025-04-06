@@ -274,12 +274,17 @@ public class MatchEngine : MonoBehaviour
         indexOfFouledPlayer = -1;
         // TODO - prepare quick access team data array(s)
         itemsInQuickPlayerList = 0;
+        
+        int indexH = gameManager.GetTeamDataIndexForTeamID(homeTeamId);
+        int indexA = gameManager.GetTeamDataIndexForTeamID(awayTeamId);
+        Debug.Log("Preparing Match for " + gameManager.dynamicTeamsData[indexH].name + " " + gameManager.dynamicTeamsData[indexA].name);
         for (int i = 0; i < gameManager.numberOfPlayersInArrays; i++)
         {
             if ((gameManager.dynamicPlayersData[i].teamId == homeTeamId) || (gameManager.dynamicPlayersData[i].teamId == awayTeamId))
             {
                 Debug.Assert(itemsInQuickPlayerList < (2*GameManager.MaxPlayersInATeam));
                 quickPlayerIdToIndexList[itemsInQuickPlayerList] = ScriptableObject.CreateInstance<IdToIndex>();
+                quickPlayerIdToIndexList[itemsInQuickPlayerList].name = gameManager.staticPlayersData[i].playerSurname;
                 quickPlayerIdToIndexList[itemsInQuickPlayerList].itemId = gameManager.staticPlayersData[i].playerId;
                 quickPlayerIdToIndexList[itemsInQuickPlayerList].itemIndex = i;
                 itemsInQuickPlayerList++;
@@ -1292,6 +1297,7 @@ public class MatchEngine : MonoBehaviour
             if (playerId != -1)
             {
                 int dataIndex = GetPlayerDataIndexForPlayerId(playerId);
+                Debug.Assert(dataIndex != -1);
                 float outOfPositionScale = 1.0f;
                 if (gameManager.CheckPlayerIndexIsHappyInFormation(dataIndex, formationInfo.formations[i]) == 0)
                     outOfPositionScale = 0.5f;

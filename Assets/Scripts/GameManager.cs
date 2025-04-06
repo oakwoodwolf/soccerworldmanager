@@ -434,6 +434,7 @@ public class GameManager : MonoBehaviour
     
     public int CheckPlayerIndexIsHappyInFormation(int playerIndex, FormationInfo formation)
     {
+        if (playerIndex == -1) return 0;
         if ((formation.formation & PlayerFormation.Substitute) != (PlayerFormation)0)
             return (int)PlayerFormation.Substitute;
         return (int)(staticPlayersData[playerIndex].playerPositionFlags & formation.formation);
@@ -1642,146 +1643,157 @@ public class GameManager : MonoBehaviour
         {
             for (int away = 0; away < numTeamsInScenarioLeague; away++)
             {
-                int homeScore = 0;
-                int homeTeamId = staticTeamsData[teamIndexsForScenarioLeague[home]].teamId;
-                int leagueIndexH = GetLeagueDataIndexForTeam(homeTeamId);
-                
-                int awayScore = 0;
-                int awayTeamId = staticTeamsData[teamIndexsForScenarioLeague[away]].teamId;
-                int leagueIndexA = GetLeagueDataIndexForTeam(awayTeamId);
-
-                if ((playersMatch.homeTeam == homeTeamId) && (playersMatch.awayTeam == awayTeamId))
+                if (PremiumLeagueMatchesPlayed[home, away] == week)
                 {
-                    homeScore = savePlayersMatchHomeTeamScore;
-                    awayScore = savePlayersMatchAwayTeamScore;
-                }
-                else // simulated match for cpu v cpu
-                {
-                    matchEngine.SetupForMatch(homeTeamId, awayTeamId);
-                    int[] teamPlayerIds = new int[MaxPlayersInATeam];
+                    int homeScore = 0;
+                    int homeTeamId = staticTeamsData[teamIndexsForScenarioLeague[home]].teamId;
+                    int leagueIndexH = GetLeagueDataIndexForTeam(homeTeamId);
                     
-                    int managerHomeIndex = GetIndexToManagerForTeamID(homeTeamId);
-                    Debug.Assert(managerHomeIndex != -1); // ensure its not unemployed
-                    playersMatch.formationTypeHomeTeam = GetCPUFormationForManagerIndex(managerHomeIndex);
-                    int numPlayersInTeam = FillTeamPlayerArray(teamPlayerIds, homeTeamId);
+                    int awayScore = 0;
+                    int awayTeamId = staticTeamsData[teamIndexsForScenarioLeague[away]].teamId;
+                    int leagueIndexA = GetLeagueDataIndexForTeam(awayTeamId);
+
+                    if ((playersMatch.homeTeam == homeTeamId) && (playersMatch.awayTeam == awayTeamId))
+                    {
+                        homeScore = savePlayersMatchHomeTeamScore;
+                        awayScore = savePlayersMatchAwayTeamScore;
+                    }
+                    else // simulated match for cpu v cpu
+                    {
+                        matchEngine.SetupForMatch(homeTeamId, awayTeamId);
+                        int[] teamPlayerIds = new int[MaxPlayersInATeam];
+                        
+                        int managerHomeIndex = GetIndexToManagerForTeamID(homeTeamId);
+                        Debug.Assert(managerHomeIndex != -1); // ensure its not unemployed
+                        playersMatch.formationTypeHomeTeam = GetCPUFormationForManagerIndex(managerHomeIndex);
+                        int numPlayersInTeam = FillTeamPlayerArray(teamPlayerIds, homeTeamId);
+                        AutofillFormationFromPlayerIDs(playersMatch.formationHomeTeam, teamPlayerIds,numPlayersInTeam,playersMatch.formationTypeHomeTeam,homeTeamId);
+
+                        int managerAwayIndex = GetIndexToManagerForTeamID(homeTeamId);
+                        Debug.Assert(managerAwayIndex != -1); // ensure its not unemployed
+                        playersMatch.formationTypeAwayTeam = GetCPUFormationForManagerIndex(managerAwayIndex);
+                        numPlayersInTeam = FillTeamPlayerArray(teamPlayerIds, awayTeamId);
+                        AutofillFormationFromPlayerIDs(playersMatch.formationAwayTeam, teamPlayerIds,numPlayersInTeam,playersMatch.formationTypeAwayTeam,awayTeamId);
+
+                        while (matchEngine.state != MatchEngineState.MatchOver)
+                        {
+                            matchEngine.Render(matchEngine.skip,true);
+                        }
+
+                        if (matchEngine.homeTeamScore == matchEngine.awayTeamScore)
+                        {
+                            premiumLeagueData[leagueIndexH].leaguePoints += 1;
+                            premiumLeagueData[leagueIndexA].leaguePoints += 1;
+                        }
+                        else if (matchEngine.homeTeamScore > matchEngine.awayTeamScore)
+                        {
+                            premiumLeagueData[leagueIndexH].leaguePoints += 3;
+                            premiumLeagueData[leagueIndexH].goalDifference += (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+                            premiumLeagueData[leagueIndexA].goalDifference -= (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
+                        }
+                        else
+                        {//away win 
+                            premiumLeagueData[leagueIndexA].leaguePoints += 3;
+                            premiumLeagueData[leagueIndexA].goalDifference += (matchEngine.awayTeamScore - matchEngine.homeTeamScore);
+                            premiumLeagueData[leagueIndexH].goalDifference -= (matchEngine.awayTeamScore - matchEngine.homeTeamScore);
+                        }
+                        premiumLeagueData[leagueIndexH].goalsFor += matchEngine.homeTeamScore;
+                        premiumLeagueData[leagueIndexH].goalsAgainst += matchEngine.awayTeamScore;
                     
-                    int managerAwayIndex = GetIndexToManagerForTeamID(homeTeamId);
-                    Debug.Assert(managerAwayIndex != -1); // ensure its not unemployed
-                    playersMatch.formationTypeAwayTeam = GetCPUFormationForManagerIndex(managerAwayIndex);
-                    numPlayersInTeam = FillTeamPlayerArray(teamPlayerIds, awayTeamId);
-                    AutofillFormationFromPlayerIDs(playersMatch.formationAwayTeam, teamPlayerIds,numPlayersInTeam,playersMatch.formationTypeAwayTeam,awayTeamId);
+                        premiumLeagueData[leagueIndexA].goalsFor += matchEngine.awayTeamScore;
+                        premiumLeagueData[leagueIndexA].goalsAgainst += matchEngine.homeTeamScore;
+                        if (leagueIndexH != -1)
+                            premiumLeagueData[leagueIndexH].matchesPlayed++;
+                        if (leagueIndexA != -1)
+                            premiumLeagueData[leagueIndexA].matchesPlayed++;
+                        homeScore = matchEngine.homeTeamScore;
+                        awayScore = matchEngine.awayTeamScore;
+                    }
 
-                    while (matchEngine.state != MatchEngineState.MatchOver)
+                    UpdateConditionOfPlayersInTeam(homeTeamId, ConditionAdjustRecoverOverWeek);
+                    UpdateBansInjuryAndFlagsOfPlayersInTeam(homeTeamId);
+                    UpdateConditionOfPlayersInTeam(awayTeamId, ConditionAdjustRecoverOverWeek);
+                    UpdateBansInjuryAndFlagsOfPlayersInTeam(awayTeamId);
+                    int homeTeamIndex = GetTeamDataIndexForTeamID(homeTeamId);
+                    int awayTeamIndex = GetTeamDataIndexForTeamID(awayTeamId);
+                    
+                    
+                    // Render todo
+                    MenuItem item = menuItemGenerator.GenerateMenuItem(currentScreenDefinition, MenuElement.StaticText,
+                        new Vector2(32, -yOff),0,0,staticTeamsData[homeTeamIndex].teamName + " " + homeScore + " " + staticTeamsData[awayTeamIndex].teamName + " " + awayScore,MenuAction.Null,0,null,18*menuItemGenerator.standingsTextFontScale);
+                    yOff += 16;
+                    item.transform.SetSiblingIndex(3); // ensure it overlays the box
+                    Color textColor = new Color(0.7f,0.8f,0.9f);
+                    if (homeTeamId == playersTeam)
+                        textColor = new Color(1.0f,1.0f,0.8f);
+                    if (awayTeamId == playersTeam)
+                        textColor = new Color(1.0f,1.0f,0.8f);
+                    item.mText.color = (textColor);
+                    // Pay out goal score bonuses
+                    int perGoalBonusCost = DefaultGoalScoreBonus;
+                    AddTeamCashBalance(homeTeamId, (perGoalBonusCost*homeScore));
+                    AddTeamCashBalance(awayTeamId, (perGoalBonusCost*awayScore));
+                    if (homeTeamId == playersTeam)
+                        statsTurnExpendSalary += (perGoalBonusCost * homeScore);
+                    if (awayTeamId == playersTeam)
+                        statsTurnExpendSalary += (perGoalBonusCost * awayScore);
+                    
+                    int leagueDataIndex = GetIndexToLeagueData((int)dynamicTeamsData[homeTeamIndex].leagueID);
+                    int maxAttendance = staticTeamsData[homeTeamIndex].stadiumSeats;
+                    float homeFanMorale = dynamicTeamsData[homeTeamIndex].fanMorale;
+                    float awayFanMorale = dynamicTeamsData[awayTeamIndex].fanMorale;
+                    float homeAttend = (8.0f + (homeFanMorale * 2.0f)) / 10.0f; // using a 10 range here so attenance should be between 60-100 per side
+                    float awayAttend = (8.0f + (awayFanMorale * 2.0f)) / 10.0f; // using a 10 range here so attenance should be between 60-100 per side
+                    int actualAttendance = (int)((maxAttendance) * ((homeAttend + awayAttend) / 2.0f));
+
+                    if (((matchEngine.homeTeamMatchBreakerFlags & MatchBreakerFlags.MaximumAttendence) !=
+                         (MatchBreakerFlags)0) ||
+                        ((matchEngine.awayTeamMatchBreakerFlags & MatchBreakerFlags.MaximumAttendence) !=
+                         (MatchBreakerFlags)0))
+                        actualAttendance = maxAttendance;
+
+                    int incomeFromMatch = (int)(actualAttendance * staticLeaguesData[leagueDataIndex].ticketValue);
+                    AddTeamCashBalance(homeTeamId, (int)(incomeFromMatch * 0.6f));
+                    AddTeamCashBalance(awayTeamId, (int)(incomeFromMatch * 0.4f));
+
+                    if (homeTeamId == playersTeam)
                     {
-                        matchEngine.Render(matchEngine.skip,true);
+                        statsTurnIncomeTicketSales += (int)(incomeFromMatch * 0.6f);
+                        statsAttendance = actualAttendance;
+                        statsStadiumSeats = maxAttendance;
                     }
-
-                    if (matchEngine.homeTeamScore == matchEngine.awayTeamScore)
+                    if (awayTeamId == playersTeam)
                     {
-                        premiumLeagueData[leagueIndexH].leaguePoints += 1;
-                        premiumLeagueData[leagueIndexA].leaguePoints += 1;
+                        statsTurnIncomeTicketSales += (int)(incomeFromMatch * 0.4f);
+                        statsAttendance = actualAttendance;
+                        statsStadiumSeats = maxAttendance;
                     }
-                    else if (matchEngine.homeTeamScore > matchEngine.awayTeamScore)
-                    {
-                        premiumLeagueData[leagueIndexH].leaguePoints += 3;
-                        premiumLeagueData[leagueIndexH].goalDifference += (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
-                        premiumLeagueData[leagueIndexA].goalDifference -= (matchEngine.homeTeamScore - matchEngine.awayTeamScore);
-                    }
-                    else
-                    {//away win 
-                        premiumLeagueData[leagueIndexA].leaguePoints += 3;
-                        premiumLeagueData[leagueIndexA].goalDifference += (matchEngine.awayTeamScore - matchEngine.homeTeamScore);
-                        premiumLeagueData[leagueIndexH].goalDifference -= (matchEngine.awayTeamScore - matchEngine.homeTeamScore);
-                    }
-                    premiumLeagueData[leagueIndexH].goalsFor += matchEngine.homeTeamScore;
-                    premiumLeagueData[leagueIndexH].goalsAgainst += matchEngine.awayTeamScore;
-                
-                    premiumLeagueData[leagueIndexA].goalsFor += matchEngine.awayTeamScore;
-                    premiumLeagueData[leagueIndexA].goalsAgainst += matchEngine.homeTeamScore;
-                    if (leagueIndexH != -1)
-                        premiumLeagueData[leagueIndexH].matchesPlayed++;
-                    if (leagueIndexA != -1)
-                        premiumLeagueData[leagueIndexA].matchesPlayed++;
-                    homeScore = matchEngine.homeTeamScore;
-                    awayScore = matchEngine.awayTeamScore;
+
+                    int homeTeamTvSponsorIncome = staticLeaguesData[leagueDataIndex].tvIncomePerTurn;
+                    int awayTeamTvSponsorIncome = staticLeaguesData[leagueDataIndex].tvIncomePerTurn;
+
+                    homeTeamTvSponsorIncome += (staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn - staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn/2)+staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn;
+                    awayTeamTvSponsorIncome += (staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn - staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn/2)+staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn;
+                    
+                    if ((matchEngine.homeTeamMatchBreakerFlags & MatchBreakerFlags.SponsorBonus) !=
+                         (MatchBreakerFlags)0)
+                        homeTeamTvSponsorIncome *= 3;
+                    if ((matchEngine.awayTeamMatchBreakerFlags & MatchBreakerFlags.SponsorBonus) !=
+                         (MatchBreakerFlags)0)
+                        awayTeamTvSponsorIncome *= 3;
+                    
+                    AddTeamCashBalance(homeTeamId, homeTeamTvSponsorIncome);
+                    AddTeamCashBalance(awayTeamId, awayTeamTvSponsorIncome);
+
+                    if (homeTeamId == playersTeam)
+                        statsTurnIncomeSponsorsTV += homeTeamTvSponsorIncome;
+                    if (awayTeamId == playersTeam)
+                        statsTurnIncomeSponsorsTV += awayTeamTvSponsorIncome;
+
+                    UpdateTeamIndexFanMorale(homeTeamIndex,(homeScore*0.05f)- (awayScore*0.05f));
+                    UpdateTeamIndexFanMorale(awayTeamIndex,(awayScore*0.05f)- (homeScore*0.05f));
                 }
-
-                UpdateConditionOfPlayersInTeam(homeTeamId, ConditionAdjustRecoverOverWeek);
-                UpdateBansInjuryAndFlagsOfPlayersInTeam(homeTeamId);
-                UpdateConditionOfPlayersInTeam(awayTeamId, ConditionAdjustRecoverOverWeek);
-                UpdateBansInjuryAndFlagsOfPlayersInTeam(awayTeamId);
-                int homeTeamIndex = GetTeamDataIndexForTeamID(homeTeamId);
-                int awayTeamIndex = GetTeamDataIndexForTeamID(awayTeamId);
                 
-                
-                // Render todo
-                MenuItem item = menuItemGenerator.GenerateMenuItem(currentScreenDefinition, MenuElement.StaticText,
-                    new Vector2(32, -yOff),0,0,staticTeamsData[homeTeamIndex].teamName + " " + homeScore + " " + staticTeamsData[awayTeamIndex].teamName + " " + awayScore,MenuAction.Null,0,null,18*menuItemGenerator.standingsTextFontScale);
-                yOff += 16;
-                item.transform.SetSiblingIndex(3); // ensure it overlays the box
-                // Pay out goal score bonuses
-                int perGoalBonusCost = DefaultGoalScoreBonus;
-                AddTeamCashBalance(homeTeamId, (perGoalBonusCost*homeScore));
-                AddTeamCashBalance(awayTeamId, (perGoalBonusCost*awayScore));
-                if (homeTeamId == playersTeam)
-                    statsTurnExpendSalary += (perGoalBonusCost * homeScore);
-                if (awayTeamId == playersTeam)
-                    statsTurnExpendSalary += (perGoalBonusCost * awayScore);
-                
-                int leagueDataIndex = GetIndexToLeagueData((int)dynamicTeamsData[homeTeamIndex].leagueID);
-                int maxAttendance = staticTeamsData[homeTeamIndex].stadiumSeats;
-                float homeFanMorale = dynamicTeamsData[homeTeamIndex].fanMorale;
-                float awayFanMorale = dynamicTeamsData[awayTeamIndex].fanMorale;
-                float homeAttend = (8.0f + (homeFanMorale * 2.0f)) / 10.0f; // using a 10 range here so attenance should be between 60-100 per side
-                float awayAttend = (8.0f + (awayFanMorale * 2.0f)) / 10.0f; // using a 10 range here so attenance should be between 60-100 per side
-                int actualAttendance = (int)((maxAttendance) * ((homeAttend + awayAttend) / 2.0f));
-
-                if (((matchEngine.homeTeamMatchBreakerFlags & MatchBreakerFlags.MaximumAttendence) !=
-                     (MatchBreakerFlags)0) ||
-                    ((matchEngine.awayTeamMatchBreakerFlags & MatchBreakerFlags.MaximumAttendence) !=
-                     (MatchBreakerFlags)0))
-                    actualAttendance = maxAttendance;
-
-                int incomeFromMatch = (int)(actualAttendance * staticLeaguesData[leagueDataIndex].ticketValue);
-                AddTeamCashBalance(homeTeamId, (int)(incomeFromMatch * 0.6f));
-                AddTeamCashBalance(awayTeamId, (int)(incomeFromMatch * 0.4f));
-
-                if (homeTeamId == playersTeam)
-                {
-                    statsTurnIncomeTicketSales += (int)(incomeFromMatch * 0.6f);
-                    statsAttendance = actualAttendance;
-                    statsStadiumSeats = maxAttendance;
-                }
-                if (awayTeamId == playersTeam)
-                {
-                    statsTurnIncomeTicketSales += (int)(incomeFromMatch * 0.4f);
-                    statsAttendance = actualAttendance;
-                    statsStadiumSeats = maxAttendance;
-                }
-
-                int homeTeamTvSponsorIncome = staticLeaguesData[leagueDataIndex].tvIncomePerTurn;
-                int awayTeamTvSponsorIncome = staticLeaguesData[leagueDataIndex].tvIncomePerTurn;
-
-                homeTeamTvSponsorIncome += (staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn - staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn/2)+staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn;
-                awayTeamTvSponsorIncome += (staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn - staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn/2)+staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn;
-                
-                if ((matchEngine.homeTeamMatchBreakerFlags & MatchBreakerFlags.SponsorBonus) !=
-                     (MatchBreakerFlags)0)
-                    homeTeamTvSponsorIncome *= 3;
-                if ((matchEngine.awayTeamMatchBreakerFlags & MatchBreakerFlags.SponsorBonus) !=
-                     (MatchBreakerFlags)0)
-                    awayTeamTvSponsorIncome *= 3;
-                
-                AddTeamCashBalance(homeTeamId, homeTeamTvSponsorIncome);
-                AddTeamCashBalance(awayTeamId, awayTeamTvSponsorIncome);
-
-                if (homeTeamId == playersTeam)
-                    statsTurnIncomeSponsorsTV += homeTeamTvSponsorIncome;
-                if (awayTeamId == playersTeam)
-                    statsTurnIncomeSponsorsTV += awayTeamTvSponsorIncome;
-
-                UpdateTeamIndexFanMorale(homeTeamIndex,(homeScore*0.05f)- (awayScore*0.05f));
-                UpdateTeamIndexFanMorale(awayTeamIndex,(awayScore*0.05f)- (homeScore*0.05f));
             }
         }
     }
