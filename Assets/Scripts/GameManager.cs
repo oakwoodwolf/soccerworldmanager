@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Serialization;
@@ -203,6 +204,8 @@ public class GameManager : MonoBehaviour
     public MatchStrategy playersMatchStrategy;
 
     public int[] playersBalance = new int[MaxWeeks];
+    public int[] endOfTurnBalanceArray = new int[MaxWeeks];
+    public MenuGraph menuGraph;
     public int week;
     public MenuIconBar[] formationMenuIconBars;
     public Formation formationType;
@@ -1709,6 +1712,30 @@ public class GameManager : MonoBehaviour
                 }
                 if (skipTransferScreen)
                     GoToMenu(Enums.Screen.EndOfTurn);
+                break;
+            case Enums.Screen.EndOfTurn:
+                playersBalance[week] = GetTeamCashBalance(playersTeam);
+                for (int i = 0; i < week + 1; i++)
+                {
+                    endOfTurnBalanceArray[i] = playersBalance[i];
+                }
+                menuGraph.array = endOfTurnBalanceArray;
+                menuGraph.numInArray = week + 1;
+                GraphItem graph = menuItems[5].GetComponent<GraphItem>();
+                graph.SetGraph();
+                string endOfTurnIncomeExpend = "Prev. Balance: $"+playersBalance[Math.Abs(week - 1)]+"k\n...\nTicket Sales ("+statsAttendance+"/"+statsStadiumSeats+"): $"+statsTurnIncomeTicketSales+"k\nSponsor/TV: $"+statsTurnIncomeSponsorsTV+"k\nOther Income: $"+statsTurnIncome+"k\n...\nSalary Expenditure: $"+statsTurnExpendSalary+"k\nOther Expenditure: $"+statsTurnExpend+"k\n...\nNew Balance: $"+playersBalance[week]+"k";
+                menuItems[4].SetText(endOfTurnIncomeExpend);
+                int currentPos = GetPositionInLeagueTableForTeamId(playersTeam);
+
+                string diffString;
+                int diff = currentPos - statsPrevLeaguePos;
+                if (diff > 0)
+                    diffString = "League Pos.: " + currentPos + " (-"+Math.Abs(diff)+")";
+                else if (diff < 0)
+                    diffString = "League Pos.: " + currentPos + " (+"+Math.Abs(diff)+")";
+                else
+                    diffString = "League Pos.: " + currentPos + " ("+diff+")";
+                menuItems[2].SetText(diffString);
                 break;
             case Enums.Screen.ProcessLeagueFinish:
                 if ((week & 1) != 0)

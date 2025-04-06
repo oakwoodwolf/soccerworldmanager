@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a819f5f9d82451f9f5a2adf254b68d3, type: 3}
+  m_Name: EndOfTurnBalance
+  m_EditorClassIdentifier: 
+  size: {x: 240, y: 80}
+  defaultMinMax: {x: 0, y: 1000}
+  flags: 0
+  numInArray: 2
+  array: f4010000c8000000e8030000
+  title: Weekly Cash Balance

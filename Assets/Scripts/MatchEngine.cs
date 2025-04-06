@@ -290,6 +290,12 @@ public class MatchEngine : MonoBehaviour
                 itemsInQuickPlayerList++;
             }
         }
+        
+        // additional clearing
+        for (int j = 0; j < 6; j++)
+        {
+            matchTexts[j].text = "-";
+        }
 
     }
 
