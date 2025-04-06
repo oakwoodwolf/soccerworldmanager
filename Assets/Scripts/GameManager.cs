@@ -408,7 +408,7 @@ public class GameManager : MonoBehaviour
                                 }
                             }
 
-                            int res = CheckPlayerIdIsHappyInFormation(playerId, formation.formations[i]);
+                            int res = CheckPlayerIdIsHappyInFormation(playerId, formation.formations[i].formation);
                             menuItemGenerator.GenerateShirt(currentScreenDefinition, new Vector2((formation.formations[i].pos.x * 512),
                                     -256 + (formation.formations[i].pos.y * 512)), stars,
                                 "", primaryColor, secondaryColor, res, dynamicPlayersData[dataIndex]);
@@ -423,13 +423,13 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-
-    private int CheckPlayerIdIsHappyInFormation(int playerId, FormationInfo formation)
+    
+    private int CheckPlayerIdIsHappyInFormation(int playerId, PlayerFormation formation)
     {
         int playerIndex = GetPlayerDataIndexForPlayerID(playerId);
-        if ((formation.formation & PlayerFormation.Substitute) != (PlayerFormation)0)
+        if ((formation & PlayerFormation.Substitute) != (PlayerFormation)0)
             return (int)PlayerFormation.Substitute;
-        return (int)(staticPlayersData[playerIndex].playerPositionFlags & formation.formation);
+        return (int)(staticPlayersData[playerIndex].playerPositionFlags & formation);
     }
     
     public int CheckPlayerIndexIsHappyInFormation(int playerIndex, FormationInfo formation)
@@ -1628,12 +1628,194 @@ public class GameManager : MonoBehaviour
                 transferOfferOffersMadeThisTurn = 0;
                 break;
 
+            case Enums.Screen.TransferOffers:
+                bool skipTransferScreen = true;
+                transferOfferInterestedPlayerId = -1;
+                transferOfferInterestedTeamIndex = -1;
+                transferOfferOffersMadeThisTurn = 0;
+
+                int numOnTransferList = -1;
+                int[] transferList = new int[MaxPlayersInATeam];
+
+                if (IsAnyPlayerInTeamOnTheTransferList(playersTeamPlayerIds, numPlayersInPlayersTeam, transferList, ref numOnTransferList))
+                {
+                    for (int i = 0; i < numTeamsInScenarioLeague; i++)
+                    {
+                        int teamId = premiumLeagueData[i].teamId;
+                        PlayerFormation form = (PlayerFormation)DoesTeamNeedToPurchasePlayers(teamId);
+                        
+                        int chance = Random.Range(0, 100);
+                        if (chance < 10 && transferOfferOffersMadeThisTurn < 3)
+                        {
+                            int numPlayersInTeam = CountNumberOfPlayersInTeam(teamId);
+                            if (numPlayersInTeam < 32)
+                            {
+                                //budget check
+                                int teamIndex = GetTeamDataIndexForTeamID(teamId);
+                                int numWeeks = (((numTeamsInScenarioLeague - 1) * 2)-week);
+                                int estimatedBalanceAtSeasonEnd = EstimateTeamIndexCashBalance(teamIndex, numWeeks);
+
+                                if (estimatedBalanceAtSeasonEnd > 0)
+                                {
+                                    for (int j = 0; j < numOnTransferList; j++)
+                                    {
+                                        if (CheckPlayerIdIsHappyInFormation(transferList[j], form)>0)
+                                        {
+                                            int playerValue = DetermineValueOfPlayerID(transferList[j], (int)playersLeague);
+                                            int teamCash = GetTeamCashBalance(teamId);
+                                            int offerValue = playerValue;
+                                            
+                                            int dataIndex = GetPlayerDataIndexForPlayerID(transferList[j]);
+                                            TransferStatus transferTerms = (TransferStatus)((dynamicPlayersData[dataIndex].trainingTransfer & transferMask) >> 8);
+                                            if (transferTerms == TransferStatus.FreeTransfer)
+                                            {
+                                                offerValue = 0;
+                                            }
+                                            else
+                                            {
+                                                if (transferTerms == TransferStatus.OffersAtValue)
+                                                    offerValue = playerValue;
+                                                else
+                                                {
+                                                    offerValue = (int)(playerValue * 0.75f);
+                                                }
+                                            }
+
+                                            if (offerValue < teamCash)
+                                            {
+                                                transferOfferOffersMadeThisTurn++;
+                                                transferOfferOfferValue = offerValue;
+                                                transferOfferInterestedTeamIndex = i;
+                                                transferOfferInterestedPlayerId = transferList[j];
+                                                skipTransferScreen = false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //Theres an offer!
+                    if (transferOfferInterestedPlayerId != -1)
+                    {
+                        int playerIndex = GetPlayerDataIndexForPlayerID(transferOfferInterestedPlayerId);
+                        string likeStr = FillPlayerLikesStringForPlayerIndex(playerIndex);
+                        string currPosStr = "";
+                        FillPositionStringForPlayerIndexs(playerIndex,formations[(int)formationType],ref currPosStr);
+
+                        string transferOffer = "You have received an offer of $"+transferOfferOfferValue+"k from "+staticTeamsData[transferOfferInterestedTeamIndex].teamName+" for:\n%s\nPlays: "+likeStr+"   Pos: "+currPosStr+"\n\n\nDo you want to accept this offer for your player?";
+                        menuItems[2].SetText(transferOffer);
+                    }
+                }
+                if (skipTransferScreen)
+                    GoToMenu(Enums.Screen.EndOfTurn);
+                break;
             case Enums.Screen.ProcessLeagueFinish:
                 if ((week & 1) != 0)
                     GoToMenu(Enums.Screen.ProcessLeagueFinish);
                 ProcessLeagueEndData();
                 break;
         }
+    }
+
+    private int EstimateTeamIndexCashBalance(int teamIndex, int weeks)
+    {
+        int totalPeriodIncome = 0;
+        int totalPeriodExpend = 0;
+        int teamId = staticTeamsData[teamIndex].teamId;
+        int leagueDataIndex = GetIndexToLeagueData((int)dynamicTeamsData[teamIndex].leagueID);
+        
+        //Calculate expenditure from salaries
+        int[] teamPlayerIds = new int[MaxPlayersInATeam];
+        int numPlayers = FillTeamPlayerArray(teamPlayerIds, teamId);
+        int weeklySalaryCost = 0;
+        for (int i = 0; i < numPlayers; i++)
+        {
+            int playerIndex = GetPlayerDataIndexForPlayerID(teamPlayerIds[i]);
+            weeklySalaryCost += dynamicPlayersData[playerIndex].weeklySalary;
+        }
+        totalPeriodExpend += weeklySalaryCost * weeks;
+        
+        //Income 
+        int maxAttendance = staticTeamsData[teamIndex].stadiumSeats;
+        totalPeriodIncome += (int)(maxAttendance * 0.5f * staticLeaguesData[leagueDataIndex].ticketValue * weeks);
+        totalPeriodIncome += (staticLeaguesData[leagueDataIndex].tvIncomePerTurn*weeks);
+        totalPeriodIncome += ((staticLeaguesData[leagueDataIndex].maxSponsorIncomePerTurn -
+                                     staticLeaguesData[leagueDataIndex].minSponsorIncomePerTurn)/2+staticLeaguesData[leagueDataIndex].minSponsorIncomePerTurn)*weeks;
+
+        int balance = dynamicTeamsData[teamIndex].cashBalance;
+        balance += totalPeriodIncome;
+        balance -= totalPeriodExpend;
+        return balance;
+    }
+
+    private int CountNumberOfPlayersInTeam(int teamId)
+    {
+        int numPlayersFound = 0;
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            if (dynamicPlayersData[i].teamId == teamId)
+                numPlayersFound++;
+        }
+        return numPlayersFound;
+    }
+
+    /// <summary>
+/// Checks if there is space on a team, and lists the needed formation types
+/// </summary>
+/// <param name="teamId"></param>
+/// <returns>the neededPositions as an int flag</returns>
+    private int DoesTeamNeedToPurchasePlayers(int teamId)
+    {
+        int neededPositions = 0;
+        numPlayersInOppositionTeam = FillTeamPlayerArray(oppositionTeamPlayerIds, teamId);
+        if (numPlayersInOppositionTeam < MaxPlayersInATeam)
+        {
+            int numCanPlayGoal = CountPlayersWhoCanPlayInPosition(PlayerFormation.Goalkeeper,oppositionTeamPlayerIds,numPlayersInOppositionTeam);
+            if (numCanPlayGoal < 2)
+                neededPositions |= (int)Enums.PlayerFormation.Goalkeeper;
+            int numCanPlayDefense = CountPlayersWhoCanPlayInPosition(PlayerFormation.Defender,oppositionTeamPlayerIds,numPlayersInOppositionTeam);
+            if (numCanPlayDefense < 6)
+                neededPositions |= (int)Enums.PlayerFormation.Defender;
+            int numCanPlayMidfield = CountPlayersWhoCanPlayInPosition(PlayerFormation.MidFielder,oppositionTeamPlayerIds,numPlayersInOppositionTeam);
+            if (numCanPlayMidfield < 6)
+                neededPositions |= (int)Enums.PlayerFormation.MidFielder;
+            int numCanPlayAttacker = CountPlayersWhoCanPlayInPosition(PlayerFormation.Attacker,oppositionTeamPlayerIds,numPlayersInOppositionTeam);
+            if (numCanPlayAttacker < 6)
+                neededPositions |= (int)Enums.PlayerFormation.Attacker;
+            
+        }
+        return neededPositions;
+    }
+
+    private int CountPlayersWhoCanPlayInPosition(PlayerFormation posType, int[] playerIds, int numPlayersId)
+    {
+        int result = 0;
+        for (int k = 0; k < numPlayersId; k++)
+        {
+            int playerId = playerIds[k];
+            int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+            if ((staticPlayersData[dataIndex].playerPositionFlags & posType) != (PlayerFormation)0)
+                result++;
+        }
+        return result;
+    }
+
+    private bool IsAnyPlayerInTeamOnTheTransferList(int[] playerIds, int numPlayerIds, int[] transfers, ref int numTrans)
+    {
+        bool result = false;
+        for (int k = 0; k < numPlayerIds; k++)
+        {
+            int playerId = playerIds[k];
+            int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
+            if ((dynamicPlayersData[dataIndex].trainingTransfer & transferMask) >> 8 != 0)
+            {
+                result = true;
+                transfers[numTrans] = playerId;
+                numTrans++;
+            }
+        }
+        return result;
     }
 
     private void ProcessCPUMatchesForWeek(int savePlayersMatchHomeTeamScore, int savePlayersMatchAwayTeamScore)

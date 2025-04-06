@@ -1512,7 +1512,7 @@ MonoBehaviour:
   - {fileID: 2032476931760494891, guid: e264c9dfa83befb4389c57585b121dc6, type: 3}
   - {fileID: 2032476931760494891, guid: 54d63fdfcb1ba6b47b59fd72a8517805, type: 3}
   - {fileID: 4401275763683909722, guid: 46cf0d54d2ce66142a0e6d89993b4b71, type: 3}
-  - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
+  - {fileID: 8241131110871529523, guid: 195dc3f974a59f946bc6907ad236a74d, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
@@ -8754,6 +8754,7 @@ MonoBehaviour:
   - {fileID: 633864595979411815, guid: 1b6de29072f151349b041a4569bd11c8, type: 3}
   playerTrainingYOffset: 96
   menuBarHeight: 32
+  standingsTextFontScale: 0.85
   menuBarSpace: 16
   menuBarSpacing: 48
   menuBarFontScale: 1.3
