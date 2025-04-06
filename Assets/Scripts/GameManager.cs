@@ -1231,7 +1231,9 @@ public class GameManager : MonoBehaviour
                             int homeTeamId = staticTeamsData[homeTeamIndex].teamId;
                             int awayTeamId = staticTeamsData[awayTeamIndex].teamId;
                             string previewString = staticTeamsData[homeTeamIndex].teamName + " vs " + staticTeamsData[awayTeamIndex].teamName;
-                            menuItemGenerator.CreateWeekPreview(currentScreenDefinition, new Vector2(0.0f, yOffset), previewString);
+                            WeekPreview preview = menuItemGenerator.CreateWeekPreview(currentScreenDefinition, new Vector2(0.0f, yOffset), previewString);
+                            if (playersTeam == homeTeamId || playersTeam == awayTeamId)
+                                preview.mText.color = new Color(1.0f,1.0f,0.8f);
                             yOffset -= 32;
                         }
                     }

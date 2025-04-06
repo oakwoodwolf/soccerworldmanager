@@ -65,7 +65,6 @@ public class GraphItem : MenuItem
             }
             
             // Thicker Data Lines
-            // TODO make this a line
             for (int lp = 0; lp < graph.numInArray-1; lp++)
             {
                 float startValue = data[lp];
@@ -76,9 +75,17 @@ public class GraphItem : MenuItem
                     endValue = startValue;
                 startValue /= range;
                 endValue /= range;
+                
+                // Unity's line renderer only works on 2d and gizmos, not ui, a bodged solution is this
                 RectTransform dataValue = Instantiate(value, transform, false).GetComponent<RectTransform>();
-                dataValue.anchoredPosition = new Vector2(lp*stepx, zeroLine+(startValue*h));
-                dataValue.sizeDelta = new Vector2( ((lp + 1)*stepx) - lp*stepx, Math.Abs((zeroLine + (endValue * h))-(zeroLine + (startValue * h))));
+                Vector2 point1 = new Vector2((lp+1)*stepx, zeroLine+(endValue*h));
+                Vector2 point2 = new Vector2(lp*stepx, zeroLine+(startValue*h));
+                Vector2 midpoint = (point1 + point2)/2f;
+                
+                dataValue.localPosition = point2;
+                Vector2 dir = point1 - point2;
+                dataValue.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg);
+                dataValue.localScale = new Vector3(dir.magnitude, 2f, 1f);
                 dataValue.name = "Data " + startValue;
 
             }

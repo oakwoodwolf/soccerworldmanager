@@ -60,7 +60,7 @@ public class MenuItemGenerator : MonoBehaviour
         standings.FillTeamValues(teamId, nameText, matchesPlayed, goalDifference, leaguePoints, isSelf);
         Debug.Log("Created standings for " + standings.teamName);
     }
-    public void CreateWeekPreview(ScreenDefinition screen, Vector2 pos, string nameText)
+    public WeekPreview CreateWeekPreview(ScreenDefinition screen, Vector2 pos, string nameText)
     {
         GameObject newObj = Instantiate(prefabs[13], screen.MenuItems.transform, false);
         WeekPreview weekPreview = newObj.GetComponent<WeekPreview>();
@@ -69,6 +69,7 @@ public class MenuItemGenerator : MonoBehaviour
         weekPreview.pos = new Vector2(pos.x, -pos.y);
         newObj.name = nameText;
         weekPreview.UpdateText(nameText);
+        return newObj.gameObject.GetComponent<WeekPreview>();
     }
 
     public void CreatePlayerTrainings(ScreenDefinition screen, Vector2 pos, int stars, string nameString, Color color, string statusString, DynamicPlayerData playerData)

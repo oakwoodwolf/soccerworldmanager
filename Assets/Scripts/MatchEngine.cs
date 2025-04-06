@@ -248,7 +248,14 @@ public class MatchEngine : MonoBehaviour
     void Update()
     {
         if (gameManager.currentScreen!=Enums.Screen.MatchEngine)
+        {
+            // additional clearing
+            for (int j = 0; j < 6; j++)
+            {
+                matchTexts[j].text = "-";
+            }
             overlay.SetActive(false);
+        }
     }
 
     public void SetupForMatch(int homeTeamId, int awayTeamId)
@@ -291,11 +298,7 @@ public class MatchEngine : MonoBehaviour
             }
         }
         
-        // additional clearing
-        for (int j = 0; j < 6; j++)
-        {
-            matchTexts[j].text = "-";
-        }
+        
 
     }
 
@@ -337,6 +340,7 @@ public class MatchEngine : MonoBehaviour
                         turnsInPossession = 0;
                         if (!skipping)
                         {
+                            
                             gameManager.SoundEngine_StartEffect(Enums.Sounds.Whistle);
                             string matchString = "";
                             if (teamInPossession == TeamHome)
@@ -480,7 +484,7 @@ public class MatchEngine : MonoBehaviour
                     int homeTeamIndex = gameManager.GetTeamDataIndexForTeamID(homeTeam);
                     int awayTeamIndex = gameManager.GetTeamDataIndexForTeamID(awayTeam);
                     string menuBarText = gameManager.staticTeamsData[homeTeamIndex].teamName + " " + homeTeamScore + " - " + awayTeamScore + " " + gameManager.staticTeamsData[awayTeamIndex].teamName; 
-                    gameManager.currentScreenDefinition.MenuItems.transform.GetChild(0).GetComponent<TitleBar>().text = menuBarText;
+                    gameManager.currentScreenDefinition.MenuItems.transform.GetChild(0).GetComponent<TitleBar>().SetText(menuBarText);
                 }
             }
         }
