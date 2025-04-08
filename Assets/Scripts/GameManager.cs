@@ -1180,6 +1180,7 @@ public class GameManager : MonoBehaviour
                 
                 break;
             case Enums.Screen.PreTurn:
+                matchEngine.state = MatchEngineState.MatchOver;
                 LeagueInfo info = GetLeagueInfoForId(playersLeague); 
                 menuItems[0].SetText(staticTeamsData[GetArrayIndexForTeam(playersTeam)].teamName);
                 statsPreturn = info.leagueName + "\nWeek " + (week+1) + " of " + ((numTeamsInScenarioLeague-1)*2);
@@ -1354,7 +1355,7 @@ public class GameManager : MonoBehaviour
                 mbId = availableMatchbreakers[2];
                 bar = menuItems[5].GetComponent<IconBar>();
                 bar.Populate(matchbreakerInfo[mbId].texture,matchbreakerInfo[mbId].textBig,matchbreakerInfo[mbId].textSmall);
-                price = menuItems[7].GetComponent<MenuItem>();
+                price = menuItems[8].GetComponent<MenuItem>();
                 price.SetText("$"+matchbreakerInfo[mbId].cost+"k");
                 string matchbreakerCashTxt = "Cash: " + GetTeamCashBalance(playersTeam) + "k";
                 menuItems[9].SetText(matchbreakerCashTxt);
@@ -1401,7 +1402,7 @@ public class GameManager : MonoBehaviour
                                 int managerIndex = GetIndexToManagerForTeamID(oppositionTeamId);
                                 float style = staticManagersData[managerIndex].styleOffset;
                                 string styleText = "Balanced";
-                                if (style <= 4.9f && style >= 4.9f)
+                                if (style is <= 4.9f and >= -4.9f)
                                 {
                                     styleText = "Balanced";
                                 }
@@ -1551,6 +1552,7 @@ public class GameManager : MonoBehaviour
                 {
                     matchbreakerButton.button.texture = textures[(int)Enums.Texture.ButtonNoMatchbreaker];
                 }
+                matchbreakerButton.SetText("");
                 
                 ButtonItem homeButton = menuItems[9].GetComponent<ButtonItem>();
                 ButtonItem awayButton = menuItems[10].GetComponent<ButtonItem>();
@@ -1559,6 +1561,8 @@ public class GameManager : MonoBehaviour
                 awayButton.HideItem(false);
                 homeButton.button.texture = formationMenuIconBars[(int)playersMatch.formationTypeHomeTeam].texture;
                 awayButton.button.texture = formationMenuIconBars[(int)playersMatch.formationTypeAwayTeam].texture;
+                homeButton.SetText("");
+                awayButton.SetText("");
                 
                 menuItems[1].HideItem(false);// show skip
                 menuItems[2].HideItem(true); // hide next
@@ -1738,6 +1742,50 @@ public class GameManager : MonoBehaviour
                 else
                     diffString = "League Pos.: " + currentPos + " ("+diff+")";
                 menuItems[2].SetText(diffString);
+                break;
+            case Enums.Screen.LeagueFinished:
+                int currentPosition = GetPositionInLeagueTableForTeamId(playersTeam);
+                string scenarioOutcome;
+                if (currentPosition == 1)
+                    scenarioOutcome = "Congratulations!\nYou have won the league!";
+                else if (currentPosition <= 3)
+                {
+                    if (scenarioData[playersScenario].leagueIDPromotion != playersLeague)
+                        scenarioOutcome = "Congratulations!\nYou have won promotion from the league.";
+                    else 
+                        scenarioOutcome = "Congratulations!\nYou finished in the top three of the league.";
+                }
+                else if (currentPosition > numTeamsInScenarioLeague - 3)
+                {
+                    if (scenarioData[playersScenario].leagueIDRelegation != playersLeague)
+                        scenarioOutcome = "Bad Luck!\nYou have been relegated from the league.";
+                    else 
+                        scenarioOutcome = "Bad Luck!\nIt's a good job you can't be relegated from the league.";
+                }
+                else
+                {
+                    if (scenarioData[playersScenario].startMoneyAdjust < 0)
+                        scenarioOutcome =
+                            "You have failed to win the league.\nGiven your difficult start well done for avoiding the relegation zone.";
+                    else
+                        scenarioOutcome = "You have failed to win the league.\nAt least you avoided the relegation zone";
+                }
+                menuItems[2].SetText(scenarioOutcome);
+
+
+                string endOfSeason;
+                if (playersYearsToRetire <= 0)
+                {
+                    endOfSeason = "You have reached retirement age! Maybe you could be reborn via a different scenario?";
+                    menuItems[6].menuAction = MenuAction.GotoMenu;
+                    menuItems[6].param = (int)Enums.Screen.ChooseLeague;
+                }
+                else
+                {
+                    endOfSeason = "You have "+playersYearsToRetire+" years until you retire. Would you like to manage your team for another season?";
+                    menuItems[6].menuAction = MenuAction.ProcessResetLeagueForNextYear;
+                }
+                menuItems[4].SetText(endOfSeason);
                 break;
             case Enums.Screen.ProcessLeagueFinish:
                 if ((week & 1) != 0)
@@ -2965,7 +3013,7 @@ public class GameManager : MonoBehaviour
         int mbIndex = availableMatchbreakers[index];
         int cash = GetTeamCashBalance(playersTeam);
         int cost = matchbreakerInfo[mbIndex].cost;
-        if (cash > cost)
+        if (cash >= cost)
         {
             AddTeamCashBalance(playersTeam, -cost);
             statsTurnExpend += cost;
@@ -3252,5 +3300,41 @@ public class GameManager : MonoBehaviour
         menuItems[10].HideItem(true);
         menuItems[11].HideItem(true);
         menuItems[12].HideItem(true);
+    }
+    public void PrepareNextYearOfPlay()
+    {
+        leagueEndNumTeamsInFinalStandings = numTeamsInScenarioLeague;
+        for (int i = 0; i < numTeamsInScenarioLeague; i++)
+            leagueEndUsersFinalStandings[i] = premiumLeagueData[i].teamId;
+
+        int finishPos = GetPositionInLeagueTableForTeamId(playersTeam);
+        if (finishPos == 1)
+            playerRating += 4;
+        else if (finishPos <= 3)
+            playerRating += 2;
+        else if (finishPos > (numTeamsInScenarioLeague - 3))
+            playerRating -= 2;
+
+        switch (playersLeague)
+        {
+            case LeagueID.Scotland:
+            case LeagueID.Usa:
+                week = -1;
+                break;
+            default:
+                leagueEndSaveUsersLeague = playersLeague;
+                if (playersLeague == LeagueID.Premium)
+                    playersLeague = LeagueID.Chumpionship;
+                else if (playersLeague == LeagueID.Chumpionship)
+                    playersLeague = LeagueID.Premium;
+
+                numTeamsInScenarioLeague = CountTeamsInLeague(playersLeague);
+                FillTeamsInLeagueArray(teamIndexsForScenarioLeague, playersLeague);
+                week = 0;
+                ResetLeaguePoints();
+                BuildMatchSchedule(numTeamsInScenarioLeague);
+                break;
+        }
+        GoToMenu(Enums.Screen.ProcessLeagueFinish);
     }
 }

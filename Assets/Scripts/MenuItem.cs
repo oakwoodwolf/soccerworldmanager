@@ -293,6 +293,7 @@ public class MenuItem : MonoBehaviour
                 case Enums.MenuAction.ProcessResetLeagueForNextYear:
                     if (gameManager.playersYearsToRetire > 0)
                         gameManager.playersYearsToRetire--;
+                    gameManager.PrepareNextYearOfPlay();
                     break;
                 case Enums.MenuAction.OpenSafari:
                     break;

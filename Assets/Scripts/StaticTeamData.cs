@@ -32,7 +32,7 @@ public class StaticTeamData : ScriptableObject
         ColorUtility.TryParseHtmlString("#" + txtData[8+offset], out awayTeam2NdColour);
 
         stadiumSeats = int.Parse(txtData[4+offset]);
-        teamName = FixUpStringName(txtData[1]);
+        teamName = FixUpStringName(txtData[1]) + teamName2;
         name = teamName;
     }
     public string FixUpStringName(string name)
