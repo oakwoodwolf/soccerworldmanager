@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -29,7 +30,8 @@ public class PlayerTraining : MenuItem
     public DynamicPlayerData playerData;
     
     public int stars;
-    public int textIndex;
+    [FormerlySerializedAs("textIndex")]
+    public int pie;
     public new int playerFlags;
     public int training;
     public string nameStr;
@@ -45,8 +47,8 @@ public class PlayerTraining : MenuItem
     {
         base.Update();
         UpdateFlags();
-        textIndex = (int)(playerData.condition * 10.0f);
-        if (textIndex < 0) textIndex = 0; if (textIndex > 9) textIndex = 9;
+        pie = (int)(playerData.condition * 10.0f);
+        pie = Math.Clamp(pie,0,9);
         switch (gameManager.currentScreen)
         {
             case Enums.Screen.SellPlayers:
@@ -87,9 +89,10 @@ public class PlayerTraining : MenuItem
     
     public void UpdateText()
     {
-        
+        pie = (int)(playerData.condition * 10.0f);
+        pie = Math.Clamp(pie,0,9);
         flagsSprite.sprite = flagsArray[playerFlags];
-        piesSprite.sprite = piesArray[textIndex];
+        piesSprite.sprite = piesArray[pie];
         switch (gameManager.currentScreen)
         {
             case Enums.Screen.BuyPlayers:

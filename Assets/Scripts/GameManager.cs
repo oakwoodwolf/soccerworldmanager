@@ -2582,8 +2582,8 @@ public class GameManager : MonoBehaviour
                             dynamicPlayersData[i].condition += Random.value *  -0.2f;
                             break;
                     }
-                    Math.Clamp(dynamicPlayersData[i].starsRating, 0.0f, 14.9f);
-                    Math.Clamp(dynamicPlayersData[i].condition, 0.0f, 1.0f);
+                    dynamicPlayersData[i].starsRating = Math.Clamp(dynamicPlayersData[i].starsRating, 0.0f, 14.9f);
+                    dynamicPlayersData[i].condition = Math.Clamp(dynamicPlayersData[i].condition, 0.0f, 1.0f);
                 }
             }
         }

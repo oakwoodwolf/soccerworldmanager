@@ -1121,15 +1121,15 @@ public class MatchEngine : MonoBehaviour
         else
             skill = GetSkillPointsForPlayersOnPitch(playersMatch.formationHomeTeam,positionOfFoulingPlayer,playersMatch.formationTypeHomeTeam);
         
-        if (skill > 0)
-        {
+        //if (skill > 0)
+        //{
             if (teamInPossession == TeamHome)
                 foulerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationAwayTeam, skill,
                     positionOfFoulingPlayer, playersMatch.formationTypeAwayTeam, awayTeam);
             else
                 foulerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationHomeTeam, skill,
                     positionOfFoulingPlayer, playersMatch.formationTypeHomeTeam, homeTeam);
-        }
+        //}
         Debug.Log("skill " + skill + "\t fouling player index:" + foulerIndex);
         Debug.Assert(foulerIndex != -1);
         if (foulerIndex == -1)
