@@ -571,19 +571,19 @@ public class GameManager : MonoBehaviour
         LoadManagers();
         
         string  balanceHistoryJson = PlayerPrefs.GetString(soccerBalanceHistoryDataKey);
-        List<int> balanceHistory = JsonUtility.FromJson<List<int>>(balanceHistoryJson);
+        BalanceHistory balanceHistory = JsonUtility.FromJson<BalanceHistory>(balanceHistoryJson);
        
-        if (balanceHistory.Count > 0)
+        if (balanceHistory.data.Count > 0)
         {
-            if (balanceHistory.Count != week)
+            if (balanceHistory.data.Count != week)
             {
                 Debug.LogError("Loading Game failed: week count doesn't match balance history.");
                 return false;
             }
 
-            for (int i = 0; i < balanceHistory.Count; i++)
+            for (int i = 0; i < balanceHistory.data.Count; i++)
             {
-                playersBalance[i] = balanceHistory[i];
+                playersBalance[i] = balanceHistory.data[i];
             }
         }
         
@@ -1318,6 +1318,110 @@ public class GameManager : MonoBehaviour
                     GoToMenu(Enums.Screen.AssignSponsor);
                 }
                break;
+           case Enums.Screen.BuyPlayers:
+                int playersOnMarket = CountPlayersOnTransferMarketExcludingTeam(playersTeam);
+                int numPlayersInUsersTeam = CountNumberOfPlayersInTeam(playersTeam);
+                currentNumberOfPage = (playersOnMarket / MaxPlayersInList) + 1;
+                if (currentNumberOfPage > MaxSheets)
+                    currentNumberOfPage = MaxSheets;
+                if (currentPage >= currentNumberOfPage)
+                    currentPage = currentNumberOfPage - 1;
+                MenuScrollBar buyBar = menuItems[3].GetComponent<MenuScrollBar>();
+                int buttonYBuy = 8;
+
+                if ((playersOnMarket == 0) || (numPlayersInUsersTeam>=MaxPlayersInATeam))
+                {
+                    string textToUse;
+                    if (numPlayersInUsersTeam>=MaxPlayersInATeam)
+                        textToUse = "Maximum number of players reached. Please sell a player to buy more.";
+                    else
+                        textToUse = "No players are available to buy at this time.\\nPlease try again later.";
+                    
+                    menuItems[1].pos = new Vector2(menuItems[1].pos.x, 180);
+                    menuItems[1].AdjustPosition(); menuItems[1].SetText("(256<<16)|104");
+                    menuItems[2].pos = new Vector2(menuItems[2].pos.x, 180);
+                    menuItems[2].AdjustPosition(); menuItems[2].SetText(textToUse);
+                    menuItems[4].pos = new Vector2(menuItems[4].pos.x, 16);
+                    menuItems[4].AdjustPosition(); menuItems[4].SetText("backButton");
+                    buttonYBuy = -256;
+                    menuItems[5].pos = new Vector2(menuItems[5].pos.x, buttonYBuy);
+                    menuItems[5].AdjustPosition(); menuItems[5].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
+                    menuItems[6].pos = new Vector2(menuItems[6].pos.x, buttonYBuy);
+                    menuItems[6].AdjustPosition(); menuItems[6].SetText("pageButtonPrev");
+                    menuItems[7].pos = new Vector2(menuItems[7].pos.x, buttonYBuy);
+                    menuItems[7].AdjustPosition(); menuItems[7].SetText("pageButtonNext");
+                    buyBar.minMaxRange = new Vector2(0, 0);
+                    
+                }
+                else {
+                   //Generate List
+                   menuItems[1].pos = new Vector2(menuItems[1].pos.x, 310);
+                   menuItems[1].AdjustPosition(); menuItems[1].SetText("(256<<16)|104");
+                   menuItems[2].pos = new Vector2(menuItems[2].pos.x, 310);
+                   menuItems[2].AdjustPosition(); menuItems[2].SetText("Tap a player's name to make an offer\nCash: $"+GetTeamCashBalance(playersTeam)+"k");
+                   
+                    int maxItemsBuying = playersOnMarket;
+                    if (maxItemsBuying > MaxPlayersOnScreen) maxItemsBuying = MaxPlayersOnScreen;
+                   
+                   buyBar.minMaxRange = new Vector2(0, -((menuItemGenerator.playerBuySpacing * maxItemsBuying) +
+                                                         menuItemGenerator.playerBuyingYOffset + 112));
+                   if (buyBar.minMaxRange.y < -480) 
+                       buyBar.minMaxRange = new Vector2(0, buyBar.minMaxRange.y+480);
+                   else
+                       buyBar.minMaxRange = new Vector2(0, 0);
+                   
+                   float yOffBuy = 0.0f;
+                   
+                    //Training screen menu stuff
+                    for (int j = 0; j < maxItemsBuying; j++)
+                    {
+                        menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalfDouble, new Vector2(0,-1*(110-menuItemGenerator.playerBuyingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.BuyPlayerReview, j);
+                    } 
+                    for (int i = 0; i < maxItemsBuying; i++)
+                    {
+                        int playerId = playersTeamPlayerIds[i + currentPage * MaxPlayersInList];
+                        int playerDataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                       string nameString = String.Empty;
+                       string playerLikesPositionString = String.Empty;
+                       Color color = Color.white;
+                        if (playerDataIndex != -1) // Handle Player name
+                        {
+                            string positionString = "--";
+                           
+                            playerLikesPositionString = FillPlayerLikesStringForPlayerIndex(playerDataIndex);
+                            int formationIndex = FillPositionStringForPlayerIndexs(playerDataIndex, formations[(int)formationType], ref positionString);
+                            if (formationIndex != -1) // Turn yellow
+                            {
+                                color = new Color(1.0f,1.0f,0.8f,1.0f);
+                            }
+
+                            if (dynamicPlayersData[playerDataIndex].weeksBannedOrInjured != 0) // Turn Red
+                            {
+                                color = new Color(1.0f,0.0f,0.0f,1.0f);
+                            }
+                            nameString = "("+positionString+") "+staticPlayersData[playerDataIndex].playerSurname;
+                        }
+
+
+                        int playerValue = 0;
+                        int teamId = dynamicPlayersData[playerDataIndex].teamId;
+                        if (teamId != -1)
+                        {
+                            int leagueId = GetTeamsLeagueID(teamId);
+                            playerValue = DetermineValueOfPlayerID(playerId, leagueId);
+                        }
+                        menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffBuy), playerValue, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
+                        yOffBuy -= menuItemGenerator.playerBuySpacing;
+                    }
+                    buttonYBuy = (int)(yOffBuy - menuItemGenerator.playerBuyingYOffset*2);
+                   menuItems[5].pos = new Vector2(menuItems[5].pos.x, buttonYBuy);
+                   menuItems[5].AdjustPosition(); menuItems[5].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
+                   menuItems[6].pos = new Vector2(menuItems[6].pos.x, buttonYBuy);
+                   menuItems[6].AdjustPosition(); menuItems[6].SetText("pageButtonPrev");
+                   menuItems[7].pos = new Vector2(menuItems[7].pos.x, buttonYBuy);
+                   menuItems[7].AdjustPosition(); menuItems[7].SetText("pageButtonNext");
+                   }
+                break;
             case Enums.Screen.SellPlayers:
                 menuScrollY = saveMenuScrollY;
                 currentNumberOfPage = (numPlayersInPlayersTeam / MaxPlayersInList) + 1;
@@ -1335,10 +1439,14 @@ public class GameManager : MonoBehaviour
                 int buttonY = 8;
                 if (maxItemsSelling > 11)
                     buttonY = 395 - menuItemGenerator.playerTrainingYOffset - (22 * (maxItemsSelling + 1));
-                menuItems[4].pos = new Vector2(menuItems[4].pos.x, buttonY); menuItems[4].SetText("backButton");
-                menuItems[5].pos = new Vector2(menuItems[5].pos.x, buttonY); menuItems[5].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
-                menuItems[6].pos = new Vector2(menuItems[6].pos.x, buttonY); menuItems[6].SetText("pageButtonPrev");
-                menuItems[7].pos = new Vector2(menuItems[7].pos.x, buttonY); menuItems[7].SetText("pageButtonNext");
+                menuItems[4].pos = new Vector2(menuItems[4].pos.x, -buttonY);
+                menuItems[4].AdjustPosition(); menuItems[4].SetText("backButton");
+                menuItems[5].pos = new Vector2(menuItems[5].pos.x, -buttonY);
+                menuItems[5].AdjustPosition(); menuItems[5].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
+                menuItems[6].pos = new Vector2(menuItems[6].pos.x, -buttonY);
+                menuItems[6].AdjustPosition(); menuItems[6].SetText("pageButtonPrev");
+                menuItems[7].pos = new Vector2(menuItems[7].pos.x, -buttonY);
+                menuItems[7].AdjustPosition();menuItems[7].SetText("pageButtonNext");
                 MenuScrollBar sellBar = menuItems[3].GetComponent<MenuScrollBar>();
                 sellBar.minMaxRange = new Vector2(0, -(22 * maxItemsSelling)+menuItemGenerator.playerTrainingYOffset+116);
                 if (sellBar.minMaxRange.y < -480) 
@@ -1349,7 +1457,7 @@ public class GameManager : MonoBehaviour
                 itemsForSelling.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+395+(22*maxItemsSelling));
                 for (int j = 0; j < maxItemsSelling; j++)
                 {
-                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j);
+                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTransferStatus, j);
                 } 
                 for (int i = 0; i < maxItemsSelling; i++)
                 {
@@ -1768,9 +1876,9 @@ public class GameManager : MonoBehaviour
                 transferOfferOffersMadeThisTurn = 0;
 
                 int numOnTransferList = -1;
-                int[] transferList = new int[MaxPlayersInATeam];
+                int[] transfersList = new int[MaxPlayersInATeam];
 
-                if (IsAnyPlayerInTeamOnTheTransferList(playersTeamPlayerIds, numPlayersInPlayersTeam, transferList, ref numOnTransferList))
+                if (IsAnyPlayerInTeamOnTheTransferList(playersTeamPlayerIds, numPlayersInPlayersTeam, transfersList, ref numOnTransferList))
                 {
                     for (int i = 0; i < numTeamsInScenarioLeague; i++)
                     {
@@ -1918,7 +2026,36 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
-   
+    int CountPlayersOnTransferMarketExcludingTeam(int teamId)
+    {
+        int numPlayersFound = 0;
+        numPlayersOnTransferList = 0;
+
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            if (dynamicPlayersData[i].teamId != teamId)
+            {
+                if (dynamicPlayersData[i].teamId == -1)
+                    dynamicPlayersData[i].trainingTransfer = ((int)Enums.TransferStatus.FreeTransfer)<<transferBitShift;
+
+                if ((dynamicPlayersData[i].trainingTransfer & transferMask) != 0)
+                {
+                    int chance = Random.Range(1, 4);
+                    if ((chance & 3) == 0)
+                    {
+                        if (numPlayersOnTransferList < MaxPlayers)
+                        {
+                            transferList[numPlayersOnTransferList] = staticPlayersData[i].playerId;
+                            numPlayersOnTransferList++;
+                        }
+                        numPlayersFound++;
+                    }
+                }
+            }
+        }
+        return numPlayersFound;
+    }
+
 
     private int EstimateTeamIndexCashBalance(int teamIndex, int weeks)
     {
@@ -2005,16 +2142,21 @@ public class GameManager : MonoBehaviour
 
     private bool IsAnyPlayerInTeamOnTheTransferList(int[] playerIds, int numPlayerIds, int[] transfers, ref int numTrans)
     {
+        Debug.Log(playerIds.Length + " " + numPlayerIds + " " + transfers.Length + " " + numTrans);
         bool result = false;
+        numTrans = 0;
         for (int k = 0; k < numPlayerIds; k++)
         {
             int playerId = playerIds[k];
             int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
-            if ((dynamicPlayersData[dataIndex].trainingTransfer & transferMask) >> 8 != 0)
+            if (dataIndex != -1)
             {
-                result = true;
-                transfers[numTrans] = playerId;
-                numTrans++;
+                if ((dynamicPlayersData[dataIndex].trainingTransfer & transferMask) >> transferBitShift != 0)
+                {
+                    result = true;
+                    transfers[numTrans] = playerId;
+                    numTrans++;
+                }
             }
         }
         return result;

@@ -9,6 +9,10 @@ public class MenuItemGenerator : MonoBehaviour
     [SerializeField]
     public int playerTrainingYOffset = 96;
     [SerializeField]
+    public int playerBuyingYOffset = 128;
+    [SerializeField]
+    public float playerBuySpacing = 38f;
+    [SerializeField]
     public int menuBarHeight = 32;
     [SerializeField]
     public float standingsTextFontScale = 0.85f;

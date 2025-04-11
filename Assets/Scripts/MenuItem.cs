@@ -75,7 +75,7 @@ public class MenuItem : MonoBehaviour
     /// <summary>
     /// This uses the position of menuItem to set Unity's RectTransform, allowing you to feed the old position values into Unity
     /// </summary>
-    protected void AdjustPosition()
+    public void AdjustPosition()
     {
         if (RectTransform == null)
             RectTransform = GetComponent<RectTransform>();
@@ -311,14 +311,14 @@ public class MenuItem : MonoBehaviour
     {
         int playerId = gameManager.playersTeamPlayerIds[playerIndex];
         int dataIndex = gameManager.GetPlayerDataIndexForPlayerID(playerId);
-        int transferState = (gameManager.dynamicPlayersData[dataIndex].trainingTransfer & GameManager.transferMask) >> 8;
+        int transferState = (gameManager.dynamicPlayersData[dataIndex].trainingTransfer & GameManager.transferMask) >> GameManager.transferBitShift;
         transferState++;
         if (transferState > (int)Enums.TransferStatus.AnyOffers)
             transferState = (int)Enums.TransferStatus.NotListed;
+        Debug.Log(transferState);
         gameManager.dynamicPlayersData[dataIndex].trainingTransfer &= GameManager.trainingMask;
-        gameManager.dynamicPlayersData[dataIndex].trainingTransfer |= (transferState<<8);
+        gameManager.dynamicPlayersData[dataIndex].trainingTransfer |= (transferState<<GameManager.transferBitShift);
         gameManager.saveMenuScrollY = gameManager.menuScrollY;
-        
     }
 
     public virtual void HideItem(bool hide)

@@ -9,7 +9,9 @@ public class PlayerTraining : MenuItem
     [SerializeField]
     private TMP_Text nameText;
     [SerializeField]
-    private TMP_Text statusText;
+    private TMP_Text statusText; 
+    [SerializeField]
+    private TMP_Text priceText;
     [SerializeField]
     private Image starsSprite;
     public Sprite[] starsArray;
@@ -36,6 +38,7 @@ public class PlayerTraining : MenuItem
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();
+        
     }
 
     public override void Update()
@@ -44,11 +47,10 @@ public class PlayerTraining : MenuItem
         UpdateFlags();
         textIndex = (int)(playerData.condition * 10.0f);
         if (textIndex < 0) textIndex = 0; if (textIndex > 9) textIndex = 9;
-        statusSprite.sprite = statusArray[training];
         switch (gameManager.currentScreen)
         {
             case Enums.Screen.SellPlayers:
-                training = playerData.trainingTransfer & (GameManager.transferMask>>8);
+                training = (playerData.trainingTransfer & GameManager.transferMask) >> GameManager.transferBitShift;
                 statusSprite.sprite = transferArray[training];
                 break;
             case Enums.Screen.TrainPlayers:
@@ -62,21 +64,13 @@ public class PlayerTraining : MenuItem
     private void UpdateFlags()
     {
         if ((playerData.weeksBannedOrInjured &  GameManager.injuryMask) != 0)
-        {
             playerFlags = 0;
-        }
         else if ((playerData.weeksBannedOrInjured &  GameManager.bannedMask) != 0)
-        {
             playerFlags = 1;
-        }
         else if ((playerData.flags & GameManager.YellowCardMask) != 0)
-        {
             playerFlags = 2;
-        }
         if (playerData.condition <  GameManager.ShowInjuredRatio)
-        {
             playerFlags = 0;
-        }
         flagsSprite.sprite = flagsArray[playerFlags];
     }
 
@@ -85,9 +79,9 @@ public class PlayerTraining : MenuItem
         this.stars = stars;
         this.playerData = playerData;
         this.nameStr = nameStr;
+        name = nameStr;
         nameColor = color;
         this.teamLikesPositionStr = teamLikesPositionStr;
-       
         UpdateText();
     }
     
@@ -98,23 +92,35 @@ public class PlayerTraining : MenuItem
         piesSprite.sprite = piesArray[textIndex];
         switch (gameManager.currentScreen)
         {
+            case Enums.Screen.BuyPlayers:
+                statusSprite.gameObject.SetActive(false);
+                starsSprite.gameObject.SetActive(false);
+                priceText.text = "$"+stars+"k";
+                menuAction = Enums.MenuAction.BuyPlayerReview;
+                break;
             case Enums.Screen.SellPlayers:
+                
+                training = playerData.trainingTransfer & (GameManager.transferMask>>GameManager.transferBitShift);
                 statusSprite.sprite = transferArray[training];
                 starsSprite.gameObject.SetActive(false);
+                priceText.gameObject.SetActive(false);
                 menuAction = Enums.MenuAction.CyclePlayerTransferStatus;
                 break;
             case Enums.Screen.TrainPlayers:
                 starsSprite.sprite = starsArray[stars];
                 statusSprite.sprite = statusArray[training];
+                priceText.gameObject.SetActive(false);
                 menuAction = Enums.MenuAction.CyclePlayerTraining;
                 break;
             case Enums.Screen.AssignPlayers:
                 statusSprite.gameObject.SetActive(false);
                 starsSprite.gameObject.SetActive(false);
+                priceText.gameObject.SetActive(false);
                 menuAction = Enums.MenuAction.AssignPlayerToFormation;
                 break;
         }
         nameText.text = nameStr;
+        priceText.color = nameColor;
         nameText.color = nameColor;
         statusText.text = teamLikesPositionStr;
     }

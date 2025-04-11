@@ -1497,7 +1497,7 @@ MonoBehaviour:
   - {fileID: 4160221129578817275, guid: f12b8afba6e49f543bc13e70973d3535, type: 3}
   - {fileID: 18725873019143295, guid: bfef9f425dbf769479a3b6fdbdb4bae9, type: 3}
   - {fileID: 7041521475674927063, guid: ef14f549c19f3744b90e53c2eb10b894, type: 3}
-  - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
+  - {fileID: 7041521475674927063, guid: fafed3a3235486e40ab833b62e4322cb, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 7041521475674927063, guid: 101627bdf5d32d64dad7812c014c569e, type: 3}
@@ -8738,7 +8738,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 1029329361401435419, guid: 56f2b0872f36f7f4399321cc47b6b7d4, type: 3}
   - {fileID: 1029329361401435419, guid: ed4384d8923c39840b0a75fc894ed938, type: 3}
-  - {fileID: 0}
+  - {fileID: 1029329361401435419, guid: a5d22f683cf95cb4a8e390faa268d353, type: 3}
   - {fileID: 6709948606914668062, guid: 05891e25af651d64ba8d8043df118a05, type: 3}
   - {fileID: 8106261006067579352, guid: cff60c02e3e1ce045a8198afb476698a, type: 3}
   - {fileID: 4312010963022742071, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
@@ -8753,6 +8753,8 @@ MonoBehaviour:
   - {fileID: 633864595979411815, guid: beb982fa76814c242b09595c609e4407, type: 3}
   - {fileID: 633864595979411815, guid: 1b6de29072f151349b041a4569bd11c8, type: 3}
   playerTrainingYOffset: 96
+  playerBuyingYOffset: 128
+  playerBuySpacing: 38
   menuBarHeight: 32
   standingsTextFontScale: 0.85
   menuBarSpace: 16
