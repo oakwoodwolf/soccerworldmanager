@@ -48,7 +48,7 @@ public class MenuItemGenerator : MonoBehaviour
         Debug.Log("Generated menu item");
         return menuItem;
     }
-    public void CreateStandings(ScreenDefinition screen, Vector2 pos, int teamId, bool isSelf, string nameText, int matchesPlayed, int leaguePoints, int goalDifference)
+    public TeamStandings CreateStandings(ScreenDefinition screen, Vector2 pos, int teamId, bool isSelf, string nameText, int matchesPlayed, int leaguePoints, int goalDifference)
     {
         Transform child = screen.MenuItems.transform;
         GameObject newObj = Instantiate(prefabs[12], child, false);
@@ -58,7 +58,9 @@ public class MenuItemGenerator : MonoBehaviour
         newObj.name = nameText;
         standings.pos = new Vector2(pos.x, -pos.y);
         standings.FillTeamValues(teamId, nameText, matchesPlayed, goalDifference, leaguePoints, isSelf);
+        standings.transform.SetSiblingIndex(3);
         Debug.Log("Created standings for " + standings.teamName);
+        return standings;
     }
     public WeekPreview CreateWeekPreview(ScreenDefinition screen, Vector2 pos, string nameText)
     {

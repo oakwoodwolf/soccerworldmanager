@@ -1303,11 +1303,13 @@ public class GameManager : MonoBehaviour
                     int teamIndex = GetTeamDataIndexForTeamID(premiumLeagueData[i].teamId);
                     int teamNo = i + 1;
                     bool isSelf = premiumLeagueData[i].teamId == playersTeam;
-                    menuItemGenerator.CreateStandings(currentScreenDefinition, new Vector2(0.0f, yOff), teamNo, isSelf, staticTeamsData[teamIndex].teamName, premiumLeagueData[i].matchesPlayed, premiumLeagueData[i].leaguePoints, premiumLeagueData[i].goalDifference);
+                    TeamStandings standings= menuItemGenerator.CreateStandings(currentScreenDefinition, new Vector2(16.0f, yOff), teamNo, isSelf, staticTeamsData[teamIndex].teamName, premiumLeagueData[i].matchesPlayed, premiumLeagueData[i].leaguePoints, premiumLeagueData[i].goalDifference);
                     yOff -= 32;
+                    if (premiumLeagueData[i].teamId == playersTeam)
+                        standings.SetColor(new Color(1.0f,1.0f,0.8f), new Color (0.9f,0.9f,0.7f));
                 }
-                RectTransform items = currentScreenDefinition.MenuItems.transform.GetComponent<RectTransform>();
-                items.sizeDelta = new Vector2(320f,-yOff+240);
+                RectTransform items = menuItems[1].transform.GetComponent<RectTransform>();
+                items.sizeDelta = new Vector2(288f,-yOff);
                 break;
            case Enums.Screen.OtherBusiness:
                 if (playersSponsor == -1)
@@ -2033,7 +2035,7 @@ public class GameManager : MonoBehaviour
                     int awayTeamIndex = GetTeamDataIndexForTeamID(awayTeamId);
                     
                     
-                    // Render todo
+                    // Render
                     MenuItem item = menuItemGenerator.GenerateMenuItem(currentScreenDefinition, MenuElement.StaticText,
                         new Vector2(32, -yOff),0,0,staticTeamsData[homeTeamIndex].teamName + " " + homeScore + " " + staticTeamsData[awayTeamIndex].teamName + " " + awayScore,MenuAction.Null,0,null,18*menuItemGenerator.standingsTextFontScale);
                     yOff += 16;

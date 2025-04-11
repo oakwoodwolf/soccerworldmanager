@@ -920,7 +920,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -1964453997957492450, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: pos.y
-      value: -212
+      value: 48
+      objectReference: {fileID: 0}
+    - target: {fileID: -1964453997957492450, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
+      propertyPath: affectedByScroll
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1258262140829095943, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: m_Name
@@ -992,7 +996,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3179940055433429547, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 212
+      value: -48
       objectReference: {fileID: 0}
     - target: {fileID: 3179940055433429547, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

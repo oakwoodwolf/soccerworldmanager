@@ -45,20 +45,22 @@ public class TeamStandings : MenuItem
         goalDifferenceText.text = goalDifference.ToString();
         leaguePointsText.text = leaguePoints.ToString();
         Color mainColor; Color goalColor;
-        if (isSelf)
-        {
-            mainColor = new Color(255, 255, 255*0.8f, 255);
-            goalColor = new Color(255*0.9f, 255*0.9f, 255*0.7f, 255);
-        }
-        else
-        {
-            mainColor = new Color(255*0.7f, 255*0.8f, 255*0.9f, 255);
-            goalColor = new Color(255*0.6f, 255*0.7f, 255*0.8f, 255);
-        }
+    
+        mainColor = new Color(255*0.7f, 255*0.8f, 255*0.9f, 255);
+        goalColor = new Color(255*0.6f, 255*0.7f, 255*0.8f, 255);
+    
         teamText.color = mainColor;
         teamNameText.color = mainColor;
         matchesPlayedText.color = mainColor;
         goalDifferenceText.color = goalColor;
         leaguePointsText.color = mainColor;
+    }
+    public void SetColor(Color mainColor, Color goalColor)
+    {
+        teamText.color = mainColor;
+        teamNameText.color = mainColor;
+        matchesPlayedText.color = mainColor;
+        leaguePointsText.color = mainColor;
+        goalDifferenceText.color = goalColor;
     }
 }
