@@ -401,11 +401,13 @@ public class MatchEngine : MonoBehaviour
                                  (Enums.MatchBreakerFlags)0) ||
                                 ((awayTeamMatchBreakerFlags & Enums.MatchBreakerFlags.ExtraExtraTime) != 0))
                                 extraTime += 5;
-                            
-                            if (extraTime > 0)
-                                PushMatchString("The 4th official indicates there will be "+extraTime+" min(s) of extra time.");
-                            else
-                                PushMatchString("The 4th official indicates there will be no extra time played.");
+                            if (!skipping)
+                            {
+                                if (extraTime > 0)
+                                    PushMatchString("The 4th official indicates there will be "+extraTime+" min(s) of extra time.");
+                                else
+                                    PushMatchString("The 4th official indicates there will be no extra time played.");
+                            }
 
                         }
                         if (turn >= turnsInSecondHalf)
