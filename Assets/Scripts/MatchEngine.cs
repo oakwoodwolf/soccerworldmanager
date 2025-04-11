@@ -847,6 +847,8 @@ public class MatchEngine : MonoBehaviour
                     if (!skipping)
                     {
                         gameManager.SoundEngine_StartEffect(Enums.Sounds.Crowd_Goal);
+                        if (gameManager.VibrationEnabled) 
+                            Handheld.Vibrate();
                         matchStringIndex++;
                         matchStringIndex &= MatchStringsMask;
                         matchStrings[matchStringIndex] = "- GOAL! ["+homeTeamScore+":"+awayTeamScore+"] " + goalString + "\n";

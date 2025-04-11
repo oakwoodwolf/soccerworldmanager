@@ -274,9 +274,10 @@ public class MenuItem : MonoBehaviour
                             gameManager.SoundEngine_StartEffect(Enums.Sounds.Splat);
                             break;
                         case 2: gameManager.VibrationEnabled = false; break;
-                        case 3: gameManager.VibrationEnabled = true; break;
+                        case 3: gameManager.VibrationEnabled = true;
+                            Handheld.Vibrate(); break;
                     }
-                    this.flags = Enums.MenuElementFlag.HideItem;
+                    gameManager.SetOptionsRadioButtons(gameManager.currentScreenDefinition.MenuItems.GetComponentsInChildren<MenuItem>());
                     break;
                 case Enums.MenuAction.RadioSelectMatchBalance:
                     MenuItem[] items = gameManager.currentScreenDefinition.MenuItems.GetComponentsInChildren<MenuItem>();

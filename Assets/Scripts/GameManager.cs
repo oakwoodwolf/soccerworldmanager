@@ -1231,6 +1231,9 @@ public class GameManager : MonoBehaviour
                 }
                 
                 break;
+            case Enums.Screen.Options:
+                SetOptionsRadioButtons(menuItems);
+                break;
             case Enums.Screen.PreTurn:
                 matchEngine.state = MatchEngineState.MatchOver;
                 LeagueInfo info = GetLeagueInfoForId(playersLeague); 
@@ -1846,6 +1849,7 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
+   
 
     private int EstimateTeamIndexCashBalance(int teamIndex, int weeks)
     {
@@ -2281,6 +2285,12 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+    }
+    public void SetOptionsRadioButtons(MenuItem[] items)
+    {
+        ResetMenuRadioButtons(items);
+        SetMenuRadioButtonsAtOccurance(items, SFXEnabled ? 1 : 0);
+        SetMenuRadioButtonsAtOccurance(items, VibrationEnabled ? 3 : 2);
     }
 
     private Formation GetCPUFormationForManagerIndex(int managerIndex)
