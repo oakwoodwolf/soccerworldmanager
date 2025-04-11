@@ -389,6 +389,11 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 370bc50a81884ab4ea272323c86f1536, type: 3}
   - {fileID: 21300000, guid: 054dc2a08a5a5e842a5c8403ce599fa0, type: 3}
   - {fileID: 21300000, guid: b859f8776dcf30d47be4c68323bc228c, type: 3}
+  transferArray:
+  - {fileID: 21300000, guid: bcc66b47508569b45bca255108fe867c, type: 3}
+  - {fileID: 21300000, guid: d81337af05d0080448ab7f6607502912, type: 3}
+  - {fileID: 21300000, guid: ed5c94fa50d29bf4db35a398e1de82d4, type: 3}
+  - {fileID: 21300000, guid: 5b5d36d52f426fc48945e9b436f385b7, type: 3}
   piesSprite: {fileID: 4855073586629044101}
   piesArray:
   - {fileID: 21300000, guid: 819624a59f713564ca755f0e06a9a471, type: 3}

@@ -16,6 +16,7 @@ public class PlayerTraining : MenuItem
     [SerializeField]
     private Image statusSprite;
     public Sprite[] statusArray;
+    public Sprite[] transferArray;
     [SerializeField]
     private Image piesSprite;
     public Sprite[] piesArray;
@@ -44,8 +45,18 @@ public class PlayerTraining : MenuItem
         textIndex = (int)(playerData.condition * 10.0f);
         if (textIndex < 0) textIndex = 0; if (textIndex > 9) textIndex = 9;
         statusSprite.sprite = statusArray[training];
-        training = playerData.trainingTransfer & GameManager.trainingMask;
-        statusSprite.sprite = statusArray[training];
+        switch (gameManager.currentScreen)
+        {
+            case Enums.Screen.SellPlayers:
+                training = playerData.trainingTransfer & (GameManager.transferMask>>8);
+                statusSprite.sprite = transferArray[training];
+                break;
+            case Enums.Screen.TrainPlayers:
+                training = playerData.trainingTransfer & GameManager.trainingMask;
+                statusSprite.sprite = statusArray[training];
+                break;
+        }
+        
     }
 
     private void UpdateFlags()
@@ -87,9 +98,15 @@ public class PlayerTraining : MenuItem
         piesSprite.sprite = piesArray[textIndex];
         switch (gameManager.currentScreen)
         {
+            case Enums.Screen.SellPlayers:
+                statusSprite.sprite = transferArray[training];
+                starsSprite.gameObject.SetActive(false);
+                menuAction = Enums.MenuAction.CyclePlayerTransferStatus;
+                break;
             case Enums.Screen.TrainPlayers:
                 starsSprite.sprite = starsArray[stars];
                 statusSprite.sprite = statusArray[training];
+                menuAction = Enums.MenuAction.CyclePlayerTraining;
                 break;
             case Enums.Screen.AssignPlayers:
                 statusSprite.gameObject.SetActive(false);

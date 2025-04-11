@@ -1500,7 +1500,7 @@ MonoBehaviour:
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
   - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
-  - {fileID: 4401275763683909722, guid: dc908cfd61c018746b4433fce6620d80, type: 3}
+  - {fileID: 7041521475674927063, guid: 101627bdf5d32d64dad7812c014c569e, type: 3}
   - {fileID: 6836921926627544821, guid: 4b25652b3e937e34792160b199deb21a, type: 3}
   - {fileID: 5704184187391086288, guid: 8a30b85c054b0dd4f97eb9701d28073d, type: 3}
   - {fileID: 4363045185956736453, guid: cf6d21e3b8270b74f91e7968db4d2e5b, type: 3}
@@ -1533,6 +1533,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a6e8d19321bc7ea49a3f0a3f26393896, type: 2}
   - {fileID: 11400000, guid: 56b418cad5b1e6b4d878a710b36ceb24, type: 2}
   menuScrollY: 0
+  saveMenuScrollY: 0
   activeMenuScrollBar: {fileID: 0}
   scrollSpeed: 10
   menuTransform: {fileID: 7591536}
@@ -1809,9 +1810,6 @@ MonoBehaviour:
   texturePitch: {fileID: 1558387878, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
   iconSad: {fileID: -205679983, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
   iconHappy: {fileID: -857502808, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
-  iconPosition: {fileID: -581303122, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
-  iconSelection: {fileID: 1260219706, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
-  iconInjury: {fileID: -1306758137, guid: 53f62cf7c684f9e458d3e42197a86d6f, type: 3}
   leagueDetails:
   - {fileID: 11400000, guid: 0713aad78df883b49964ac55656e3b22, type: 2}
   - {fileID: 11400000, guid: 017fca6a5d167874083e1bf8737e6bb7, type: 2}

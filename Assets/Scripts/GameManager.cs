@@ -67,6 +67,7 @@ public class GameManager : MonoBehaviour
     public int processMatchDataStartFrameCount;
     public ScenarioInfo[] scenarioData;
     public float menuScrollY;
+    public float saveMenuScrollY;
     public MenuScrollBar activeMenuScrollBar;
     public float scrollSpeed = 10f;
     private Vector2 lastTouchPosition;
@@ -1317,6 +1318,72 @@ public class GameManager : MonoBehaviour
                     GoToMenu(Enums.Screen.AssignSponsor);
                 }
                break;
+            case Enums.Screen.SellPlayers:
+                menuScrollY = saveMenuScrollY;
+                currentNumberOfPage = (numPlayersInPlayersTeam / MaxPlayersInList) + 1;
+                if (currentPage >= currentNumberOfPage)
+                {
+                    currentPage = currentNumberOfPage - 1;
+                }
+                
+               //Generate List
+               RectTransform itemsForSelling= currentScreenDefinition.MenuItems.transform.GetChild(0).GetComponent<RectTransform>(); 
+               float yOffSell = 0.0f;
+                int maxItemsSelling = numPlayersInPlayersTeam - (currentPage * MaxPlayersInList);
+                if (maxItemsSelling > MaxPlayersInList) maxItemsSelling = MaxPlayersInList;
+
+                int buttonY = 8;
+                if (maxItemsSelling > 11)
+                    buttonY = 395 - menuItemGenerator.playerTrainingYOffset - (22 * (maxItemsSelling + 1));
+                menuItems[4].pos = new Vector2(menuItems[4].pos.x, buttonY); menuItems[4].SetText("backButton");
+                menuItems[5].pos = new Vector2(menuItems[5].pos.x, buttonY); menuItems[5].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
+                menuItems[6].pos = new Vector2(menuItems[6].pos.x, buttonY); menuItems[6].SetText("pageButtonPrev");
+                menuItems[7].pos = new Vector2(menuItems[7].pos.x, buttonY); menuItems[7].SetText("pageButtonNext");
+                MenuScrollBar sellBar = menuItems[3].GetComponent<MenuScrollBar>();
+                sellBar.minMaxRange = new Vector2(0, -(22 * maxItemsSelling)+menuItemGenerator.playerTrainingYOffset+116);
+                if (sellBar.minMaxRange.y < -480) 
+                    sellBar.minMaxRange = new Vector2(0, sellBar.minMaxRange.y+480);
+                else
+                    sellBar.minMaxRange = new Vector2(0, 0);
+                //Training screen menu stuff
+                itemsForSelling.sizeDelta = new Vector2(320f,menuItemGenerator.playerTrainingYOffset+395+(22*maxItemsSelling));
+                for (int j = 0; j < maxItemsSelling; j++)
+                {
+                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTraining, j);
+                } 
+                for (int i = 0; i < maxItemsSelling; i++)
+                {
+                    int playerId = playersTeamPlayerIds[i + currentPage * MaxPlayersInList];
+                    int playerDataIndex = GetPlayerDataIndexForPlayerID(playerId);
+                   string nameString = String.Empty;
+                   string playerLikesPositionString = String.Empty;
+                   Color color = Color.white;
+                    if (playerDataIndex != -1) // Handle Player name
+                    {
+                        string positionString = "--";
+                       
+                        playerLikesPositionString = FillPlayerLikesStringForPlayerIndex(playerDataIndex);
+                        int formationIndex = FillPositionStringForPlayerIndexs(playerDataIndex, formations[(int)formationType], ref positionString);
+                        if (formationIndex != -1) // Turn yellow
+                        {
+                            color = new Color(1.0f,1.0f,0.8f,1.0f);
+                        }
+
+                        if (dynamicPlayersData[playerDataIndex].weeksBannedOrInjured != 0) // Turn Red
+                        {
+                            color = new Color(1.0f,0.0f,0.0f,1.0f);
+                        }
+                        nameString = "("+positionString+") "+staticPlayersData[playerDataIndex].playerSurname;
+                    }
+                    
+                   
+                    int stars = (int)GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerDataIndex);
+                    if (stars < 0) stars = 0; if (stars > 5) stars = 5;
+                    menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffSell), stars, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
+                    yOffSell -= 22f;
+                }
+               
+                break;
            case Enums.Screen.TrainPlayers:
 
                 currentNumberOfPage = (numPlayersInPlayersTeam / MaxPlayersInList) + 1;

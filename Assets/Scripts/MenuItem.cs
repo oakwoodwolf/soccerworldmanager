@@ -151,6 +151,7 @@ public class MenuItem : MonoBehaviour
                     gameManager.dynamicPlayersData[dataIndex].trainingTransfer |= training;
                     break;
                 case Enums.MenuAction.CyclePlayerTransferStatus:
+                    CyclePlayerTransferStatus(param);
                     break;
                 case Enums.MenuAction.BuyPlayerReview:
                     break;
@@ -305,6 +306,19 @@ public class MenuItem : MonoBehaviour
             }
         }
        
+    }
+    void CyclePlayerTransferStatus(int playerIndex)
+    {
+        int playerId = gameManager.playersTeamPlayerIds[playerIndex];
+        int dataIndex = gameManager.GetPlayerDataIndexForPlayerID(playerId);
+        int transferState = (gameManager.dynamicPlayersData[dataIndex].trainingTransfer & GameManager.transferMask) >> 8;
+        transferState++;
+        if (transferState > (int)Enums.TransferStatus.AnyOffers)
+            transferState = (int)Enums.TransferStatus.NotListed;
+        gameManager.dynamicPlayersData[dataIndex].trainingTransfer &= GameManager.trainingMask;
+        gameManager.dynamicPlayersData[dataIndex].trainingTransfer |= (transferState<<8);
+        gameManager.saveMenuScrollY = gameManager.menuScrollY;
+        
     }
 
     public virtual void HideItem(bool hide)
