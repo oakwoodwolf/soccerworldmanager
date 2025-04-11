@@ -1,6 +1,5 @@
-using UnityEngine;
-
-public class DynamicLeagueData : ScriptableObject
+[System.Serializable]
+public class SaveLeagueData
 {
     public int teamId;
     public int matchesPlayed;

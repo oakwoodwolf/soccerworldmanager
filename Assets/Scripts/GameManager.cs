@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 using static Enums;
@@ -177,9 +174,6 @@ public class GameManager : MonoBehaviour
     public Sprite texturePitch;
     public Sprite iconSad;
     public Sprite iconHappy;
-    public Sprite iconPosition;
-    public Sprite iconSelection;
-    public Sprite iconInjury;
     [Header("Static Soccer Data")]
     public LeagueInfo[] leagueDetails;
     public int numberOfLeaguesInArrays;
@@ -553,8 +547,7 @@ public class GameManager : MonoBehaviour
 
         if (mainData.SaveDataType != 5 && mainData.SaveDataType != 4 && mainData.SaveDataType != 3)
         {
-            Debug.Log("Unsupported save data type.");
-        
+            Debug.LogError("Unsupported save data type.");
             return false;
         }
 
@@ -571,7 +564,6 @@ public class GameManager : MonoBehaviour
         playersWeeksWithSponsor  = mainData.PlayersWeeksWithSponsor;
         playersMatchBreaker  = mainData.PlayersMatchBreaker;
         playersMatchStrategy  = mainData.PlayersMatchStrategy;
-        
         LoadLeagueData();
         LoadTeams();
         LoadPlayers();
@@ -584,6 +576,7 @@ public class GameManager : MonoBehaviour
         {
             if (balanceHistory.Count != week)
             {
+                Debug.LogError("Loading Game failed: week count doesn't match balance history.");
                 return false;
             }
 
@@ -595,83 +588,92 @@ public class GameManager : MonoBehaviour
         
         //Load Dynamic Team Data
         string  dynamicTeamJson = PlayerPrefs.GetString(soccerDynamicTeamDataKey);
-        List<DynamicTeamData> dynamicTeamData = JsonUtility.FromJson<List<DynamicTeamData>>(dynamicTeamJson);
+        TeamSave dynamicTeam = JsonUtility.FromJson<TeamSave>(dynamicTeamJson);
        
-        if (dynamicTeamData.Count > 0)
+        if (dynamicTeam.data.Count > 0)
         {
-            if (dynamicTeamData.Count != numberOfTeamsInArrays)
+            if (dynamicTeam.data.Count != numberOfTeamsInArrays)
             {
+                Debug.LogError("Loading Game failed: team count is different.");
                 return false;
             }
 
-            for (int i = 0; i < dynamicTeamData.Count; i++)
+            for (int i = 0; i < dynamicTeam.data.Count; i++)
             {
-                DynamicTeamData dictionary = dynamicTeamData[i];
-                int teamId = dictionary.teamId;
+                SaveTeamData team = dynamicTeam.data[i];
+                int teamId = team.teamId;
                 int dataIndex = GetArrayIndexForTeam(teamId);
                 if (dataIndex == -1)
                 {
+                    Debug.LogError("Loading Game failed: Team not found.");
                     return false;
                 }
                 
-                dynamicTeamsData[dataIndex].leagueID = dictionary.leagueID;
-                dynamicTeamsData[dataIndex].cashBalance = dictionary.cashBalance;
-                dynamicTeamsData[dataIndex].fanMorale = dictionary.fanMorale;
+                dynamicTeamsData[dataIndex].leagueID = team.leagueID;
+                dynamicTeamsData[dataIndex].cashBalance = team.cashBalance;
+                dynamicTeamsData[dataIndex].fanMorale = team.fanMorale;
             }
         }
         //Load Dynamic player Data
         string  dynamicPlayerJson = PlayerPrefs.GetString(soccerDynamicPlayerDataKey);
-        List<DynamicPlayerData> dynamicPlayerData = JsonUtility.FromJson<List<DynamicPlayerData>>(dynamicPlayerJson);
+        PlayerSave dynamicPlayer = JsonUtility.FromJson<PlayerSave>(dynamicPlayerJson);
        
-        if (dynamicPlayerData.Count > 0)
+        if (dynamicPlayer.data.Count > 0)
         {
-            if (dynamicPlayerData.Count != numberOfPlayersInArrays)
+            if (dynamicPlayer.data.Count != numberOfPlayersInArrays)
             {
+                Debug.LogError("Loading Game failed: Player count doesnt match.");
+
                 return false;
             }
 
-            for (int i = 0; i < dynamicPlayerData.Count; i++)
+            for (int i = 0; i < dynamicPlayer.data.Count; i++)
             {
-                DynamicPlayerData dictionary = dynamicPlayerData[i];
-                int playerId = dictionary.playerID;
+                SavePlayerData player = dynamicPlayer.data[i];
+                int playerId = player.playerID;
                 int dataIndex = GetPlayerDataIndexForPlayerID(playerId);
                 if (dataIndex == -1)
                 {
+                    Debug.LogError("Loading Game failed: Player not found");
+
                     return false;
                 }
                 
-                dynamicPlayersData[dataIndex].starsRating = dictionary.starsRating;
-                dynamicPlayersData[dataIndex].condition = dictionary.condition;
-                dynamicPlayersData[dataIndex].trainingTransfer = dictionary.trainingTransfer;
-                dynamicPlayersData[dataIndex].teamId = dictionary.teamId;
-                dynamicPlayersData[dataIndex].weeklySalary = dictionary.weeklySalary;
-                dynamicPlayersData[dataIndex].morale = dictionary.morale;
-                dynamicPlayersData[dataIndex].weeksBannedOrInjured = dictionary.weeksBannedOrInjured;
-                dynamicPlayersData[dataIndex].flags = dictionary.flags;
+                dynamicPlayersData[dataIndex].starsRating = player.starsRating;
+                dynamicPlayersData[dataIndex].condition = player.condition;
+                dynamicPlayersData[dataIndex].trainingTransfer = player.trainingTransfer;
+                dynamicPlayersData[dataIndex].teamId = player.teamId;
+                dynamicPlayersData[dataIndex].weeklySalary = player.weeklySalary;
+                dynamicPlayersData[dataIndex].morale = player.morale;
+                dynamicPlayersData[dataIndex].weeksBannedOrInjured = player.weeksBannedOrInjured;
+                dynamicPlayersData[dataIndex].flags = player.flags;
             }
         }
         //Load Dynamic Manager Data
-        string  dynamicManagerJson = PlayerPrefs.GetString(soccerDynamicTeamDataKey);
-        List<DynamicManagerData> dynamicManagerData = JsonUtility.FromJson<List<DynamicManagerData>>(dynamicManagerJson);
+        string  dynamicManagerJson = PlayerPrefs.GetString(soccerDynamicManagerDataKey);
+        ManagerSave dynamicManager = JsonUtility.FromJson<ManagerSave>(dynamicManagerJson);
        
-        if (dynamicManagerData.Count > 0)
+        if (dynamicManager.data.Count > 0)
         {
-            if (dynamicManagerData.Count != numberOfTeamsInArrays)
+            if (dynamicManager.data.Count != numberOfManagersInArrays)
             {
+                Debug.LogError("Loading Game failed: Manager counts do not match.");
                 return false;
             }
 
-            for (int i = 0; i < dynamicManagerData.Count; i++)
+            for (int i = 0; i < dynamicManager.data.Count; i++)
             {
-                DynamicManagerData dictionary = dynamicManagerData[i];
-                int managerId = dictionary.managerId;
-                int dataIndex = GetIndexToManagerForTeamID(managerId);
+                SaveManagerData manager = dynamicManager.data[i];
+                int managerId = manager.managerId;
+                int dataIndex = GetIndexToManagerForManagerID(managerId);
                 if (dataIndex == -1)
                 {
+                    Debug.LogError("Loading Game failed: Manager "+i+" not found\n"+dynamicManagerJson);
+
                     return false;
                 }
                 
-                dynamicManagersData[dataIndex].teamId = dictionary.teamId;
+                dynamicManagersData[dataIndex].teamId = manager.teamId;
             }
         }
 
@@ -691,7 +693,10 @@ public class GameManager : MonoBehaviour
         {
             int count = playerFormationData.Count;
             if (count != MaxPlayersInSquad)
+            {
+                Debug.LogError("Loading Game failed: formation count doesnt match squad");
                 return false;
+            }
             for (int i = 0; i < count; i++)
             {
                 playersInFormation[i] = playerFormationData[i];
@@ -700,40 +705,45 @@ public class GameManager : MonoBehaviour
         
         // League data. The simplest of them
         string leagueDataJson = PlayerPrefs.GetString(soccerSaveLeagueDataKey);
-        List<DynamicLeagueData> leagueData = JsonUtility.FromJson<List<DynamicLeagueData>>(leagueDataJson);
-        if (leagueData.Count > 0)
+        LeagueSave league = JsonUtility.FromJson<LeagueSave>(leagueDataJson);
+        if (league.data.Count > 0)
         {
-            int count = leagueData.Count;
+            int count = league.data.Count;
             Debug.Assert(count == numTeamsInScenarioLeague);
+            ResetLeaguePoints();
             for (int i = 0; i < count; i++)
-                premiumLeagueData[i] = leagueData[i];
+            {
+                SaveLeagueData leagueData = league.data[i];
+                
+                premiumLeagueData[i].teamId = leagueData.teamId;
+                premiumLeagueData[i].matchesPlayed = leagueData.matchesPlayed;
+                premiumLeagueData[i].leaguePoints = leagueData.leaguePoints;
+                premiumLeagueData[i].goalDifference = leagueData.goalDifference;
+                premiumLeagueData[i].goalsAgainst = leagueData.goalsAgainst;
+                premiumLeagueData[i].goalsFor = leagueData.goalsFor;
+            }
         }
 
         string yellowCardJson = PlayerPrefs.GetString(soccerLeagueYellowCardDataKey);
-        List<YellowCardData> yellowCardData = JsonUtility.FromJson<List<YellowCardData>>(yellowCardJson);
-        if (yellowCardData.Count > 0)
+        CardSave yellowCard = JsonUtility.FromJson<CardSave>(yellowCardJson);
+        if (yellowCard.data.Count > 0)
         {
-            int count = yellowCardData.Count;
+            int count = yellowCard.data.Count;
             if (count != numberOfPlayersInArrays && checkSaveDataType != 3)
             {
+                Debug.LogError("Loading Game failed: card count doesnt match player count");
                 return false;
             }
 
             for (int i = 0; i < count; i++)
             {
                 int dataIndex = i;
-                if (checkSaveDataType == 3)
-                {
-                    int playerId = yellowCardData[dataIndex].playerId;
-                    dataIndex = GetPlayerDataIndexForPlayerID(playerId);
-                    if (dataIndex == -1)
-                        return false;
-                }
-                premiumLeagueYellowCards[dataIndex] = yellowCardData[i].yellowCard;
+                premiumLeagueYellowCards[dataIndex] = yellowCard.data[i].yellowCard;
             }
         }
         return true;
     }
+  
     private void SaveGameData()
     {
         string name = PlayerPrefs.GetString(usernameDefaultKey, "Player");
@@ -760,70 +770,118 @@ public class GameManager : MonoBehaviour
      
         PlayerPrefs.SetString(soccerSaveDataKey, JsonUtility.ToJson(score));
         //Balance history
-        List<int> balanceHistory = new List<int>();
+        BalanceHistory balanceHistory = new BalanceHistory
+        {
+            data = new List<int>()
+        };
         for (int i = 0; i < week; i++)
         {
-            balanceHistory.Add(playersBalance[i]);
+            balanceHistory.data.Add(playersBalance[i]);
         }
         PlayerPrefs.SetString(soccerBalanceHistoryDataKey, JsonUtility.ToJson(balanceHistory));
         //Player Formation
-        List<int> playerFormation = new List<int>();
+        BalanceHistory playerFormation = new BalanceHistory()
+        {
+            data = new List<int>()
+        };
         for (int i = 0; i < MaxPlayersInSquad; i++)
         {
-            playerFormation.Add(playersInFormation[i]);
+            playerFormation.data.Add(playersInFormation[i]);
         }
         PlayerPrefs.SetString(soccerPlayerFormationDataKey, JsonUtility.ToJson(playerFormation));
         //League data
-        List<DynamicLeagueData> leagueData = new List<DynamicLeagueData>();
+        LeagueSave leagues = new LeagueSave
+        {
+            data = new List<SaveLeagueData>()
+        };
         for (int i = 0; i < numTeamsInScenarioLeague; i++)
         {
-            leagueData.Add(premiumLeagueData[i]);
+            SaveLeagueData league = new SaveLeagueData
+            {
+                matchesPlayed = premiumLeagueData[i].matchesPlayed,
+                teamId =  premiumLeagueData[i].teamId,
+                leaguePoints = premiumLeagueData[i].leaguePoints,
+                goalDifference = premiumLeagueData[i].goalDifference,
+                goalsFor = premiumLeagueData[i].goalsFor,
+                goalsAgainst = premiumLeagueData[i].goalsAgainst,
+            };
+            leagues.data.Add(league);
         }
-        PlayerPrefs.SetString(soccerSaveLeagueDataKey, JsonUtility.ToJson(leagueData));
+        PlayerPrefs.SetString(soccerSaveLeagueDataKey, JsonUtility.ToJson(leagues));
         //Dynamic team data
-        List<DynamicTeamData> dynamicTeam = new List<DynamicTeamData>();
+        TeamSave dynamicTeam = new TeamSave
+        {
+            data = new List<SaveTeamData>()
+        };
         for (int i = 0; i < numberOfTeamsInArrays; i++)
         {
-            DynamicTeamData data = dynamicTeamsData[i];
-            data.teamId = staticTeamsData[i].teamId;
-            dynamicTeam.Add(data);
+            SaveTeamData data = new SaveTeamData()
+            {
+                teamId = staticTeamsData[i].teamId,
+                leagueID = dynamicTeamsData[i].leagueID,
+                cashBalance = dynamicTeamsData[i].cashBalance,
+                fanMorale =  dynamicTeamsData[i].fanMorale,
+            };
+            dynamicTeam.data.Add(data);
         }
         PlayerPrefs.SetString(soccerDynamicTeamDataKey, JsonUtility.ToJson(dynamicTeam));
         //Dynamic player data
-        List<DynamicPlayerData> dynamicPlayer = new List<DynamicPlayerData>();
+        PlayerSave dynamicPlayer = new PlayerSave
+        {
+            data = new List<SavePlayerData>()
+        };
         for (int i = 0; i < numberOfPlayersInArrays; i++)
         {
-            DynamicPlayerData data = dynamicPlayersData[i];
-            data.playerID = staticPlayersData[i].playerId;
-            dynamicPlayer.Add(data);
+            SavePlayerData data = new SavePlayerData
+            {
+                playerID = staticPlayersData[i].playerId,
+                trainingTransfer =  dynamicPlayersData[i].trainingTransfer,
+                starsRating =  dynamicPlayersData[i].starsRating,
+                condition =  dynamicPlayersData[i].condition,
+                weeklySalary =  dynamicPlayersData[i].weeklySalary,
+                morale =  dynamicPlayersData[i].morale,
+                weeksBannedOrInjured =  dynamicPlayersData[i].weeksBannedOrInjured,
+                flags =  dynamicPlayersData[i].flags,
+                teamId = dynamicPlayersData[i].teamId,
+            };
+            dynamicPlayer.data.Add(data);
         }
         PlayerPrefs.SetString(soccerDynamicPlayerDataKey, JsonUtility.ToJson(dynamicPlayer));
         //Dynamic manager data
-        List<DynamicManagerData> dynamicManagerData = new List<DynamicManagerData>();
+        ManagerSave dynamicManager = new ManagerSave
+        {
+            data = new List<SaveManagerData>()
+        };
         for (int i = 0; i < numberOfManagersInArrays; i++)
         {
-            DynamicManagerData data = dynamicManagersData[i];
-            data.managerId = staticManagersData[i].managerId;
-            dynamicManagerData.Add(data);
+            SaveManagerData data = new SaveManagerData
+            {
+                managerId = staticManagersData[i].managerId,
+                teamId =  dynamicManagersData[i].teamId
+            };
+            dynamicManager.data.Add(data);
         }
-        PlayerPrefs.SetString(soccerDynamicManagerDataKey, JsonUtility.ToJson(dynamicManagerData));
+        PlayerPrefs.SetString(soccerDynamicManagerDataKey, JsonUtility.ToJson(dynamicManager));
         //Dynamic manager data
-        List<YellowCardData> yellowCardData = new List<YellowCardData>();
+        CardSave yellowCard = new CardSave
+        {
+            data = new List<YellowCardData>()
+        };
         for (int i = 0; i < numberOfPlayersInArrays; i++)
         {
-            yellowCardData.Add(new YellowCardData
+            yellowCard.data.Add(new YellowCardData
             {
                 playerId = staticPlayersData[i].playerId,
                 yellowCard = premiumLeagueYellowCards[i],
             });
         }
-        PlayerPrefs.SetString(soccerLeagueYellowCardDataKey, JsonUtility.ToJson(yellowCardData));
+        PlayerPrefs.SetString(soccerLeagueYellowCardDataKey, JsonUtility.ToJson(yellowCard));
         PlayerPrefs.Save();
         //Reset some match parameters
         lastOppositionTeamAssignmentId = -1;
         matchEngine.maxAwayTeamPlayersOnPitch = 11;
         matchEngine.maxHomeTeamPlayersOnPitch = 11; 
-        Debug.Log("Save information\nSoccer Data\t"+PlayerPrefs.GetString(soccerSaveDataKey)+"\nBalance History\t"+PlayerPrefs.GetString(soccerBalanceHistoryDataKey)+"\nLeague Data\t"+PlayerPrefs.GetString(soccerSaveLeagueDataKey)+"\nTeam Data\t"+PlayerPrefs.GetString(soccerDynamicTeamDataKey)+"\nPlayer Data\t"+PlayerPrefs.GetString(soccerDynamicPlayerDataKey)+"\nManager Data\t"+PlayerPrefs.GetString(soccerDynamicManagerDataKey) +"\nYellow Card Data\t"+PlayerPrefs.GetString(soccerLeagueYellowCardDataKey));
+        Debug.Log("Save information\nSoccer Data\t"+PlayerPrefs.GetString(soccerSaveDataKey)+"\nBalance History\t"+PlayerPrefs.GetString(soccerBalanceHistoryDataKey)+"\nLeague Data\t"+PlayerPrefs.GetString(soccerSaveLeagueDataKey)+"\nTeam Data\t"+PlayerPrefs.GetString(soccerDynamicTeamDataKey)+"\nPlayer Data\t"+"\nManager Data\t"+PlayerPrefs.GetString(soccerDynamicManagerDataKey) +"\nYellow Card Data\t"+PlayerPrefs.GetString(soccerLeagueYellowCardDataKey));
     }
     private void LoadTeams() 
     {
@@ -895,9 +953,10 @@ public class GameManager : MonoBehaviour
     public void LoadAndPrepareGame() 
     {
         bool loadGameSuccessful = LoadGameData();
+        Debug.Log("Load game succesful" + loadGameSuccessful);
         if (loadGameSuccessful)
         {
-            BuildMatchSchedule(0);
+            BuildMatchSchedule(numTeamsInScenarioLeague);
             GoToMenu(Enums.Screen.PreTurn);
         }
         else
@@ -2796,34 +2855,38 @@ public class GameManager : MonoBehaviour
     {
         
         int managerIndex = GetIndexToManagerForTeamID(teamId);
-        float style = staticManagersData[managerIndex].styleOffset;
-        if (style is <= 4.9f and >= -4.9f)
+        if (managerIndex != -1)
         {
-            return ManagementStyle.Balanced;
+            float style = staticManagersData[managerIndex].styleOffset;
+            if (style is <= 4.9f and >= -4.9f)
+            {
+                return ManagementStyle.Balanced;
+            }
+            else
+            {
+                if (style < -9.9f)
+                {
+                    return ManagementStyle.VeryDefensive;
+                }
+                else if (style < -4.9f)
+                {
+                    return ManagementStyle.Defensive;
+                }
+                else if (style > 9.9f)
+                {
+                    return ManagementStyle.StrongAttacking;
+                }
+                else if (style > 4.9f)
+                {
+                    return ManagementStyle.Attacking;
+                }
+            }
         }
-        else
-        {
-            if (style < -9.9f)
-            {
-                return ManagementStyle.VeryDefensive;
-            }
-            else if (style < -4.9f)
-            {
-                return ManagementStyle.Defensive;
-            }
-            else if (style > 9.9f)
-            {
-                return ManagementStyle.StrongAttacking;
-            }
-            else if (style > 4.9f)
-            {
-                return ManagementStyle.Attacking;
-            }
-        }
+       
         return ManagementStyle.Balanced;
     }
     
-    /// <param name="teamId">The team to retrive the manager of</param>
+    /// <param name="teamId">The team to retrieve the manager of</param>
     /// <returns>the index to the manager for a given teamId, note this is the index of the manager, NOT the ID!!! </returns>
     private int GetIndexToManagerForTeamID(int teamId)
     {
@@ -2832,6 +2895,24 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < numberOfManagersInArrays; i++)
         {
             if (dynamicManagersData[i].teamId == teamId)
+            {
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+    /// <summary>
+    /// Manager index variant for loading a savegame
+    /// </summary>
+    /// <param name="managerId"></param>
+    /// <returns></returns>
+    int GetIndexToManagerForManagerID(int managerId)
+    {
+        int result = -1;
+        for (int i = 0; i < numberOfManagersInArrays; i++)
+        {
+            if (staticManagersData[i].managerId == managerId)
             {
                 result = i;
                 break;
@@ -2964,7 +3045,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < numTeamsInScenarioLeague; i++)
         {
             int dataIndex = teamIndexsForScenarioLeague[i];
-            Debug.Log(premiumLeagueData.Length + " " + staticTeamsData.Length + " " + dataIndex);
+            //Debug.Log(premiumLeagueData.Length + " " + staticTeamsData.Length + " " + dataIndex);
             premiumLeagueData[i] = ScriptableObject.CreateInstance<DynamicLeagueData>();
             premiumLeagueData[i].teamId = staticTeamsData[dataIndex].teamId;
             premiumLeagueData[i].matchesPlayed = 0;

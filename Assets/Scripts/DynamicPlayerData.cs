@@ -1,10 +1,8 @@
 using UnityEngine;
 using static Enums;
 
-[System.Serializable]
 public class DynamicPlayerData : ScriptableObject
 {
-    public int playerID;
     public float starsRating;
     public float condition;
     public short teamId;
