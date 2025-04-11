@@ -1865,6 +1865,9 @@ public class GameManager : MonoBehaviour
                 ProcessCPUMatchesForWeek(savePlayersMatchHomeTeamScore,savePlayersMatchAwayTeamScore);
                 SortLeagueTable();
                 week++;
+                ProcessWeeksPlayerTrainingForLeagueId(playersLeague);
+                ProcessWeeklyPlayerSalariesForLeagueId(playersLeague);
+                CPUTeamConsiderTransferListsForWeek();
                 SaveGameData();
                 transferOfferOffersMadeThisTurn = 0;
                 break;
@@ -1907,7 +1910,7 @@ public class GameManager : MonoBehaviour
                                             int offerValue = playerValue;
                                             
                                             int dataIndex = GetPlayerDataIndexForPlayerID(transferList[j]);
-                                            TransferStatus transferTerms = (TransferStatus)((dynamicPlayersData[dataIndex].trainingTransfer & transferMask) >> 8);
+                                            TransferStatus transferTerms = (TransferStatus)((dynamicPlayersData[dataIndex].trainingTransfer & transferMask) >> transferBitShift);
                                             if (transferTerms == TransferStatus.FreeTransfer)
                                             {
                                                 offerValue = 0;
@@ -2026,6 +2029,105 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
+    void CPUTeamConsiderTransferListsForWeek()
+    {
+        for (int teamIndex = 0; teamIndex < numberOfTeamsInArrays; teamIndex++)
+        {
+            int transferMood = 0;
+            int teamId = staticTeamsData[teamIndex].teamId;
+            int numWeeks = ((numTeamsInScenarioLeague - 1) * 2) - week;
+            int estimatedBalanceAtSeasonEnd = EstimateTeamIndexCashBalance(teamIndex, numWeeks);
+
+            if (estimatedBalanceAtSeasonEnd < 0)
+            {
+                int weeklyChange = (dynamicTeamsData[teamIndex].cashBalance - estimatedBalanceAtSeasonEnd / numWeeks);
+                int numWeeksUntilBust = dynamicTeamsData[teamIndex].cashBalance / weeklyChange;
+                if (numWeeksUntilBust < 8)
+                    transferMood = -2; //sell star players
+                else
+                    transferMood = -1; //sell unneeded players
+            }
+            else if (estimatedBalanceAtSeasonEnd > dynamicTeamsData[teamIndex].cashBalance)
+            {
+                transferMood = 1; // might sell un-needed players maybe
+            }
+            else
+            {
+                if (estimatedBalanceAtSeasonEnd > (dynamicTeamsData[teamIndex].cashBalance/2))
+                    transferMood = -1;
+            }
+            
+            int[] teamPlayerIds = new int[MaxPlayersInATeam];
+            int numPlayers = FillTeamPlayerArray(teamPlayerIds, teamId);
+            for (int i = 0; i < numPlayers; i++)
+            {
+                int playerIndex = GetPlayerDataIndexForPlayerID(teamPlayerIds[i]);
+                if ((dynamicPlayersData[playerIndex].trainingTransfer & transferMask) != 0)
+                {
+                    int chance = Random.Range(1, 100);
+                    if (chance < 75)
+                    {
+                        if (transferMood > 0)
+                            dynamicPlayersData[playerIndex].trainingTransfer = (dynamicPlayersData[playerIndex].trainingTransfer&trainingMask) | ((int)(TransferStatus.NotListed)<<transferBitShift);
+                    }
+                }
+                else
+                {
+                    int chance = Random.Range(1, 100);
+                    if (chance < 50)
+                    {
+                        if (transferMood < -1)
+                            dynamicPlayersData[playerIndex].trainingTransfer = (dynamicPlayersData[playerIndex].trainingTransfer&trainingMask) | ((int)(TransferStatus.AnyOffers)<<transferBitShift);
+                        else if (transferMood < 0)
+                        {
+                            int chance2 = Random.Range(1, 100);
+                            if (chance2 < 50)
+                            {
+                                float playerStarRating = GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerIndex);
+                                if (playerStarRating <= 1.0f)
+                                    dynamicPlayersData[playerIndex].trainingTransfer = (dynamicPlayersData[playerIndex].trainingTransfer&trainingMask) | ((int)(TransferStatus.OffersAtValue)<<transferBitShift);
+                                else if (chance2 < 10)
+                                {
+                                    if (playerStarRating <= 2.0f)
+                                        dynamicPlayersData[playerIndex].trainingTransfer = (dynamicPlayersData[playerIndex].trainingTransfer&trainingMask) | ((int)(TransferStatus.OffersAtValue)<<transferBitShift);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            float playerStarRating = GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerIndex);
+                            if (playerStarRating == 0.0f)
+                                dynamicPlayersData[playerIndex].trainingTransfer = (dynamicPlayersData[playerIndex].trainingTransfer&trainingMask) | ((int)(TransferStatus.FreeTransfer)<<transferBitShift);
+                            else if (playerStarRating <= 0.1f)
+                                dynamicPlayersData[playerIndex].trainingTransfer = (dynamicPlayersData[playerIndex].trainingTransfer&trainingMask) | ((int)(TransferStatus.OffersAtValue)<<transferBitShift);
+                            
+                            if (dynamicPlayersData[playerIndex].morale < -32)
+                                dynamicPlayersData[playerIndex].trainingTransfer = (dynamicPlayersData[playerIndex].trainingTransfer&trainingMask) | ((int)(TransferStatus.OffersAtValue)<<transferBitShift);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    void ProcessWeeklyPlayerSalariesForLeagueId(LeagueID leagueID)
+    {
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            if (dynamicPlayersData[i].teamId != -1)
+            {
+                if (GetTeamsLeagueID(dynamicPlayersData[i].teamId) == (int)leagueID)
+                {
+                    int teamId = dynamicPlayersData[i].teamId;
+                    if (teamId != -1)
+                    {
+                        AddTeamCashBalance(teamId, -dynamicPlayersData[i].weeklySalary);
+                        if (teamId == playersTeam)
+                            statsTurnExpendSalary += dynamicPlayersData[i].weeklySalary;
+                    }
+                }
+            }
+        }
+    }
     int CountPlayersOnTransferMarketExcludingTeam(int teamId)
     {
         int numPlayersFound = 0;
@@ -2036,7 +2138,7 @@ public class GameManager : MonoBehaviour
             if (dynamicPlayersData[i].teamId != teamId)
             {
                 if (dynamicPlayersData[i].teamId == -1)
-                    dynamicPlayersData[i].trainingTransfer = ((int)Enums.TransferStatus.FreeTransfer)<<transferBitShift;
+                    dynamicPlayersData[i].trainingTransfer = ((int)TransferStatus.FreeTransfer)<<transferBitShift;
 
                 if ((dynamicPlayersData[i].trainingTransfer & transferMask) != 0)
                 {
@@ -2374,7 +2476,11 @@ public class GameManager : MonoBehaviour
         Debug.Log("Processing end data");
         if ((week != -1) && week < ((numTeamsInScenarioLeague-1)*2))
         {
+            ProcessCPUMatchesForWeek(0,0);
             SortLeagueTable();
+            ProcessWeeksPlayerTrainingForLeagueId(playersLeague);
+            ProcessWeeklyPlayerSalariesForLeagueId(playersLeague);
+            CPUTeamConsiderTransferListsForWeek();
             week++;
         }
         else // done running cpu matches
@@ -2448,6 +2554,38 @@ public class GameManager : MonoBehaviour
             ResetLeaguePoints();
             SaveGameData();
             LoadAndPrepareGame();
+        }
+    }
+    void ProcessWeeksPlayerTrainingForLeagueId(LeagueID leagueID)
+    {
+        for (int i = 0; i < numberOfPlayersInArrays; i++)
+        {
+            if (dynamicPlayersData[i].teamId != -1)
+            {
+                if (GetTeamsLeagueID(dynamicPlayersData[i].teamId) == (int)leagueID)
+                {
+                    switch ((Training)(dynamicPlayersData[i].trainingTransfer & trainingMask))
+                    {
+                        case Training.None:
+                            dynamicPlayersData[i].starsRating += Random.value * -0.05f;
+                            dynamicPlayersData[i].condition += Random.value *  0.2f;
+                            UpdatePlayerIndexMoraleByAmount(i,-1);
+                            break;
+                        case Training.Light:
+                            dynamicPlayersData[i].starsRating += Random.value * -0.002f;
+                            dynamicPlayersData[i].condition += Random.value *  0.02f;
+                            break;
+                        case Training.Normal:
+                            break;
+                        case Training.Intensive:
+                            dynamicPlayersData[i].starsRating += Random.value * 0.05f;
+                            dynamicPlayersData[i].condition += Random.value *  -0.2f;
+                            break;
+                    }
+                    Math.Clamp(dynamicPlayersData[i].starsRating, 0.0f, 14.9f);
+                    Math.Clamp(dynamicPlayersData[i].condition, 0.0f, 1.0f);
+                }
+            }
         }
     }
 
@@ -2792,6 +2930,7 @@ public class GameManager : MonoBehaviour
         
         numPlayersInPlayersTeam = FillTeamPlayerArray(playersTeamPlayerIds, playersTeam);  
         AutofillFormationFromPlayerIDs(playersInFormation, playersTeamPlayerIds, numPlayersInPlayersTeam, Formation.KFormation442, playersTeam);
+        CPUTeamConsiderTransferListsForWeek();
         BuildMatchSchedule(numTeamsInScenarioLeague);
         SaveGameData();
         GoToMenu(Enums.Screen.PreTurn);
