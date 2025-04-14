@@ -52,6 +52,7 @@ public class PlayerTraining : MenuItem
         switch (gameManager.currentScreen)
         {
             case Enums.Screen.SellPlayers:
+            case Enums.Screen.TransferOffers:
                 training = (playerData.trainingTransfer & GameManager.transferMask) >> GameManager.transferBitShift;
                 statusSprite.sprite = transferArray[training];
                 break;
@@ -100,6 +101,10 @@ public class PlayerTraining : MenuItem
                 starsSprite.gameObject.SetActive(false);
                 priceText.text = "$"+stars+"k";
                 menuAction = Enums.MenuAction.BuyPlayerReview;
+                break;
+            case Enums.Screen.TransferOffers:
+                training = playerData.trainingTransfer & (GameManager.transferMask>>GameManager.transferBitShift);
+                menuAction = Enums.MenuAction.Null;
                 break;
             case Enums.Screen.SellPlayers:
                 

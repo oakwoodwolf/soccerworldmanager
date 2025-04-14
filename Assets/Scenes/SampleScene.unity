@@ -8752,6 +8752,7 @@ MonoBehaviour:
   - {fileID: 6709948606914668062, guid: ddb45479fa0f817499b707871836b690, type: 3}
   - {fileID: 633864595979411815, guid: beb982fa76814c242b09595c609e4407, type: 3}
   - {fileID: 633864595979411815, guid: 1b6de29072f151349b041a4569bd11c8, type: 3}
+  - {fileID: 6709948606914668062, guid: bc8637cb5ba134b46bb11a29e00aa240, type: 3}
   playerTrainingYOffset: 96
   playerBuyingYOffset: 128
   playerBuySpacing: 38

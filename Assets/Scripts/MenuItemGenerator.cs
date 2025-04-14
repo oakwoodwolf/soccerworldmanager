@@ -78,16 +78,19 @@ public class MenuItemGenerator : MonoBehaviour
         return newObj.gameObject.GetComponent<WeekPreview>();
     }
 
-    public void CreatePlayerTrainings(ScreenDefinition screen, Vector2 pos, int stars, string nameString, Color color, string statusString, DynamicPlayerData playerData)
+    public PlayerTraining CreatePlayerTrainings(ScreenDefinition screen, Vector2 pos, int stars, string nameString, Color color, string statusString, DynamicPlayerData playerData)
     {
+        int index = 14;
+        if (GetComponent<GameManager>().currentScreen == Enums.Screen.TransferOffers) index = 17;
         Transform child = screen.MenuItems.transform;
-        GameObject newObj = Instantiate(prefabs[14], child, false);
+        GameObject newObj = Instantiate(prefabs[index], child, false);
         RectTransform rectTransform = newObj.GetComponent<RectTransform>();
         PlayerTraining playerTraining = newObj.GetComponent<PlayerTraining>();
         rectTransform.anchoredPosition = pos;
         playerTraining.pos = new Vector2(pos.x, -pos.y);
         playerTraining.FillPlayerValues(stars,nameString,color,statusString, playerData);
         playerTraining.transform.SetSiblingIndex(1);
+        return playerTraining;
     }
 
     public void GenerateFormationMarker(ScreenDefinition screen, Vector2 pos, int param, string name = "marker")
