@@ -154,6 +154,8 @@ public class MenuItem : MonoBehaviour
                     CyclePlayerTransferStatus(param);
                     break;
                 case Enums.MenuAction.BuyPlayerReview:
+                    BuyPlayerReview();
+
                     break;
                 case Enums.MenuAction.BuyPlayerUpdateOffer:
                     int decinc = param;
@@ -307,6 +309,30 @@ public class MenuItem : MonoBehaviour
         }
        
     }
+
+    private void BuyPlayerReview()
+    {
+        int forSaleIndex= param;
+        int playerId = gameManager.transferList[forSaleIndex];
+        int dataIndex = gameManager.GetPlayerDataIndexForPlayerID(playerId);
+
+        int playerValue = 0;
+        int teamId = gameManager.dynamicPlayersData[dataIndex].teamId;
+        if (teamId != -1)
+        {
+           int leagueId = gameManager.GetTeamsLeagueID(teamId);
+           playerValue = gameManager.DetermineValueOfPlayerID(playerId, leagueId);
+        }
+
+        gameManager.currentBuyPlayerId = playerId;
+        gameManager.currentBuyPlayerOffer = playerValue;
+
+        int availableCash = gameManager.GetTeamCashBalance(gameManager.playersTeam);
+        if (gameManager.currentBuyPlayerOffer > availableCash)
+            gameManager.currentBuyPlayerOffer = availableCash;
+        gameManager.GoToMenu(Enums.Screen.BuyPlayerOffer);
+    }
+
     void CyclePlayerTransferStatus(int playerIndex)
     {
         int playerId = gameManager.playersTeamPlayerIds[playerIndex];

@@ -34,6 +34,7 @@ public class ButtonItem : MenuItem
                     
                 }
                 mText.text = button.text;
+                mText.rectTransform.anchoredPosition = new Vector2(button.offset.x, -button.offset.y);
             }
             else
             {

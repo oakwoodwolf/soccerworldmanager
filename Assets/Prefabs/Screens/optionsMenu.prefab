@@ -466,6 +466,14 @@ PrefabInstance:
       propertyPath: menuAction
       value: 18
       objectReference: {fileID: 0}
+    - target: {fileID: 4289089594964911476, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 4289089594964911476, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 4312010963022742071, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
       propertyPath: m_Name
       value: RadioButton
@@ -595,6 +603,14 @@ PrefabInstance:
     - target: {fileID: 4191741657140213735, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
       propertyPath: menuAction
       value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 4289089594964911476, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 4289089594964911476, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4312010963022742071, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
       propertyPath: m_Name
@@ -843,6 +859,14 @@ PrefabInstance:
     - target: {fileID: 4191741657140213735, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
       propertyPath: menuAction
       value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 4289089594964911476, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 36
+      objectReference: {fileID: 0}
+    - target: {fileID: 4289089594964911476, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4312010963022742071, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
       propertyPath: m_Name
@@ -1430,6 +1454,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3981924467825779966, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: a3bdce74d640fc840a12867c703d2690, type: 3}
     - target: {fileID: 4191741657140213735, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
       propertyPath: text
       value: On
@@ -1453,6 +1481,14 @@ PrefabInstance:
     - target: {fileID: 4191741657140213735, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
       propertyPath: menuAction
       value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 4289089594964911476, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 36
+      objectReference: {fileID: 0}
+    - target: {fileID: 4289089594964911476, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4312010963022742071, guid: 5026adf2771bb0649a91083fd40d1a23, type: 3}
       propertyPath: m_Name
