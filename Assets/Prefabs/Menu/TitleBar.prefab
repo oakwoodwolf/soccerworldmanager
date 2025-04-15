@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4194640695344901253}
   - component: {fileID: 6418387589366276222}
   - component: {fileID: 3357049138219034932}
+  - component: {fileID: 2981607603110509069}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -136,6 +137,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!225 &2981607603110509069
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4436987985484749833}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &4679260076222127061
 GameObject:
   m_ObjectHideFlags: 0
@@ -147,6 +160,7 @@ GameObject:
   - component: {fileID: 8370403720131906667}
   - component: {fileID: 951277792812073436}
   - component: {fileID: 8283828824758171916}
+  - component: {fileID: 5863279690716723742}
   m_Layer: 5
   m_Name: Texture_LogoIcon
   m_TagString: Untagged
@@ -211,6 +225,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &5863279690716723742
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4679260076222127061}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &7519032743413054478
 GameObject:
   m_ObjectHideFlags: 0
@@ -223,6 +249,7 @@ GameObject:
   - component: {fileID: 1748043892060985762}
   - component: {fileID: 3873244342168482899}
   - component: {fileID: 529267945245105470}
+  - component: {fileID: 5087248523237340134}
   m_Layer: 5
   m_Name: TitleBar
   m_TagString: Untagged
@@ -312,3 +339,15 @@ MonoBehaviour:
   param: 0
   affectedByScroll: 0
   logo: {fileID: 8283828824758171916}
+--- !u!225 &5087248523237340134
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7519032743413054478}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0

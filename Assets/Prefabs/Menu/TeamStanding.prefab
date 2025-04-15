@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6798610046511326083}
   - component: {fileID: 5881441799879194010}
   - component: {fileID: 8267383361088760114}
+  - component: {fileID: 5495744780724285760}
   m_Layer: 5
   m_Name: goalDifference
   m_TagString: Untagged
@@ -136,6 +137,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!225 &5495744780724285760
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 124019312483435429}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &935543498049801319
 GameObject:
   m_ObjectHideFlags: 0
@@ -147,6 +160,7 @@ GameObject:
   - component: {fileID: 1239656263353754264}
   - component: {fileID: 7340259071938458132}
   - component: {fileID: 9086194022061331755}
+  - component: {fileID: 2651352379963260436}
   m_Layer: 5
   m_Name: teamName
   m_TagString: Untagged
@@ -272,6 +286,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!225 &2651352379963260436
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935543498049801319}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &1283817430844134259
 GameObject:
   m_ObjectHideFlags: 0
@@ -283,6 +309,7 @@ GameObject:
   - component: {fileID: 6419474453968236750}
   - component: {fileID: 1186998660090739017}
   - component: {fileID: 7357009031471004273}
+  - component: {fileID: 4193587044455192294}
   m_Layer: 5
   m_Name: team
   m_TagString: Untagged
@@ -410,6 +437,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!225 &4193587044455192294
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1283817430844134259}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &6709948606914668062
 GameObject:
   m_ObjectHideFlags: 0
@@ -421,6 +460,7 @@ GameObject:
   - component: {fileID: 8647860744761728058}
   - component: {fileID: 5157558853228330185}
   - component: {fileID: 8348648082015349162}
+  - component: {fileID: 5040889507431454049}
   m_Layer: 5
   m_Name: TeamStanding
   m_TagString: Untagged
@@ -493,6 +533,18 @@ MonoBehaviour:
   matchesPlayed: 0
   goalDifference: 0
   leaguePoints: 0
+--- !u!225 &5040889507431454049
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6709948606914668062}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &7397625979441292865
 GameObject:
   m_ObjectHideFlags: 0
@@ -504,6 +556,7 @@ GameObject:
   - component: {fileID: 9005773306602945388}
   - component: {fileID: 4101750130808066033}
   - component: {fileID: 4292978119259962591}
+  - component: {fileID: 5525365257301080951}
   m_Layer: 5
   m_Name: leaguePoints
   m_TagString: Untagged
@@ -629,6 +682,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!225 &5525365257301080951
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7397625979441292865}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &8893182095756104087
 GameObject:
   m_ObjectHideFlags: 0
@@ -640,6 +705,7 @@ GameObject:
   - component: {fileID: 8198912153738191410}
   - component: {fileID: 2890099703033363043}
   - component: {fileID: 2747225333740736294}
+  - component: {fileID: 30801616517399205}
   m_Layer: 5
   m_Name: matchesPlayed
   m_TagString: Untagged
@@ -765,3 +831,15 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!225 &30801616517399205
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8893182095756104087}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0

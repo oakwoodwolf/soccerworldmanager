@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 9122208333643505842}
   - component: {fileID: 1088103748359177918}
   - component: {fileID: 795267293376531120}
+  - component: {fileID: 3058669785137141039}
   m_Layer: 5
   m_Name: StaticText
   m_TagString: Untagged
@@ -159,3 +160,15 @@ MonoBehaviour:
   menuAction: 0
   param: 0
   affectedByScroll: 0
+--- !u!225 &3058669785137141039
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1654863194828413301}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0

@@ -752,6 +752,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 922029887540976453}
     m_Modifications:
     - target: {fileID: -1964453997957492450, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
+      propertyPath: h
+      value: 96
+      objectReference: {fileID: 0}
+    - target: {fileID: -1964453997957492450, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
+      propertyPath: w
+      value: 128
+      objectReference: {fileID: 0}
+    - target: {fileID: -1964453997957492450, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
+      propertyPath: text
+      value: (128<<16)|96
+      objectReference: {fileID: 0}
+    - target: {fileID: -1964453997957492450, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: pos.x
       value: 32
       objectReference: {fileID: 0}
@@ -789,11 +801,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3179940055433429547, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 256
+      value: 128
       objectReference: {fileID: 0}
     - target: {fileID: 3179940055433429547, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 64
+      value: 96
       objectReference: {fileID: 0}
     - target: {fileID: 3179940055433429547, guid: 33b3e6af4b91dcf42afadb7cfbe49d04, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1005,12 +1017,12 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 521350077604959330, guid: 05891e25af651d64ba8d8043df118a05, type: 3}
       propertyPath: m_text
-      value: Did you see that?
+      value: Purveyors of fine novelty baked items.
       objectReference: {fileID: 0}
     - target: {fileID: 1054643785274833894, guid: 05891e25af651d64ba8d8043df118a05, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 7809ca0032fab214e83e90a15c680b19, type: 3}
+      objectReference: {fileID: 21300000, guid: cb3a47b389222154a9c292fe3d2f6b29, type: 3}
     - target: {fileID: 5208045718544940160, guid: 05891e25af651d64ba8d8043df118a05, type: 3}
       propertyPath: text
       value: 

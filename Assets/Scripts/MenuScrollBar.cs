@@ -39,7 +39,7 @@ using Random = UnityEngine.Random;
             bar.sizeDelta = new Vector2(x, y);
             
             float w = ScrollBarWidth * 0.75f;
-            barHandle.anchoredPosition = new Vector2(x+((ScrollBarWidth-w)/2),
+            barHandle.anchoredPosition = new Vector2(0,
                 -1*(scrollYoffset - (scrollStep * gameManager.menuScrollY)));
             barHandle.sizeDelta = new Vector2(w, scrollBarLen);
 
