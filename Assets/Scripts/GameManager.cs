@@ -303,9 +303,15 @@ public class GameManager : MonoBehaviour
     {
         
         // Draw specific elements under menuItems
-        if (currentScreen == Enums.Screen.MatchEngine)
+        if (currentScreen is Enums.Screen.MatchEngine)
         {
-            matchEngine.Render(Time.deltaTime, false);
+            matchEngine.Render(Time.deltaTime);
+        }
+        if (currentScreen is Enums.Screen.ProcessLeagueFinish)
+        {
+            if ((week & 1) != 0)
+                GoToMenu(Enums.Screen.ProcessLeagueFinish);
+            ProcessLeagueEndData();
         }
         if (currentScreen is Enums.Screen.AssignPlayers or Enums.Screen.OppositionFormation)
         {
@@ -682,11 +688,11 @@ public class GameManager : MonoBehaviour
                 dynamicManagersData[dataIndex].teamId = manager.teamId;
             }
         }
-
+        // Check that player manages their own team!!!
         int managerIndex = GetIndexToManagerForTeamID(playersTeam);
         if (managerIndex != -1)
         {
-            dynamicManagersData[managerIndex].teamId = -1;
+            dynamicManagersData[managerIndex].teamId = -1; // fire the manager associated with the players team!!! 
         }
         FillTeamsInLeagueArray(teamIndexsForScenarioLeague, playersLeague);
         numPlayersInPlayersTeam = FillTeamPlayerArray(playersTeamPlayerIds, playersTeam);
@@ -2086,9 +2092,11 @@ public class GameManager : MonoBehaviour
                 menuItems[4].SetText(endOfSeason);
                 break;
             case Enums.Screen.ProcessLeagueFinish:
-                if ((week & 1) != 0)
-                    GoToMenu(Enums.Screen.ProcessLeagueFinish);
-                ProcessLeagueEndData();
+                
+                float wk = week;
+                int percent = (int)((wk / ((numTeamsInScenarioLeague - 1) * 2)) * 100f);
+                menuItems[1].SetText("PROCESSING END OF SEASON DATA\nPlease Wait... "+percent+"%");
+                
                 break;
         }
     }
@@ -2101,7 +2109,7 @@ public class GameManager : MonoBehaviour
             int numWeeks = ((numTeamsInScenarioLeague - 1) * 2) - week;
             int estimatedBalanceAtSeasonEnd = EstimateTeamIndexCashBalance(teamIndex, numWeeks);
 
-            if (estimatedBalanceAtSeasonEnd < 0)
+            if (estimatedBalanceAtSeasonEnd < 0 & numWeeks != 0)
             {
                 int weeklyChange = (dynamicTeamsData[teamIndex].cashBalance - estimatedBalanceAtSeasonEnd / numWeeks);
                 int numWeeksUntilBust = dynamicTeamsData[teamIndex].cashBalance / weeklyChange;
@@ -2327,7 +2335,7 @@ public class GameManager : MonoBehaviour
         return result;
     }
 
-    private void ProcessCPUMatchesForWeek(int savePlayersMatchHomeTeamScore, int savePlayersMatchAwayTeamScore)
+    private void ProcessCPUMatchesForWeek(int savePlayersMatchHomeTeamScore, int savePlayersMatchAwayTeamScore,bool draw=true)
     {
         float yOff = 72.0f;
         for (int home = 0; home < numTeamsInScenarioLeague; home++)
@@ -2410,16 +2418,20 @@ public class GameManager : MonoBehaviour
                     
                     
                     // Render
-                    MenuItem item = menuItemGenerator.GenerateMenuItem(currentScreenDefinition, MenuElement.StaticText,
-                        new Vector2(32, -yOff),0,0,staticTeamsData[homeTeamIndex].teamName + " " + homeScore + " " + staticTeamsData[awayTeamIndex].teamName + " " + awayScore,MenuAction.Null,0,null,18*menuItemGenerator.standingsTextFontScale);
-                    yOff += 16;
-                    item.transform.SetSiblingIndex(3); // ensure it overlays the box
-                    Color textColor = new Color(0.7f,0.8f,0.9f);
-                    if (homeTeamId == playersTeam)
-                        textColor = new Color(1.0f,1.0f,0.8f);
-                    if (awayTeamId == playersTeam)
-                        textColor = new Color(1.0f,1.0f,0.8f);
-                    item.mText.color = (textColor);
+                    if (draw)
+                    {
+                        MenuItem item = menuItemGenerator.GenerateMenuItem(currentScreenDefinition, MenuElement.StaticText,
+                            new Vector2(32, -yOff),0,0,staticTeamsData[homeTeamIndex].teamName + " " + homeScore + " " + staticTeamsData[awayTeamIndex].teamName + " " + awayScore,MenuAction.Null,0,null,18*menuItemGenerator.standingsTextFontScale);
+                        yOff += 16;
+                        item.transform.SetSiblingIndex(3); // ensure it overlays the box
+                        Color textColor = new Color(0.7f,0.8f,0.9f);
+                        if (homeTeamId == playersTeam)
+                            textColor = new Color(1.0f,1.0f,0.8f);
+                        if (awayTeamId == playersTeam)
+                            textColor = new Color(1.0f,1.0f,0.8f);
+                        item.mText.color = (textColor);
+                    }
+                    
                     // Pay out goal score bonuses
                     int perGoalBonusCost = DefaultGoalScoreBonus;
                     AddTeamCashBalance(homeTeamId, (perGoalBonusCost*homeScore));
@@ -2539,12 +2551,12 @@ public class GameManager : MonoBehaviour
         Debug.Log("Processing end data");
         if ((week != -1) && week < ((numTeamsInScenarioLeague-1)*2))
         {
-            ProcessCPUMatchesForWeek(0,0);
+            ProcessCPUMatchesForWeek(0,0, false);
             SortLeagueTable();
+            week++;
             ProcessWeeksPlayerTrainingForLeagueId(playersLeague);
             ProcessWeeklyPlayerSalariesForLeagueId(playersLeague);
             CPUTeamConsiderTransferListsForWeek();
-            week++;
         }
         else // done running cpu matches
         {
@@ -2939,7 +2951,7 @@ public class GameManager : MonoBehaviour
     {
         playersTeam = teamId;
         Debug.Log(staticTeamsData[GetArrayIndexForTeam(teamId)].teamName);
-        int managerIndex = 0;
+        int managerIndex = GetIndexToManagerForTeamID(playersTeam);
         if (managerIndex != -1)
         {
             dynamicManagersData[managerIndex].teamId = -1; // set unemployed
@@ -2950,8 +2962,8 @@ public class GameManager : MonoBehaviour
         playersSponsor = -1;
         playersWeeksWithSponsor = 0;
         playersMatchBreaker = -1;
-        matchEngine.state = Enums.MatchEngineState.MatchOver;
-        playersMatchStrategy = Enums.MatchStrategy.Balanced;
+        matchEngine.state = MatchEngineState.MatchOver;
+        playersMatchStrategy = MatchStrategy.Balanced;
 
         ResetLeaguePoints();
         

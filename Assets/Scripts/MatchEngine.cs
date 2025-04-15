@@ -279,7 +279,6 @@ public class MatchEngine : MonoBehaviour
         homeTeamMatchBreakerFlags = 0;
         awayTeamMatchBreakerFlags = 0;
         indexOfFouledPlayer = -1;
-        // TODO - prepare quick access team data array(s)
         itemsInQuickPlayerList = 0;
         
         int indexH = gameManager.GetTeamDataIndexForTeamID(homeTeamId);
@@ -1112,7 +1111,7 @@ public class MatchEngine : MonoBehaviour
             else
                 positionOfFoulingPlayer = Enums.PlayerFormation.Defender;
         }
-        Debug.Log(positionOfFoulingPlayer.ToString());
+        //Debug.Log(positionOfFoulingPlayer.ToString());
         
         // Scan list for players in needed position
         int skill;
@@ -1130,7 +1129,7 @@ public class MatchEngine : MonoBehaviour
                 foulerIndex = GetPlayerIndexInFormationAtSkillOffset(playersMatch.formationHomeTeam, skill,
                     positionOfFoulingPlayer, playersMatch.formationTypeHomeTeam, homeTeam);
         //}
-        Debug.Log("skill " + skill + "\t fouling player index:" + foulerIndex);
+        //Debug.Log("skill " + skill + "\t fouling player index:" + foulerIndex);
         Debug.Assert(foulerIndex != -1);
         if (foulerIndex == -1)
             playersMatch.foulerName = "[Err Det Foul Plyr]";
@@ -1294,7 +1293,7 @@ public class MatchEngine : MonoBehaviour
                     float starsRating = gameManager.GetTeamLeagueAdjustedStarsRatingForPlayerIndex(dataIndex);
                     if (gameManager.dynamicPlayersData[dataIndex].weeksBannedOrInjured != 0)
                         starsRating = 0.0f;
-                    Debug.Log("Getting skill points for " + gameManager.dynamicPlayersData[dataIndex].name + gameManager.dynamicPlayersData[dataIndex].condition);
+                    //Debug.Log("Getting skill points for " + gameManager.dynamicPlayersData[dataIndex].name + gameManager.dynamicPlayersData[dataIndex].condition);
                     totalSkillPoints += (starsRating * gameManager.dynamicPlayersData[dataIndex].condition) * outOfPositionScale;
                 }
             }
