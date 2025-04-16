@@ -1466,6 +1466,46 @@ public class GameManager : MonoBehaviour
                 string buyPlayerOfferTxt = "Current Offer:\n$"+currentBuyPlayerOffer+"k";
                 menuItems[6].SetText(buyPlayerOfferTxt);
                 break;
+            case Enums.Screen.BuyPlayerConfirmOffer:
+                int currentPlayerId = currentBuyPlayerId;
+                int currentPlayerIndex = GetPlayerDataIndexForPlayerID(currentPlayerId);
+                int currentPlayerValue = 0;
+                int currentTeamIndex = -1;
+                int currentTeamId = dynamicPlayersData[currentPlayerIndex].teamId;
+                if (currentTeamId != -1)
+                {
+                    int leagueId = GetTeamsLeagueID(currentTeamId);
+                    currentPlayerValue = DetermineValueOfPlayerID(currentPlayerId, leagueId);
+                    currentTeamIndex = GetTeamDataIndexForTeamID(currentTeamId);
+                }
+                bool happyToSell = false;
+                TransferStatus currentStatus = (TransferStatus)((dynamicPlayersData[currentPlayerIndex].trainingTransfer & transferMask) >> transferBitShift);
+                switch (currentStatus)
+                {
+                    case TransferStatus.FreeTransfer: happyToSell = true; break;
+                    case TransferStatus.OffersAtValue:
+                        if (currentBuyPlayerOffer >= currentPlayerValue)
+                            happyToSell = true;
+                        break;
+                    case TransferStatus.AnyOffers:
+                        float acceptableRatio = 0.9f;
+                        if (currentBuyPlayerOffer >= (currentPlayerValue * acceptableRatio))
+                            happyToSell = true;
+                        break;
+                    default: happyToSell = false; break;
+                }
+                
+                if (!happyToSell)
+                    menuItems[2].SetText(staticTeamsData[currentTeamIndex].teamName+" have declined your offer of $"+currentBuyPlayerOffer+"k for their player "+staticPlayersData[currentPlayerIndex].playerSurname+".\n");
+                else
+                {
+                    if (currentTeamId != 1)
+                        menuItems[2].SetText(staticTeamsData[currentTeamIndex].teamName+" have ACCEPTED your offer of $"+currentBuyPlayerOffer+"k for their player "+staticPlayersData[currentPlayerIndex].playerSurname+".\n\nThe player will leave for his new team immediately.");
+                    else // was unemployed 
+                        menuItems[2].SetText(staticPlayersData[currentPlayerIndex].playerSurname+" has ACCEPTED your job offer.");
+                    BuyOfferedPlayer(currentPlayerIndex, currentTeamId);
+                }
+                break;
             case Enums.Screen.SellPlayers:
                 menuScrollY = saveMenuScrollY;
                 currentNumberOfPage = (numPlayersInPlayersTeam / MaxPlayersInList) + 1;
@@ -2096,6 +2136,37 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
+
+    /// <summary>
+    /// Extracted logic for buying a player.
+    /// </summary>
+    /// <param name="playerIndex">The purchased player</param>
+    /// <param name="teamId">the previous team that sold the player</param>
+    private void BuyOfferedPlayer(int playerIndex, int teamId)
+    {
+        dynamicPlayersData[playerIndex].trainingTransfer = (int)Training.Normal;
+        dynamicPlayersData[playerIndex].teamId = (short)playersTeam;
+        numPlayersInPlayersTeam = FillTeamPlayerArray(playersTeamPlayerIds, playersTeam);
+
+        AddTeamCashBalance(playersTeam, -currentBuyPlayerOffer);
+        if (teamId != -1) // the players old team profits
+            AddTeamCashBalance(teamId, currentBuyPlayerOffer);
+
+        if (teamId == oppositionTeamId)
+        {
+            // is player id already in a formation? if so REMOVE it!
+            int formIndex = IsPlayerIdInFormation(currentBuyPlayerId, playersInOppositionFormation);
+            if (formIndex != -1)
+            {
+                playersInOppositionFormation[formIndex] = -1;
+                numPlayersInOppositionTeam = FillTeamPlayerArray(oppositionTeamPlayerIds, teamId);
+                AutofillFormationFromPlayerIDs(playersInOppositionFormation,oppositionTeamPlayerIds,numPlayersInOppositionTeam,oppositionTeamFormationType,teamId);
+            }
+        }
+
+        SaveGameData();
+    }
+
     void CPUTeamConsiderTransferListsForWeek()
     {
         for (int teamIndex = 0; teamIndex < numberOfTeamsInArrays; teamIndex++)
