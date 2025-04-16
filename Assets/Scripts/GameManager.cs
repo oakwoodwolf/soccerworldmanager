@@ -1381,10 +1381,8 @@ public class GameManager : MonoBehaviour
                    else
                        buyBar.minMaxRange = new Vector2(0, 0);
                    
-                   float yOffBuy = 0.0f;
+                   float yOffBuy = -22.0f;
                    
-                    //Training screen menu stuff
-                    
                     for (int i = 0; i < maxItemsBuying; i++)
                     {
                         int playerId = transferList[i];
@@ -1418,19 +1416,17 @@ public class GameManager : MonoBehaviour
                             int leagueId = GetTeamsLeagueID(teamId);
                             playerValue = DetermineValueOfPlayerID(playerId, leagueId);
                         }
-                        menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffBuy), playerValue, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
+                        menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(16.0f, yOffBuy), playerValue, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
+                        menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalfDouble, new Vector2(0,yOffBuy),0,0," "+(i+1) + ")", Enums.MenuAction.BuyPlayerReview, i).name = nameString;
                         yOffBuy -= menuItemGenerator.playerBuySpacing;
                     }
-                    for (int j = 0; j < maxItemsBuying; j++)
-                    {
-                        menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalfDouble, new Vector2(0,-1*(110-menuItemGenerator.playerBuyingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.BuyPlayerReview, j);
-                    } 
+                    yOffBuy = 0.0f;
                     buttonYBuy = (int)(yOffBuy - menuItemGenerator.playerBuyingYOffset*2);
-                   menuItems[5].pos = new Vector2(menuItems[5].pos.x, buttonYBuy);
+                   menuItems[5].pos = new Vector2(menuItems[5].pos.x, -buttonYBuy);
                    menuItems[5].AdjustPosition(); menuItems[5].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
-                   menuItems[6].pos = new Vector2(menuItems[6].pos.x, buttonYBuy);
+                   menuItems[6].pos = new Vector2(menuItems[6].pos.x, -buttonYBuy);
                    menuItems[6].AdjustPosition(); menuItems[6].SetText("pageButtonPrev");
-                   menuItems[7].pos = new Vector2(menuItems[7].pos.x, buttonYBuy);
+                   menuItems[7].pos = new Vector2(menuItems[7].pos.x, -buttonYBuy);
                    menuItems[7].AdjustPosition(); menuItems[7].SetText("pageButtonNext");
                    }
                 break;
@@ -1500,11 +1496,7 @@ public class GameManager : MonoBehaviour
                     sellBar.minMaxRange = new Vector2(0, sellBar.minMaxRange.y+480);
                 else
                     sellBar.minMaxRange = new Vector2(0, 0);
-                //Training screen menu stuff
-                for (int j = 0; j < maxItemsSelling; j++)
-                {
-                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTransferStatus, j);
-                } 
+                
                 for (int i = 0; i < maxItemsSelling; i++)
                 {
                     int playerId = playersTeamPlayerIds[i + currentPage * MaxPlayersInList];
@@ -1533,9 +1525,13 @@ public class GameManager : MonoBehaviour
                    
                     int stars = (int)GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerDataIndex);
                     if (stars < 0) stars = 0; if (stars > 5) stars = 5;
-                    menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffSell), stars, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
+                    menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(18.0f, yOffSell), stars, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
                     yOffSell -= 22f;
                 }
+                for (int j = 0; j < maxItemsSelling; j++)
+                {
+                    menuItemGenerator.GenerateMenuItem(currentScreenDefinition,MenuElement.TextBarHalf, new Vector2(0,-1*(110-menuItemGenerator.playerTrainingYOffset+22*j)),0,0," "+(j+1) + ")", Enums.MenuAction.CyclePlayerTransferStatus, j);
+                } 
                
                 break;
            case Enums.Screen.TrainPlayers:
@@ -1581,7 +1577,7 @@ public class GameManager : MonoBehaviour
                    
                     int stars = (int)GetTeamLeagueAdjustedStarsRatingForPlayerIndex(playerDataIndex);
                     if (stars < 0) stars = 0; if (stars > 5) stars = 5;
-                    menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(0.0f, yOffTrain), stars, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
+                    menuItemGenerator.CreatePlayerTrainings(currentScreenDefinition, new Vector2(18.0f, yOffTrain), stars, nameString,color,playerLikesPositionString,dynamicPlayersData[playerDataIndex]);
                     yOffTrain -= 22f;
                 }
                 for (int j = 0; j < maxItems; j++)
@@ -2213,16 +2209,16 @@ public class GameManager : MonoBehaviour
 
                 if ((dynamicPlayersData[i].trainingTransfer & transferMask) != 0)
                 {
-                   // int chance = Random.Range(1, 2);
-                   // if ((chance & 1) == 0)
-                   // {
+                    int chance = Random.Range(1, 4);
+                    if ((chance & 1) == 0)
+                    {
                         if (numPlayersOnTransferList < MaxPlayers)
                         {
                             transferList[numPlayersOnTransferList] = staticPlayersData[i].playerId;
                             numPlayersOnTransferList++;
                         }
-                  //      numPlayersFound++;
-                  //  }
+                        numPlayersFound++;
+                    }
                 }
             }
         }
