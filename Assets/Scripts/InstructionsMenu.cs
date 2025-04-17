@@ -20,6 +20,7 @@ public class InstructionsMenu : MonoBehaviour
     void Awake()
     {
         SetInstructionScreen(1);
+        gameManager = FindAnyObjectByType<GameManager>();
     }
 
     public void SetInstructionScreen(int screen)
@@ -29,11 +30,11 @@ public class InstructionsMenu : MonoBehaviour
     }
     private void Exit()
     {
-        SetInstructionScreen(1);
         gameManager.GoToMenu(Enums.Screen.Title);
     }
     public void OnClick(bool reverse)
     {
+        gameManager.SoundEngine_StartEffect(Enums.Sounds.MenuClick);
         int screenToGo = instructionScreen;
         if (reverse) //left
         {
