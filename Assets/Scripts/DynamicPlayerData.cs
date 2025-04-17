@@ -1,5 +1,4 @@
 using UnityEngine;
-using static Enums;
 
 public class DynamicPlayerData : ScriptableObject
 {

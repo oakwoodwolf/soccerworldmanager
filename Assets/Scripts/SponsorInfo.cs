@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 [CreateAssetMenu]
 public class SponsorInfo : MenuIconBar
 {

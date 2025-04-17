@@ -539,7 +539,7 @@ public class GameManager : MonoBehaviour
         string jsonforData = PlayerPrefs.GetString(soccerSaveDataKey);
         SoccerSaveData scores = JsonUtility.FromJson<SoccerSaveData>(jsonforData);
 
-        if (scores.SaveDataType > 3)
+        if (scores != null)
         {
             return true;
         }
@@ -898,15 +898,16 @@ public class GameManager : MonoBehaviour
     private void LoadTeams() 
     {
         numberOfTeamsInArrays = 0;
-        string path = "Assets/data/teamdata.txt";
+        string path = "teamdata";
+        TextAsset data = Resources.Load<TextAsset>(path);
         //Check if data file exists.
-        if (File.Exists(path))
+        if (data != null)
         {
-            StreamReader sr = new(path);
-            int teamCount = int.Parse(sr.ReadLine() ?? throw new InvalidOperationException());
+            string[] lines = data.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            int teamCount = int.Parse(lines[0]);
             for (int i = 0; i < teamCount; i++) //Iterate through each line
             {
-                string[] line = sr.ReadLine()?.Split();
+                string[] line = lines[i+1].Split();
                 if (line != null && line.Length > 8) // ensure its split enough
                 {
                     int offset = 0;
@@ -935,15 +936,16 @@ public class GameManager : MonoBehaviour
     private void LoadManagers()
     {
         numberOfManagersInArrays = 0;
-        string path = "Assets/data/Manager_Data.txt";
+        string path = "Manager_Data";
         //Check if data file exists.
-        if (File.Exists(path))
+        TextAsset data = Resources.Load<TextAsset>(path);
+        if (data != null)
         {
-            StreamReader sr = new(path);
-            int managerCount = int.Parse(sr.ReadLine() ?? throw new InvalidOperationException());
+            string[] lines = data.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            int managerCount = int.Parse(lines[0]);
             for (int i = 0; i < managerCount; i++) //Iterate through each line
             {
-                string[] line = sr.ReadLine()?.Split();
+                string[] line = lines[i+1].Split();
                 if (line != null && line.Length == 4) // ensure its split enough
                 {
                     //Add to the list of leaguesData.
@@ -1131,19 +1133,21 @@ public class GameManager : MonoBehaviour
     private void LoadLeagueData()
     {
         numberOfLeaguesInArrays = 0;
-        string path = "Assets/data/LeagueData.txt";
+        string path = "LeagueData";
+        TextAsset data = Resources.Load<TextAsset>(path);
         //Check if data file exists.
-        if (File.Exists(path))
+        if (data != null)
         {
-            StreamReader sr = new(path);
-            int leagueCount = int.Parse(sr.ReadLine());
-            for (int i=0; i < leagueCount; i++) //Iterate through each line
+            string[] lines = data.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            int leagueCount = int.Parse(lines[0]);
+            for (int i = 0; i < leagueCount; i++) //Iterate through each line
             {
-                string[] line = sr.ReadLine().Split();
+                string[] line = lines[i+1].Split();
                 if (line.Length == 8) // ensure its split enough
                 {
                     //Add to the list of leaguesData.
                     staticLeaguesData[numberOfLeaguesInArrays] = ScriptableObject.CreateInstance<StaticLeagueData>();
+                    Debug.Log(lines[i]);
                     staticLeaguesData[numberOfLeaguesInArrays].LoadStaticLeagueData(line);
                     Debug.Log(staticLeaguesData[numberOfLeaguesInArrays].ToString());
                     numberOfLeaguesInArrays++;
@@ -1160,15 +1164,16 @@ public class GameManager : MonoBehaviour
     private void LoadPlayers()
     {
         numberOfPlayersInArrays = 0;
-        string path = "Assets/data/PlayerData.txt";
+        string path = "PlayerData";
+        TextAsset data = Resources.Load<TextAsset>(path);
         //Check if data file exists.
-        if (File.Exists(path))
+        if (data != null)
         {
-            StreamReader sr = new(path);
-            int teamCount = int.Parse(sr.ReadLine());
+            string[] lines = data.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            int teamCount = int.Parse(lines[0]);
             for (int i = 0; i < teamCount; i++) //Iterate through each line
             {
-                string[] line = sr.ReadLine().Split();
+                string[] line = lines[i+1].Split();
                 if (line.Length == 5) // ensure its split enough
                 {
                     //Add to the list of playerData.

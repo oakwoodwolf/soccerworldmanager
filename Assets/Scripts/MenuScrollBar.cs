@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using NUnit.Framework.Constraints;
 using UnityEngine;
-using UnityEngine.Assertions;
-using UnityEngine.Serialization;
-using static Enums;
-using Random = UnityEngine.Random;
 
 
-    public class MenuScrollBar : MenuItem
+public class MenuScrollBar : MenuItem
     {
         public const float ScrollBarWidth = 10.0f;
         public const float ScrollBarHeight = 320.0f;
