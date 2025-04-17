@@ -1463,7 +1463,7 @@ MonoBehaviour:
   flags: 0
   text: backButton
   menuAction: 1
-  param: 15
+  param: 14
   affectedByScroll: 0
   images:
   - {fileID: 21300000, guid: 369350d3d6c38934690ff1b37c71fd4d, type: 3}
@@ -1472,6 +1472,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: b1af9edf94de366479acac3a8c58a821, type: 3}
   - {fileID: 21300000, guid: c28e03f8c19a74f41974b3785cd1d794, type: 3}
   image: {fileID: 7862390516962350602}
+  button: {fileID: 0}
 --- !u!1 &7904268455714061890
 GameObject:
   m_ObjectHideFlags: 0
@@ -1623,6 +1624,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: b1af9edf94de366479acac3a8c58a821, type: 3}
   - {fileID: 21300000, guid: c28e03f8c19a74f41974b3785cd1d794, type: 3}
   image: {fileID: 4332173555302721139}
+  button: {fileID: 0}
 --- !u!1 &8028673862428647993
 GameObject:
   m_ObjectHideFlags: 0
