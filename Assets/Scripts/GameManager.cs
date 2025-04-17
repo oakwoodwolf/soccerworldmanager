@@ -1791,6 +1791,18 @@ public class GameManager : MonoBehaviour
                     matchEngine.updateTimer = -1; // force this here to quickly update the display when we return
                 }
                 break;
+            case Enums.Screen.SelectFormation:
+                if (matchEngine.state == MatchEngineState.MatchOver)
+                {
+                    menuItems[8].param = (int)Enums.Screen.OppositionFormation;
+                }
+                else // If we are in a match, go back to the match! 
+                {
+                    menuItems[8].param = (int)Enums.Screen.MatchEngine;
+                    matchEngine.updateTimer = -1; // force this here to quickly update the display when we return
+                }
+                currentScreenSubState = 0;
+                break;
             case Enums.Screen.AssignPlayers:
                 RenderScene();
                 int showFormation = 0;
