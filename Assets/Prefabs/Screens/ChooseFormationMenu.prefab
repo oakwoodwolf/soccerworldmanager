@@ -1254,9 +1254,13 @@ PrefabInstance:
       propertyPath: text
       value: Choose Formation
       objectReference: {fileID: 0}
+    - target: {fileID: 529267945245105470, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
+      propertyPath: text
+      value: Choose Formation
+      objectReference: {fileID: 0}
     - target: {fileID: 3357049138219034932, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_text
-      value: Title Selection
+      value: Choose Formation
       objectReference: {fileID: 0}
     - target: {fileID: 6286069871423168839, guid: 98d6649483c3ab74296dfc254b33c53b, type: 3}
       propertyPath: m_Pivot.x
@@ -1796,7 +1800,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 171172335418177232, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
       propertyPath: pos.y
-      value: 240
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 171172335418177232, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
       propertyPath: minMaxRange.x
@@ -1876,7 +1880,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7177218407338049546, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -240
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7177218407338049546, guid: 2c230bff268543b4597170763a48ed2e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

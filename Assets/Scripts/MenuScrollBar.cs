@@ -25,12 +25,13 @@ public class MenuScrollBar : MenuItem
             float scrollStep = (ScrollBarHeight - scrollBarLen)/(range - 480.0f); //SCROLL_BAR_SIZE / range;
             float scrollYoffset = (range - 480.0f) * scrollStep;
 					
-            float x = (ScrollBarWidth/2);
+            float x = -(ScrollBarWidth/2);
             float y = ((480 - ScrollBarWidth)/2);
-            bar.sizeDelta = new Vector2(x, y);
+            bar.anchoredPosition = new Vector2(x, 0);
+            bar.sizeDelta = new Vector2(ScrollBarWidth, ScrollBarHeight);
             
             float w = ScrollBarWidth * 0.75f;
-            barHandle.anchoredPosition = new Vector2(0,
+            barHandle.anchoredPosition = new Vector2((ScrollBarWidth-w)/2,
                 -1*(scrollYoffset - (scrollStep * gameManager.menuScrollY)));
             barHandle.sizeDelta = new Vector2(w, scrollBarLen);
 

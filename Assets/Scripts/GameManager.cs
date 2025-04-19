@@ -1524,7 +1524,7 @@ public class GameManager : MonoBehaviour
                 int maxItemsSelling = numPlayersInPlayersTeam - (currentPage * MaxPlayersInList);
                 if (maxItemsSelling > MaxPlayersInList) maxItemsSelling = MaxPlayersInList;
 
-                int buttonY = 8;
+                int buttonY = -286;
                 if (maxItemsSelling > 11)
                     buttonY = 395 - menuItemGenerator.playerTrainingYOffset - (22 * (maxItemsSelling + 1));
                 menuItems[4].pos = new Vector2(menuItems[4].pos.x, -buttonY);
@@ -1590,10 +1590,18 @@ public class GameManager : MonoBehaviour
                float yOffTrain = 0.0f;
                 int maxItems = numPlayersInPlayersTeam - (currentPage * MaxPlayersInList);
                 if (maxItems > MaxPlayersInList) maxItems = MaxPlayersInList;
-                //update Page ?/? text
-                menuItems[4].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
                 //Training screen menu stuff
-                
+                int buttonTrainY = -286;
+                if (maxItems > 11)
+                    buttonTrainY = 395 - menuItemGenerator.playerTrainingYOffset - (22 * (maxItems + 1));
+                menuItems[7].pos = new Vector2(menuItems[7].pos.x, -buttonTrainY);
+                menuItems[7].AdjustPosition(); menuItems[7].SetText("backButton");
+                menuItems[4].pos = new Vector2(menuItems[4].pos.x, -buttonTrainY);
+                menuItems[4].AdjustPosition(); menuItems[4].SetText("Page " + (currentPage+1) + "/" + currentNumberOfPage);
+                menuItems[5].pos = new Vector2(menuItems[5].pos.x, -buttonTrainY);
+                menuItems[5].AdjustPosition(); menuItems[5].SetText("pageButtonPrev");
+                menuItems[6].pos = new Vector2(menuItems[6].pos.x, -buttonTrainY);
+                menuItems[6].AdjustPosition();menuItems[6].SetText("pageButtonNext");
                 for (int i = 0; i < maxItems; i++)
                 {
                     int playerId = playersTeamPlayerIds[i + currentPage * MaxPlayersInList];
